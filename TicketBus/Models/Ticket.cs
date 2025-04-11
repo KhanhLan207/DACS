@@ -19,17 +19,11 @@ namespace TicketBus.Models
         public TicketState State { get; set; }
         [ForeignKey("Employee")]
         public int? IdEmployee { get; set; }
-        [ForeignKey("BusRoute")]
-        public int? IdRoute { get; set; }
-        [ForeignKey("Coach")]
-        public int? IdCoach { get; set; }
 
         public Seat? Seat { get; set; }
         public Price? Price { get; set; }
         public Passenger? Passenger { get; set; }
         public Employee? Employee { get; set; }
-        public BusRoute? BusRoute { get; set; }
-        public Coach? Coach { get; set; }
     }
 
     public enum TicketState
