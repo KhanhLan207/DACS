@@ -1,0 +1,65 @@
+﻿@inject UserManager<TicketBus.Models.ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TicketBus</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/stylePage.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="~/images/DreamBus_logo.png" alt="logo">
+            <span>DREAM BUS</span>
+        </div>
+        <nav class="menu">
+            <a href="/">Trang Chủ</a>
+            <a href="#">Đặt Vé</a>
+            <a href="#">Lịch Trình</a>
+            <a href="#">Liên Hệ</a>
+        </nav>
+        <div class="auth-buttons">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                var user = await UserManager.GetUserAsync(User);
+                var displayName = user?.FullName ?? user?.Email ?? "Người dùng";
+                <span class="user-email">Xin chào, @displayName</span>
+                <form class="d-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                    <button type="submit" class="btn-login">Đăng xuất</button>
+                </form>
+            }
+            else
+            {
+                <a href="/Identity/Account/Register" class="btn-register">Đăng ký</a>
+                <a href="/Identity/Account/Login" class="btn-login">Đăng nhập</a>
+            }
+        </div>
+    </header>
+
+    <main role="main" class="pb-3">
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>📞 Hotline: 1900 1234 | 📧 Email: support@vexebuyt.com</p>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
