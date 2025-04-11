@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250411093210_ReUpAgain")]
+    partial class ReUpAgain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,12 +285,7 @@ namespace TicketBus.Migrations
                     b.Property<int>("State")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("IdBrand");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Brands");
                 });
@@ -1002,15 +1000,6 @@ namespace TicketBus.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Passenger");
-                });
-
-            modelBuilder.Entity("TicketBus.Models.Brand", b =>
-                {
-                    b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("TicketBus.Models.BusRoute", b =>

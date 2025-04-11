@@ -15,7 +15,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<ApplicationUser> _signInManager; // Sửa IdentityUser thành ApplicationUser
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
@@ -91,7 +91,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    var displayName = user.FullName ?? user.Email; // Lấy FullName hoặc Email để log
+                    var displayName = user.FullName ?? user.Email;
                     _logger.LogInformation("User {DisplayName} (Email: {Email}) logged in successfully.", displayName, Input.Email);
 
                     // Hiển thị thông báo đăng nhập thành công
@@ -101,15 +101,19 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     var roles = await _userManager.GetRolesAsync(user);
                     if (roles.Contains("Admin"))
                     {
-                        returnUrl = "/Home/AdminPanel"; // Chuyển hướng Admin đến trang AdminPanel
+                        returnUrl = "/Home/AdminPanel";
                     }
                     else if (roles.Contains("NhanVien"))
                     {
-                        returnUrl = "/Home/EmployeePanel"; // Chuyển hướng NhanVien đến trang EmployeePanel
+                        returnUrl = "/Home/EmployeePanel";
+                    }
+                    else if (roles.Contains("Brand"))
+                    {
+                        returnUrl = "/Brand/RegisterCoachAndRoute"; // Chuyển hướng Brand đến trang đăng ký xe/tuyến
                     }
                     else
                     {
-                        returnUrl = "/"; // Nếu không có vai trò đặc biệt, chuyển về trang chủ
+                        returnUrl = "/";
                     }
 
                     return LocalRedirect(returnUrl);

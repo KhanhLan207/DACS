@@ -10,7 +10,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
 {
     public class LogoutModel : PageModel
     {
-        private readonly SignInManager<ApplicationUser> _signInManager; // Sửa IdentityUser thành ApplicationUser
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
 
         public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger)
@@ -26,8 +26,8 @@ namespace TicketBus.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPost(string returnUrl = null)
         {
-            var user = await _signInManager.UserManager.GetUserAsync(User); // Lấy thông tin user
-            var userDisplayName = user?.FullName ?? user?.Email ?? "Unknown"; // Lấy FullName hoặc Email
+            var user = await _signInManager.UserManager.GetUserAsync(User);
+            var userDisplayName = user?.FullName ?? user?.Email ?? "Unknown";
 
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User {DisplayName} (Email: {Email}) logged out successfully.", userDisplayName, user?.Email ?? "Unknown");
@@ -41,7 +41,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
             }
             else
             {
-                // Chuyển hướng về trang chủ thay vì reload trang logout
                 return RedirectToAction("Index", "Home", new { area = "" });
             }
         }

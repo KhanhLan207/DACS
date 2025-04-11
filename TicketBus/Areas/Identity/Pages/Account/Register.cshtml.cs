@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using TicketBus.Data;
 using TicketBus.Models;
 
 namespace TicketBus.Areas.Identity.Pages.Account
@@ -26,13 +27,15 @@ namespace TicketBus.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -40,6 +43,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
         }
 
         [BindProperty]
@@ -85,6 +89,13 @@ namespace TicketBus.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "Vui lòng chọn vai trò.")]
             [Display(Name = "Vai trò")]
             public string Role { get; set; }
+
+            // Thêm các trường cho Brand (nếu chọn vai trò Brand)
+            [Display(Name = "Tên hãng xe")]
+            public string BrandName { get; set; }
+
+            [Display(Name = "Địa chỉ hãng xe")]
+            public string BrandAddress { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -97,6 +108,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
@@ -123,6 +135,27 @@ namespace TicketBus.Areas.Identity.Pages.Account
                                 ModelState.AddModelError(string.Empty, error.Description);
                             }
                             return Page();
+                        }
+
+                        // Nếu vai trò là Brand, tạo bản ghi trong bảng Brands
+                        if (Input.Role == "Brand")
+                        {
+                            if (string.IsNullOrEmpty(Input.BrandName) || string.IsNullOrEmpty(Input.BrandAddress))
+                            {
+                                ModelState.AddModelError(string.Empty, "Vui lòng nhập đầy đủ thông tin hãng xe.");
+                                return Page();
+                            }
+
+                            var brand = new Brand
+                            {
+                                BrandCode = $"BRAND-{DateTime.Now:yyyyMMddHHmmss}",
+                                NameBrand = Input.BrandName,
+                                Address = Input.BrandAddress,
+                                PhoneNumber = Input.PhoneNumber,
+                                State = BrandState.HoatDong
+                            };
+                            _context.Brands.Add(brand);
+                            await _context.SaveChangesAsync();
                         }
                     }
 

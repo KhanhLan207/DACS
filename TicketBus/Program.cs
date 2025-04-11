@@ -47,10 +47,11 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Định nghĩa route
+
+// Định tuyến cho Areas
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area:exists}/{controller=Home}/{action=AdminPanel}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
@@ -58,13 +59,13 @@ app.MapControllerRoute(
 
 app.MapRazorPages(); // Thêm để Identity UI (Razor Pages) hoạt động
 
-// Tạo vai trò Admin và NhanVien với xử lý lỗi và logging
+// Tạo vai trò Admin, NhanVien và Brand với xử lý lỗi và logging
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    string[] roleNames = { "Admin", "NhanVien" };
+    string[] roleNames = { "Admin", "NhanVien", "Brand" }; // Thêm vai trò Brand
     foreach (var roleName in roleNames)
     {
         try

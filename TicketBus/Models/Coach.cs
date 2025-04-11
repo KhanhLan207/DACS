@@ -22,7 +22,10 @@ namespace TicketBus.Models
 
     public enum CoachState
     {
-        Hoạt_động,
-        Không_hoạt_động
+        [Display(Name = "Hoạt động")]
+        HoatDong,
+
+        [Display(Name = "Không hoạt động")]
+        KhongHoatDong
     }
 }

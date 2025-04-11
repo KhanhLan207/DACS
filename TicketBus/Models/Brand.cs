@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TicketBus.Models
 {
@@ -12,6 +13,11 @@ namespace TicketBus.Models
         [RegularExpression(@"^[0-9]+$", ErrorMessage = "PhoneNumber must contain only digits")]
         public string? PhoneNumber { get; set; }
         public BrandState State { get; set; }
+
+        // Thêm trường UserId để liên kết với ApplicationUser
+        [ForeignKey("ApplicationUser")]
+        public string? UserId { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
     }
     public enum BrandState
     {
