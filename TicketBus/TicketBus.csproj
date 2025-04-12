@@ -26,8 +26,11 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Brand\Controllers\" />
     <Folder Include="Areas\Brand\Data\" />
     <Folder Include="Areas\Brand\Models\" />
+    <Folder Include="Areas\Brand\Views\" />
+    <Folder Include="wwwroot\images\coaches\" />
   </ItemGroup>
 
 </Project>

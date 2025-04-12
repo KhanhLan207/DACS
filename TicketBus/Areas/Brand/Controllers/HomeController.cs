@@ -12,6 +12,7 @@ namespace TicketBus.Areas.Brand.Controllers
             return View();
         }
 
+        // Action để điều hướng về trang Index ngoài Area
         public IActionResult GoToHomePage()
         {
             return RedirectToAction("Index", "Home", new { area = "" });
