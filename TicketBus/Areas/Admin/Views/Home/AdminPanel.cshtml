@@ -1,0 +1,12 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<h1>Admin Panel</h1>
+<p>Chào mừng Admin! Đây là khu vực quản lý của bạn.</p>
+<ul>
+    <li><a asp-controller="Home" asp-action="GeneralPanel">Truy cập General Panel</a></li>
+    <li><a asp-area="" asp-controller="Home" asp-action="Index">Quay về trang chủ</a></li>
+</ul>

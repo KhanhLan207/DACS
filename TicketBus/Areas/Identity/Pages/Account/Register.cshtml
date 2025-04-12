@@ -24,44 +24,44 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger text-center" role="alert"></div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input asp-for="Input.FullName" class="form-control" aria-required="true" placeholder="Họ và tên" />
+                            <input asp-for="Input.FullName" class="form-control" placeholder="Họ và tên" id="Input_FullName" required minlength="2" maxlength="100" />
                             <label asp-for="Input.FullName" class="form-label">Họ và tên</label>
                             <span asp-validation-for="Input.FullName" class="text-danger"></span>
                         </div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" id="Input_Email" type="email" required />
                             <label asp-for="Input.Email" class="form-label">Email</label>
                             <span asp-validation-for="Input.Email" class="text-danger"></span>
                         </div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                            <input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="Số điện thoại" />
+                            <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Số điện thoại" id="Input_PhoneNumber" type="tel" required />
                             <label asp-for="Input.PhoneNumber" class="form-label">Số điện thoại</label>
                             <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
                         </div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                            <input asp-for="Input.DateOfBirth" type="date" class="form-control" aria-required="true" />
+                            <input asp-for="Input.DateOfBirth" type="date" class="form-control" id="Input_DateOfBirth" required />
                             <label asp-for="Input.DateOfBirth" class="form-label">Ngày sinh</label>
                             <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
                         </div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Mật khẩu" />
+                            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" placeholder="Mật khẩu" id="Input_Password" type="password" required minlength="6" />
                             <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
                             <span asp-validation-for="Input.Password" class="text-danger"></span>
                         </div>
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Xác nhận mật khẩu" />
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Xác nhận mật khẩu" id="Input_ConfirmPassword" type="password" required />
                             <label asp-for="Input.ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
                             <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                         </div>
                         <!-- Dropdown chọn vai trò -->
                         <div class="form-floating mb-3 input-group">
                             <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                            <select asp-for="Input.Role" class="form-control" aria-required="true" id="roleSelect">
+                            <select asp-for="Input.Role" class="form-control" id="roleSelect" required>
                                 <option value="">-- Chọn vai trò --</option>
                                 <option value="Admin">Admin</option>
                                 <option value="NhanVien">Nhân Viên</option>
@@ -69,21 +69,6 @@
                             </select>
                             <label asp-for="Input.Role" class="form-label">Vai trò</label>
                             <span asp-validation-for="Input.Role" class="text-danger"></span>
-                        </div>
-                        <!-- Các trường bổ sung cho Brand -->
-                        <div id="brandFields" style="display: none;">
-                            <div class="form-floating mb-3 input-group">
-                                <span class="input-group-text"><i class="fas fa-building"></i></span>
-                                <input asp-for="Input.BrandName" class="form-control" placeholder="Tên hãng xe" />
-                                <label asp-for="Input.BrandName" class="form-label">Tên hãng xe</label>
-                                <span asp-validation-for="Input.BrandName" class="text-danger"></span>
-                            </div>
-                            <div class="form-floating mb-3 input-group">
-                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                                <input asp-for="Input.BrandAddress" class="form-control" placeholder="Địa chỉ hãng xe" />
-                                <label asp-for="Input.BrandAddress" class="form-label">Địa chỉ hãng xe</label>
-                                <span asp-validation-for="Input.BrandAddress" class="text-danger"></span>
-                            </div>
                         </div>
                         <div>
                             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary register-btn glow-on-hover">Đăng ký</button>
@@ -96,21 +81,5 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-        $(document).ready(function () {
-            $("#roleSelect").change(function () {
-                var role = $(this).val();
-                if (role === "Brand") {
-                    $("#brandFields").show();
-                    $("#Input_BrandName").prop("required", true);
-                    $("#Input_BrandAddress").prop("required", true);
-                } else {
-                    $("#brandFields").hide();
-                    $("#Input_BrandName").prop("required", false);
-                    $("#Input_BrandAddress").prop("required", false);
-                }
-            });
-        });
-    </script>
+    <!-- Không cần JavaScript để hiển thị/ẩn trường Brand nữa -->
 }

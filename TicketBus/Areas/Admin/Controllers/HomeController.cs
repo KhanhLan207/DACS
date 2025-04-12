@@ -6,27 +6,41 @@ namespace TicketBus.Areas.Admin.Controllers
     [Area("Admin")]
     public class HomeController : Controller
     {
+        [Authorize]
         public IActionResult Index()
         {
-            return View();
+            // Chuyển hướng dựa trên vai trò
+            if (User.IsInRole("Admin"))
+            {
+                return RedirectToAction("AdminPanel");
+            }
+            else if (User.IsInRole("NhanVien"))
+            {
+                return RedirectToAction("EmployeePanel");
+            }
+            else
+            {
+                // Nếu không có vai trò phù hợp, chuyển về trang chủ hoặc hiển thị lỗi
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
         }
 
-        [Authorize(Roles = "Admin")] // Chỉ Admin truy cập được
-        public IActionResult AdminPanel()
-        {
-            return View();
-        }
+            [Authorize(Roles = "Admin")]
+            public IActionResult AdminPanel()
+            {
+                return View();
+            }
 
-        [Authorize(Roles = "NhanVien")] // Chỉ Nhân Viên truy cập được
-        public IActionResult EmployeePanel()
-        {
-            return View();
-        }
+            [Authorize(Roles = "NhanVien")]
+            public IActionResult EmployeePanel()
+            {
+                return View();
+            }
 
-        [Authorize(Roles = "Admin, NhanVien")] // Cả hai vai trò đều truy cập được
-        public IActionResult GeneralPanel()
-        {
-            return View();
-        }
+            [Authorize(Roles = "Admin, NhanVien")]
+            public IActionResult GeneralPanel()
+            {
+                return View();
+            }
     }
 }

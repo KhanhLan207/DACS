@@ -101,15 +101,15 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     var roles = await _userManager.GetRolesAsync(user);
                     if (roles.Contains("Admin"))
                     {
-                        returnUrl = "/Home/AdminPanel";
+                        returnUrl = "/Admin/Home/AdminPanel"; // Sửa URL để trỏ đúng vào khu vực Admin
                     }
                     else if (roles.Contains("NhanVien"))
                     {
-                        returnUrl = "/Home/EmployeePanel";
+                        returnUrl = "/Admin/Home/EmployeePanel"; // Sửa URL để trỏ đúng vào khu vực Admin
                     }
                     else if (roles.Contains("Brand"))
                     {
-                        returnUrl = "/Brand/RegisterCoachAndRoute"; // Chuyển hướng Brand đến trang đăng ký xe/tuyến
+                        returnUrl = "/Brand/RegisterCoachAndRoute";
                     }
                     else
                     {

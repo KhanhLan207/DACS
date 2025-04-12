@@ -11,16 +11,13 @@
             @{
                 if (User.Identity?.IsAuthenticated ?? false)
                 {
-                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
                         <p>Bạn có chắc chắn muốn đăng xuất?</p>
                         <button type="submit" class="btn btn-danger">Đăng xuất ngay</button>
                     </form>
                 }
                 else
                 {
-                    <div class="alert alert-success" role="alert">
-                        Bạn đã đăng xuất thành công khỏi ứng dụng.
-                    </div>
                     <a href="/Identity/Account/Login" class="btn btn-primary">Đăng nhập lại</a>
                 }
             }

@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using TicketBus.Data;
 using TicketBus.Models;
 
@@ -23,6 +13,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<ApplicationUser> _userStore;
         private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
@@ -31,6 +22,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             IUserStore<ApplicationUser> userStore,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
@@ -38,6 +30,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
             ApplicationDbContext context)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
@@ -89,13 +82,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "Vui lòng chọn vai trò.")]
             [Display(Name = "Vai trò")]
             public string Role { get; set; }
-
-            // Thêm các trường cho Brand (nếu chọn vai trò Brand)
-            [Display(Name = "Tên hãng xe")]
-            public string BrandName { get; set; }
-
-            [Display(Name = "Địa chỉ hãng xe")]
-            public string BrandAddress { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -109,8 +95,14 @@ namespace TicketBus.Areas.Identity.Pages.Account
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+            // Log dữ liệu đầu vào
+            _logger.LogInformation("Register attempt with data: FullName={FullName}, Email={Email}, PhoneNumber={PhoneNumber}, DateOfBirth={DateOfBirth}, Role={Role}",
+                Input.FullName, Input.Email, Input.PhoneNumber, Input.DateOfBirth, Input.Role);
+
             if (ModelState.IsValid)
             {
+                _logger.LogInformation("ModelState is valid. Proceeding with registration.");
+
                 var user = CreateUser();
                 user.FullName = Input.FullName;
                 user.PhoneNumber = Input.PhoneNumber;
@@ -118,76 +110,80 @@ namespace TicketBus.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
 
+                // Tạo user
+                var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
+                    _logger.LogInformation("User created successfully: Email={Email}", Input.Email);
 
-                    // Gán vai trò cho user
+                    // Kiểm tra và tạo vai trò nếu chưa tồn tại
                     if (!string.IsNullOrEmpty(Input.Role))
                     {
-                        var roleResult = await _userManager.AddToRoleAsync(user, Input.Role);
-                        if (!roleResult.Succeeded)
+                        if (!await _roleManager.RoleExistsAsync(Input.Role))
                         {
-                            foreach (var error in roleResult.Errors)
+                            var role = new IdentityRole(Input.Role);
+                            var roleResult = await _roleManager.CreateAsync(role);
+                            if (!roleResult.Succeeded)
+                            {
+                                _logger.LogWarning("Failed to create role {Role}. Errors: {Errors}",
+                                    Input.Role, string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                                ModelState.AddModelError(string.Empty, "Không thể tạo vai trò. Vui lòng liên hệ quản trị viên.");
+                                return Page();
+                            }
+                            _logger.LogInformation("Created role {Role}", Input.Role);
+                        }
+
+                        // Gán vai trò cho user
+                        var addRoleResult = await _userManager.AddToRoleAsync(user, Input.Role);
+                        if (!addRoleResult.Succeeded)
+                        {
+                            _logger.LogWarning("Failed to assign role {Role} to user {Email}. Errors: {Errors}",
+                                Input.Role, Input.Email, string.Join(", ", addRoleResult.Errors.Select(e => e.Description)));
+                            foreach (var error in addRoleResult.Errors)
                             {
                                 ModelState.AddModelError(string.Empty, error.Description);
                             }
                             return Page();
                         }
-
-                        // Nếu vai trò là Brand, tạo bản ghi trong bảng Brands
-                        if (Input.Role == "Brand")
-                        {
-                            if (string.IsNullOrEmpty(Input.BrandName) || string.IsNullOrEmpty(Input.BrandAddress))
-                            {
-                                ModelState.AddModelError(string.Empty, "Vui lòng nhập đầy đủ thông tin hãng xe.");
-                                return Page();
-                            }
-
-                            var brand = new Brand
-                            {
-                                BrandCode = $"BRAND-{DateTime.Now:yyyyMMddHHmmss}",
-                                NameBrand = Input.BrandName,
-                                Address = Input.BrandAddress,
-                                PhoneNumber = Input.PhoneNumber,
-                                State = BrandState.HoatDong
-                            };
-                            _context.Brands.Add(brand);
-                            await _context.SaveChangesAsync();
-                        }
+                        _logger.LogInformation("Role {Role} assigned to user {Email}", Input.Role, Input.Email);
                     }
 
-                    var userId = await _userManager.GetUserIdAsync(user);
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                    // Đăng nhập user
+                    await _signInManager.SignInAsync(user, isPersistent: false);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    // Hiển thị thông báo đăng ký thành công
+                    var displayName = user.FullName ?? user.Email;
+                    TempData["Message"] = $"Đăng ký thành công! Chào mừng {displayName}.";
 
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    // Điều hướng về trang chủ cho tất cả vai trò
+                    returnUrl = "/";
+                    _logger.LogInformation("Redirecting user {Email} to {ReturnUrl}", Input.Email, returnUrl);
+                    return LocalRedirect(returnUrl);
+                }
+                else
+                {
+                    _logger.LogWarning("User creation failed for {Email}. Errors: {Errors}",
+                        Input.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                    foreach (var error in result.Errors)
                     {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
-                foreach (var error in result.Errors)
+            }
+            else
+            {
+                // Log các lỗi validation
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                _logger.LogWarning("ModelState is invalid. Errors: {Errors}", string.Join(", ", errors));
+                foreach (var error in errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError(string.Empty, error);
                 }
             }
 
             // If we got this far, something failed, redisplay form
+            _logger.LogInformation("Redisplaying form due to validation errors.");
             return Page();
         }
 

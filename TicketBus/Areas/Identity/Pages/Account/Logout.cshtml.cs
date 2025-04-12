@@ -33,7 +33,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
             _logger.LogInformation("User {DisplayName} (Email: {Email}) logged out successfully.", userDisplayName, user?.Email ?? "Unknown");
 
             // Hiển thị thông báo đăng xuất thành công
-            TempData["Message"] = "Bạn đã đăng xuất thành công.";
+            TempData["Message"] = $"Đăng xuất thành công! Tạm biệt {userDisplayName}.";
 
             if (returnUrl != null)
             {
