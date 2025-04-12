@@ -156,10 +156,23 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     var displayName = user.FullName ?? user.Email;
                     TempData["Message"] = $"Đăng ký thành công! Chào mừng {displayName}.";
 
-                    // Điều hướng về trang chủ cho tất cả vai trò
-                    returnUrl = "/";
-                    _logger.LogInformation("Redirecting user {Email} to {ReturnUrl}", Input.Email, returnUrl);
-                    return LocalRedirect(returnUrl);
+                    // Điều hướng theo vai trò
+                    if (Input.Role == "Admin")
+                    {
+                        return RedirectToAction("AdminPanel", "Home", new { area = "Admin" });
+                    }
+                    else if (Input.Role == "Brand")
+                    {
+                        return RedirectToAction("Index", "Home", new { area = "Brand" });
+                    }
+                    else if (Input.Role == "NhanVien")
+                    {
+                        return RedirectToAction("EmployeePanel", "Home", new { area = "Admin" });
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Home", new { area = "" });
+                    }
                 }
                 else
                 {

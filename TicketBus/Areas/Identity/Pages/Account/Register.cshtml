@@ -18,6 +18,12 @@
             <div class="col-md-6 col-lg-4">
                 <div class="auth-container register-container animate__animated animate__fadeIn">
                     <h1 class="text-center mb-4">@ViewData["Title"]</h1>
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            @TempData["Message"]
+                        </div>
+                    }
                     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                         <h2 class="text-center mb-3">Tạo tài khoản mới</h2>
                         <hr class="gradient-hr" />

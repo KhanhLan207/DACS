@@ -18,6 +18,12 @@
             <div class="col-md-6 col-lg-4">
                 <div class="auth-container login-container animate__animated animate__fadeIn">
                     <h1 class="text-center mb-4">@ViewData["Title"]</h1>
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            @TempData["Message"]
+                        </div>
+                    }
                     <form id="account" method="post">
                         <h2 class="text-center mb-3">Đăng nhập bằng tài khoản của bạn</h2>
                         <hr class="gradient-hr" />

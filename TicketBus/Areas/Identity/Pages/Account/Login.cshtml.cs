@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 using TicketBus.Models;
 
 namespace TicketBus.Areas.Identity.Pages.Account
@@ -73,7 +67,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
@@ -101,22 +94,20 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     var roles = await _userManager.GetRolesAsync(user);
                     if (roles.Contains("Admin"))
                     {
-                        returnUrl = "/Admin/Home/AdminPanel"; // Sửa URL để trỏ đúng vào khu vực Admin
+                        return RedirectToAction("AdminPanel", "Home", new { area = "Admin" });
                     }
                     else if (roles.Contains("NhanVien"))
                     {
-                        returnUrl = "/Admin/Home/EmployeePanel"; // Sửa URL để trỏ đúng vào khu vực Admin
+                        return RedirectToAction("EmployeePanel", "Home", new { area = "Admin" });
                     }
                     else if (roles.Contains("Brand"))
                     {
-                        returnUrl = "/Brand/RegisterCoachAndRoute";
+                        return RedirectToAction("Index", "Home", new { area = "Brand" });
                     }
                     else
                     {
-                        returnUrl = "/";
+                        return RedirectToAction("Index", "Home", new { area = "" });
                     }
-
-                    return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)
                 {
