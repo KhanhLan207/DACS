@@ -22,6 +22,22 @@
             <a href="#">Đặt Vé</a>
             <a href="#">Lịch Trình</a>
             <a href="#">Liên Hệ</a>
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    <a asp-area="Admin" asp-controller="Home" asp-action="AdminPanel">Bảng điều khiển Admin</a>
+                }
+                else if (User.IsInRole("NhanVien"))
+                {
+                    <a asp-area="Admin" asp-controller="Home" asp-action="EmployeePanel">Quản lý nhân viên</a>
+                }
+                else if (User.IsInRole("Brand"))
+                {
+                    <a asp-area="Brand" asp-controller="Home" asp-action="Index">Quản lý hãng xe</a>
+                    <a asp-area="Brand" asp-controller="Coach" asp-action="RegisterCoach">Đăng ký xe</a>
+                }
+            }
         </nav>
         <div class="auth-buttons">
             @if (User.Identity?.IsAuthenticated ?? false)

@@ -1,4 +1,5 @@
-﻿@{
+﻿@* Views/Home/Index.cshtml *@
+@{
     ViewData["Title"] = "Trang chủ";
 }
 
@@ -24,3 +25,23 @@
     </div>
 </section>
 
+<!-- Điều hướng theo vai trò -->
+<section class="navigation mt-4">
+    <div class="container text-center">
+        @if (User.Identity.IsAuthenticated)
+        {
+            if (User.IsInRole("Admin"))
+            {
+                <p><a asp-area="Admin" asp-controller="Home" asp-action="AdminPanel" class="btn btn-primary">Admin Panel</a></p>
+            }
+            else if (User.IsInRole("Brand"))
+            {
+                <p><a asp-area="Brand" asp-controller="Home" asp-action="Index" class="btn btn-primary">Brand Management</a></p>
+            }
+            else if (User.IsInRole("NhanVien"))
+            {
+                <p><a asp-area="Admin" asp-controller="Home" asp-action="EmployeePanel" class="btn btn-primary">Employee Panel</a></p>
+            }
+        }
+    </div>
+</section>

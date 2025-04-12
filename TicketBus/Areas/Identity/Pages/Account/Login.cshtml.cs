@@ -1,8 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using TicketBus.Models;
 
 namespace TicketBus.Areas.Identity.Pages.Account
@@ -56,7 +62,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
 
             returnUrl ??= Url.Content("~/");
 
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -71,7 +76,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // Kiểm tra email có tồn tại không
                 var user = await _userManager.FindByEmailAsync(Input.Email);
                 if (user == null)
                 {
@@ -80,17 +84,14 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                // Thử đăng nhập
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     var displayName = user.FullName ?? user.Email;
                     _logger.LogInformation("User {DisplayName} (Email: {Email}) logged in successfully.", displayName, Input.Email);
 
-                    // Hiển thị thông báo đăng nhập thành công
                     TempData["Message"] = $"Đăng nhập thành công! Chào mừng {displayName}.";
 
-                    // Điều hướng theo vai trò
                     var roles = await _userManager.GetRolesAsync(user);
                     if (roles.Contains("Admin"))
                     {
@@ -126,7 +127,6 @@ namespace TicketBus.Areas.Identity.Pages.Account
                 }
             }
 
-            // Nếu có lỗi validation, hiển thị lại form
             return Page();
         }
     }
