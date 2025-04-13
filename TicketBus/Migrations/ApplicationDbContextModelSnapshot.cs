@@ -350,6 +350,10 @@ namespace TicketBus.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCoach"));
 
                     b.Property<string>("CoachCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Document")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("IdRegist")
@@ -362,7 +366,8 @@ namespace TicketBus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumberPlate")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("State")
                         .HasColumnType("int");

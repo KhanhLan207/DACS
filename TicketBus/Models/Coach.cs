@@ -7,7 +7,9 @@ namespace TicketBus.Models
     {
         [Key]
         public int IdCoach { get; set; }
+        [StringLength(50)]
         public string? CoachCode { get; set; }
+        [StringLength(10)]
         public string? NumberPlate { get; set; }
         public CoachState State { get; set; }
         [ForeignKey("VehicleType")]
@@ -15,6 +17,8 @@ namespace TicketBus.Models
         [ForeignKey("RegistForm")]
         public int? IdRegist { get; set; }
         public string? Image { get; set; }
+
+        public string? Document { get; set; }
 
         public VehicleType? VehicleType { get; set; }
         public RegistForm? RegistForm { get; set; }

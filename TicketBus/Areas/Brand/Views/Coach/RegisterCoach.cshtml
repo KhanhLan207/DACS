@@ -19,6 +19,15 @@
                     {
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             @TempData["Message"]
+                            @if (TempData["DocumentPath"] != null)
+                            {
+                                <div class="mt-2">
+                                    Tài liệu đã upload:
+                                    <a href="@TempData["DocumentPath"]" target="_blank" class="btn btn-guide">
+                                        <i class="fas fa-book"></i> Xem tài liệu
+                                    </a>
+                                </div>
+                            }
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }
@@ -143,6 +152,20 @@
                             <span asp-validation-for="ImageFile" class="text-danger"></span>
                         </div>
 
+                        @* Tài liệu Word/PDF *@
+                        <div class="form-group mb-4">
+                            <label asp-for="DocumentFile" class="form-label">Tài liệu (Word hoặc PDF, tùy chọn)</label>
+                            <div class="upload-group">
+                                <input asp-for="DocumentFile" class="form-control" type="file" accept=".doc,.docx,.pdf" id="documentFileInput" />
+                                <div id="viewDocumentButton" style="display: none;">
+                                    <a href="#" target="_blank" class="btn btn-guide" id="viewDocumentLink">
+                                        <i class="fas fa-book"></i> Xem tài liệu
+                                    </a>
+                                </div>
+                            </div>
+                            <span asp-validation-for="DocumentFile" class="text-danger"></span>
+                        </div>
+
                         <div class="text-center">
                             <button type="submit" class="btn btn-primary btn-register-coach">Đăng ký xe</button>
                         </div>
@@ -150,8 +173,9 @@
                         @* Script xử lý hiển thị/ẩn custom vehicle type *@
                         <script>
                             document.addEventListener("DOMContentLoaded", function () {
-                                console.log("DOM fully loaded and parsed"); // Debug
+                                console.log("DOM fully loaded and parsed");
 
+                                // Xử lý hiển thị/ẩn custom vehicle type
                                 var vehicleTypeSelect = document.getElementById("vehicleTypeSelect");
                                 var customVehicleTypeDiv = document.getElementById("customVehicleType");
                                 var customVehicleTypeName = document.getElementById("CustomVehicleTypeName");
@@ -168,25 +192,62 @@
                                 }
 
                                 function toggleCustomVehicleType() {
-                                    console.log("Vehicle Type Selected:", vehicleTypeSelect.value); // Debug
+                                    console.log("Vehicle Type Selected:", vehicleTypeSelect.value);
                                     if (vehicleTypeSelect.value === "other") {
-                                        console.log("Showing custom vehicle type fields"); // Debug
+                                        console.log("Showing custom vehicle type fields");
                                         customVehicleTypeDiv.style.display = "block";
                                         customVehicleTypeName.setAttribute("required", "required");
                                         customVehicleSeatCount.setAttribute("required", "required");
                                     } else {
-                                        console.log("Hiding custom vehicle type fields"); // Debug
+                                        console.log("Hiding custom vehicle type fields");
                                         customVehicleTypeDiv.style.display = "none";
                                         customVehicleTypeName.removeAttribute("required");
                                         customVehicleSeatCount.removeAttribute("required");
                                     }
                                 }
 
-                                // Gọi hàm khi trang tải
                                 toggleCustomVehicleType();
-
-                                // Gắn sự kiện change
                                 vehicleTypeSelect.addEventListener("change", toggleCustomVehicleType);
+
+                                // Xử lý upload file qua AJAX
+                                var documentFileInput = document.getElementById("documentFileInput");
+                                var viewDocumentButton = document.getElementById("viewDocumentButton");
+                                var viewDocumentLink = document.getElementById("viewDocumentLink");
+
+                                if (documentFileInput && viewDocumentButton && viewDocumentLink) {
+                                    documentFileInput.addEventListener("change", function () {
+                                        var file = this.files[0];
+                                        if (!file) {
+                                            viewDocumentButton.style.display = "none";
+                                            return;
+                                        }
+
+                                        var formData = new FormData();
+                                        formData.append("file", file);
+
+                                        fetch("/Brand/Coach/UploadTempDocument", {
+                                            method: "POST",
+                                            body: formData
+                                        })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    viewDocumentLink.href = data.documentPath;
+                                                    viewDocumentButton.style.display = "inline-flex";
+                                                } else {
+                                                    alert(data.message);
+                                                    viewDocumentButton.style.display = "none";
+                                                    documentFileInput.value = ""; // Xóa file đã chọn nếu upload thất bại
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error("Error uploading file:", error);
+                                                alert("Có lỗi xảy ra khi upload file. Vui lòng thử lại.");
+                                                viewDocumentButton.style.display = "none";
+                                                documentFileInput.value = "";
+                                            });
+                                    });
+                                }
                             });
                         </script>
                     </form>

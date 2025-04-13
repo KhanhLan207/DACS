@@ -1,0 +1,142 @@
+﻿/* Reset cơ bản */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* Header */
+.admin-header {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.admin-info span {
+    font-size: 16px;
+}
+
+.btn-toggle-sidebar {
+    font-size: 20px;
+    color: white;
+    background: none;
+    border: none;
+}
+
+    .btn-toggle-sidebar:hover {
+        color: #e0e0e0;
+    }
+
+/* Layout chính */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    padding-top: 70px; /* Khoảng cách cho header cố định */
+}
+
+/* Sidebar */
+.admin-sidebar {
+    width: 250px;
+    background-color: #343a40;
+    color: white;
+    position: fixed;
+    top: 70px;
+    bottom: 0;
+    transition: transform 0.3s ease;
+    z-index: 999;
+}
+
+    .admin-sidebar.collapsed {
+        transform: translateX(-250px);
+    }
+
+.sidebar-header {
+    background-color: #495057;
+    padding: 20px;
+    text-align: center;
+}
+
+    .sidebar-header h4 {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+.nav-link {
+    padding: 12px 20px;
+    color: #adb5bd;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+    .nav-link:hover {
+        background-color: #495057;
+        color: white;
+    }
+
+    .nav-link.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+/* Main Content */
+.admin-content {
+    margin-left: 250px;
+    padding: 20px;
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+}
+
+    .admin-content.collapsed {
+        margin-left: 0;
+    }
+
+.card {
+    border-radius: 10px;
+    background-color: white;
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #343a40;
+}
+
+.card-text {
+    color: #6c757d;
+    font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+    .admin-sidebar {
+        transform: translateX(-250px);
+    }
+
+        .admin-sidebar.collapsed {
+            transform: translateX(0);
+        }
+
+    .admin-content {
+        margin-left: 0;
+    }
+
+        .admin-content.collapsed {
+            margin-left: 250px;
+        }
+
+    .btn-toggle-sidebar {
+        display: block !important;
+    }
+}

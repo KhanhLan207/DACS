@@ -57,6 +57,9 @@ namespace TicketBus.Areas.Brand.Controllers
 
             [Display(Name = "Ảnh xe")]
             public IFormFile ImageFile { get; set; }
+
+            [Display(Name = "Tài liệu (Word hoặc PDF)")]
+            public IFormFile DocumentFile { get; set; }
         }
 
         // GET: /Brand/Coach/RegisterCoach
@@ -76,6 +79,40 @@ namespace TicketBus.Areas.Brand.Controllers
             return View(model);
         }
 
+        // POST: /Brand/Coach/UploadTempDocument
+        [HttpPost]
+        public async Task<IActionResult> UploadTempDocument(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return Json(new { success = false, message = "Vui lòng chọn file." });
+            }
+
+            var allowedExtensions = new[] { ".doc", ".docx", ".pdf" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return Json(new { success = false, message = "Chỉ chấp nhận file Word (.doc, .docx) hoặc PDF (.pdf)." });
+            }
+
+            try
+            {
+                var documentFileName = Guid.NewGuid().ToString() + extension;
+                var documentFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/guides", documentFileName);
+                using (var stream = new FileStream(documentFilePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+                var documentPath = $"/guides/{documentFileName}";
+                return Json(new { success = true, documentPath });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to upload temporary document.");
+                return Json(new { success = false, message = "Có lỗi xảy ra khi upload file. Vui lòng thử lại." });
+            }
+        }
+
         // POST: /Brand/Coach/RegisterCoach
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -85,6 +122,34 @@ namespace TicketBus.Areas.Brand.Controllers
                 .Where(vt => vt.State == VehicleTypeState.HoatDong)
                 .ToListAsync();
             ViewBag.VehicleTypes = vehicleTypes;
+
+            // Xử lý upload tài liệu Word/PDF (lưu vào wwwroot/guides)
+            string documentPath = null;
+            if (input.DocumentFile != null)
+            {
+                var allowedExtensions = new[] { ".doc", ".docx", ".pdf" };
+                var extension = Path.GetExtension(input.DocumentFile.FileName).ToLower();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("DocumentFile", "Chỉ chấp nhận file Word (.doc, .docx) hoặc PDF (.pdf).");
+                }
+                else
+                {
+                    var documentFileName = Guid.NewGuid().ToString() + extension;
+                    var documentFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/guides", documentFileName);
+                    using (var stream = new FileStream(documentFilePath, FileMode.Create))
+                    {
+                        await input.DocumentFile.CopyToAsync(stream);
+                    }
+                    documentPath = $"/guides/{documentFileName}";
+                    TempData["DocumentPath"] = documentPath;
+                }
+            }
+            else if (TempData["DocumentPath"] != null)
+            {
+                documentPath = TempData["DocumentPath"].ToString();
+                TempData.Keep("DocumentPath");
+            }
 
             if (ModelState.IsValid)
             {
@@ -102,6 +167,7 @@ namespace TicketBus.Areas.Brand.Controllers
                     return View(input);
                 }
 
+                // Xử lý upload ảnh (lưu vào wwwroot/images/coaches)
                 string imagePath = null;
                 if (input.ImageFile != null)
                 {
@@ -130,7 +196,8 @@ namespace TicketBus.Areas.Brand.Controllers
                     NumberPlate = input.NumberPlate,
                     State = input.State,
                     IdType = input.IdType,
-                    Image = imagePath
+                    Image = imagePath,
+                    Document = documentPath
                 };
 
                 var vehicleType = await _context.VehicleTypes
@@ -163,6 +230,7 @@ namespace TicketBus.Areas.Brand.Controllers
                     _logger.LogInformation("Brand and Coach registered successfully: BrandName={BrandName}, CoachCode={CoachCode}", input.BrandName, coach.CoachCode);
 
                     TempData["Message"] = "Đăng ký xe thành công!";
+                    TempData["DocumentPath"] = documentPath;
 
                     return RedirectToAction("Index", "Home", new { area = "Brand" });
                 }

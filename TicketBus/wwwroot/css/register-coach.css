@@ -11,7 +11,7 @@
 /* Container của form */
 .register-coach-container {
     background-color: #ffffff;
-    padding: 40px 50px; /* Giảm padding một chút để gọn hơn */
+    padding: 40px 50px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     width: 100%;
@@ -54,14 +54,14 @@ input[type="file"] {
     border: 1px solid #ced4da;
     border-radius: 8px;
     transition: border-color 0.3s, box-shadow 0.3s;
-    background-color: #fff; /* Đảm bảo nền trắng */
+    background-color: #fff;
     color: #495057;
 }
 
     /* Placeholder */
     .form-control::placeholder,
     select:invalid {
-        color: #adb5bd; /* Màu placeholder nhạt hơn */
+        color: #adb5bd;
         font-style: italic;
     }
 
@@ -91,7 +91,7 @@ input[type="file"] {
 .input-group .form-control,
 .input-group select {
     border-radius: 0 8px 8px 0;
-    border-left: none; /* Loại bỏ viền trái để liền mạch với icon */
+    border-left: none;
 }
 
 /* Trường nhập liệu động (Custom Vehicle Type) */
@@ -104,12 +104,47 @@ input[type="file"] {
     max-height: 0;
     opacity: 0;
     overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Thêm bóng nhẹ để nổi bật */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
     #customVehicleType:not([style*="display: none"]) {
         max-height: 300px;
         opacity: 1;
+    }
+
+/* Upload group (chứa input file và nút xem hướng dẫn) */
+.upload-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+    /* Input file trong upload-group */
+    .upload-group .form-control {
+        flex: 1;
+        min-width: 200px;
+    }
+
+/* Nút xem hướng dẫn */
+.btn-guide {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background-color: #00c853;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s;
+    white-space: nowrap;
+}
+
+    .btn-guide:hover {
+        background-color: #00a843;
+        transform: scale(1.02);
     }
 
 /* Nút đăng ký */
@@ -127,7 +162,7 @@ input[type="file"] {
     max-width: 300px;
 }
 
-    /* Hover nút */
+    /* Hover nút đăng ký */
     .btn-register-coach:hover {
         background-color: #0056b3;
         transform: scale(1.02);
@@ -196,6 +231,11 @@ input[type="file"] {
         padding: 10px 30px;
     }
 
+    .btn-guide {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+
     .input-group-text {
         padding: 8px 12px;
         font-size: 14px;
@@ -232,6 +272,11 @@ input[type="file"] {
     .btn-register-coach {
         font-size: 14px;
         padding: 10px 20px;
+    }
+
+    .btn-guide {
+        font-size: 12px;
+        padding: 6px 10px;
     }
 
     .form-control,
