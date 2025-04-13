@@ -1,0 +1,246 @@
+﻿/* Toàn bộ section */
+.register-coach-section {
+    padding: 60px 0;
+    background-color: #f1f3f5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Container của form */
+.register-coach-container {
+    background-color: #ffffff;
+    padding: 40px 50px; /* Giảm padding một chút để gọn hơn */
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;
+}
+
+/* Tiêu đề */
+.register-coach-title {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+/* Tiêu đề phụ */
+.register-coach-subtitle {
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* Label */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    color: #495057;
+}
+
+/* Các input/select */
+.form-control,
+select,
+input[type="file"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background-color: #fff; /* Đảm bảo nền trắng */
+    color: #495057;
+}
+
+    /* Placeholder */
+    .form-control::placeholder,
+    select:invalid {
+        color: #adb5bd; /* Màu placeholder nhạt hơn */
+        font-style: italic;
+    }
+
+    /* Khi focus input/select */
+    .form-control:focus,
+    select:focus,
+    input[type="file"]:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+        outline: none;
+    }
+
+/* Icon bên trái input */
+.input-group-text {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-right: none;
+    padding: 10px 14px;
+    border-radius: 8px 0 0 8px;
+    font-size: 16px;
+    color: #495057;
+    display: flex;
+    align-items: center;
+}
+
+/* Đảm bảo input liền mạch với icon */
+.input-group .form-control,
+.input-group select {
+    border-radius: 0 8px 8px 0;
+    border-left: none; /* Loại bỏ viền trái để liền mạch với icon */
+}
+
+/* Trường nhập liệu động (Custom Vehicle Type) */
+#customVehicleType {
+    margin-top: 10px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Thêm bóng nhẹ để nổi bật */
+}
+
+    #customVehicleType:not([style*="display: none"]) {
+        max-height: 300px;
+        opacity: 1;
+    }
+
+/* Nút đăng ký */
+.btn-register-coach {
+    padding: 12px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, transform 0.2s;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 300px;
+}
+
+    /* Hover nút */
+    .btn-register-coach:hover {
+        background-color: #0056b3;
+        transform: scale(1.02);
+        cursor: pointer;
+    }
+
+/* Alert thông báo */
+.alert {
+    font-size: 16px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+/* Khoảng cách giữa các nhóm form */
+.register-coach-container .form-group {
+    margin-bottom: 20px;
+}
+
+/* Tinh chỉnh layout 2 cột */
+.row {
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.col-md-6 {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Đảm bảo các thông báo lỗi hiển thị rõ ràng */
+.text-danger {
+    font-size: 14px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .register-coach-section {
+        padding: 40px 0;
+    }
+
+    .register-coach-container {
+        padding: 30px 20px;
+    }
+
+    .register-coach-title {
+        font-size: 28px;
+    }
+
+    .register-coach-subtitle {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .form-control,
+    select,
+    input[type="file"] {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .btn-register-coach {
+        font-size: 16px;
+        padding: 10px 30px;
+    }
+
+    .input-group-text {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .col-md-6 {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .row {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
+    #customVehicleType:not([style*="display: none"]) {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-coach-container {
+        padding: 20px 15px;
+    }
+
+    .register-coach-title {
+        font-size: 24px;
+    }
+
+    .register-coach-subtitle {
+        font-size: 16px;
+    }
+
+    .btn-register-coach {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .form-control,
+    select,
+    input[type="file"] {
+        font-size: 14px;
+    }
+
+    .input-group-text {
+        padding: 8px 10px;
+    }
+}
