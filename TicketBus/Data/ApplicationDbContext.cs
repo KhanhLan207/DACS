@@ -35,10 +35,47 @@ namespace TicketBus.Data
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TypeNews> TypeNews { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Dữ liệu mẫu cho VehicleType
+            modelBuilder.Entity<VehicleType>().HasData(
+                new VehicleType
+                {
+                    IdType = 1,
+                    TypeCode = "VT001",
+                    NameType = "Xe khách 16 chỗ",
+                    SeatCount = 16,
+                    State = VehicleTypeState.HoatDong
+                },
+                new VehicleType
+                {
+                    IdType = 2,
+                    TypeCode = "VT002",
+                    NameType = "Xe khách 29 chỗ",
+                    SeatCount = 29,
+                    State = VehicleTypeState.HoatDong
+                },
+                new VehicleType
+                {
+                    IdType = 3,
+                    TypeCode = "VT003",
+                    NameType = "Xe khách 45 chỗ",
+                    SeatCount = 45,
+                    State = VehicleTypeState.HoatDong
+                },
+                new VehicleType
+                {
+                    IdType = 4,
+                    TypeCode = "VT004",
+                    NameType = "Xe limousine 9 chỗ",
+                    SeatCount = 9,
+                    State = VehicleTypeState.HoatDong
+                }
+            );
 
             // Cấu hình khóa chính
             modelBuilder.Entity<Bill>().HasKey(b => b.IdBill);

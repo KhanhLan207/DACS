@@ -28,8 +28,19 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Brand\Data\" />
     <Folder Include="Areas\Brand\Models\" />
+    <Folder Include="wwwroot\documents\" />
     <Folder Include="wwwroot\images\coaches\" />
-    <Folder Include="wwwroot\guides\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Assets\admin\assets\demo\chart-area-demo.js" />
+    <None Include="wwwroot\Assets\admin\assets\demo\chart-bar-demo.js" />
+    <None Include="wwwroot\Assets\admin\assets\demo\chart-pie-demo.js" />
+    <None Include="wwwroot\Assets\admin\assets\demo\datatables-demo.js" />
+    <None Include="wwwroot\Assets\admin\assets\img\error-404-monochrome.svg" />
+    <None Include="wwwroot\Assets\admin\css\styles.css" />
+    <None Include="wwwroot\Assets\admin\js\datatables-simple-demo.js" />
+    <None Include="wwwroot\Assets\admin\js\scripts.js" />
   </ItemGroup>
 
 </Project>

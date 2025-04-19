@@ -356,6 +356,9 @@ namespace TicketBus.Migrations
                     b.Property<string>("Document")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("IdBrand")
+                        .HasColumnType("int");
+
                     b.Property<int?>("IdRegist")
                         .HasColumnType("int");
 
@@ -369,10 +372,15 @@ namespace TicketBus.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("State")
                         .HasColumnType("int");
 
                     b.HasKey("IdCoach");
+
+                    b.HasIndex("IdBrand");
 
                     b.HasIndex("IdRegist");
 
@@ -587,6 +595,33 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdTypeNews");
 
                     b.ToTable("News");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("TicketBus.Models.Passenger", b =>
@@ -946,6 +981,40 @@ namespace TicketBus.Migrations
                     b.HasKey("IdType");
 
                     b.ToTable("VehicleTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            IdType = 1,
+                            NameType = "Xe khách 16 chỗ",
+                            SeatCount = 16,
+                            State = 0,
+                            TypeCode = "VT001"
+                        },
+                        new
+                        {
+                            IdType = 2,
+                            NameType = "Xe khách 29 chỗ",
+                            SeatCount = 29,
+                            State = 0,
+                            TypeCode = "VT002"
+                        },
+                        new
+                        {
+                            IdType = 3,
+                            NameType = "Xe khách 45 chỗ",
+                            SeatCount = 45,
+                            State = 0,
+                            TypeCode = "VT003"
+                        },
+                        new
+                        {
+                            IdType = 4,
+                            NameType = "Xe limousine 9 chỗ",
+                            SeatCount = 9,
+                            State = 0,
+                            TypeCode = "VT004"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1030,6 +1099,10 @@ namespace TicketBus.Migrations
 
             modelBuilder.Entity("TicketBus.Models.Coach", b =>
                 {
+                    b.HasOne("TicketBus.Models.Brand", "Brand")
+                        .WithMany()
+                        .HasForeignKey("IdBrand");
+
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
                         .HasForeignKey("IdRegist")
@@ -1039,6 +1112,8 @@ namespace TicketBus.Migrations
                         .WithMany()
                         .HasForeignKey("IdType")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Brand");
 
                     b.Navigation("RegistForm");
 
@@ -1126,6 +1201,15 @@ namespace TicketBus.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("TypeNews");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Notification", b =>
+                {
+                    b.HasOne("TicketBus.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TicketBus.Models.Pickup", b =>

@@ -48,6 +48,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
+// Chuyển hướng /Admin đến /Admin/Home/Index
+app.MapGet("/Admin", context =>
+{
+    context.Response.Redirect("/Admin/Home/AdminPanel");
+    return Task.CompletedTask;
+});
+
 // Định tuyến cho Areas
 app.MapControllerRoute(
     name: "areas",
@@ -56,6 +63,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 
 app.MapRazorPages(); // Thêm để Identity UI (Razor Pages) hoạt động
 

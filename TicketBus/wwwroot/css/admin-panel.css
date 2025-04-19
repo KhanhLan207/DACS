@@ -3,6 +3,7 @@ body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f6f9;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -24,16 +25,21 @@ body {
 
 .admin-info span {
     font-size: 16px;
+    font-weight: 500;
 }
 
 .btn-toggle-sidebar {
     font-size: 20px;
     color: white;
-    background: none;
+    background-color: rgba(255, 255, 255, 0.1);
     border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
 }
 
     .btn-toggle-sidebar:hover {
+        background-color: rgba(255, 255, 255, 0.2);
         color: #e0e0e0;
     }
 
@@ -71,23 +77,27 @@ body {
         font-weight: 600;
     }
 
-.nav-link {
+.admin-sidebar .nav .nav-item a.nav-link {
     padding: 12px 20px;
     color: #adb5bd;
     font-size: 16px;
     display: flex;
     align-items: center;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer !important; /* Đảm bảo hiển thị bàn tay */
+    text-decoration: none !important;
 }
 
-    .nav-link:hover {
+    .admin-sidebar .nav .nav-item a.nav-link:hover {
         background-color: #495057;
         color: white;
+        text-decoration: none !important;
     }
 
-    .nav-link.active {
+    .admin-sidebar .nav .nav-item a.nav-link.active {
         background-color: #007bff;
         color: white;
+        box-shadow: inset 4px 0 0 #ffffff;
     }
 
 /* Main Content */
@@ -96,21 +106,30 @@ body {
     padding: 20px;
     flex-grow: 1;
     transition: margin-left 0.3s ease;
+    background-color: #f4f6f9;
 }
 
     .admin-content.collapsed {
         margin-left: 0;
     }
 
+/* Card */
 .card {
     border-radius: 10px;
     background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
 
 .card-title {
     font-size: 24px;
     font-weight: 600;
-    color: #343a40;
+    color: #1a3c6d;
 }
 
 .card-text {
@@ -118,10 +137,65 @@ body {
     font-size: 16px;
 }
 
+/* Button styles */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateY(-2px);
+    }
+
+.btn-outline-danger {
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+
+/* Glow-on-hover effect */
+.glow-on-hover {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+    .glow-on-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    }
+
+    .glow-on-hover::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .glow-on-hover:hover::before {
+        left: 100%;
+    }
+
 /* Responsive */
 @media (max-width: 767px) {
     .admin-sidebar {
         transform: translateX(-250px);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
     }
 
         .admin-sidebar.collapsed {
@@ -133,10 +207,15 @@ body {
     }
 
         .admin-content.collapsed {
-            margin-left: 250px;
+            margin-left: 0;
+            overflow: hidden;
         }
 
     .btn-toggle-sidebar {
         display: block !important;
+    }
+
+    body.collapsed {
+        overflow: hidden;
     }
 }

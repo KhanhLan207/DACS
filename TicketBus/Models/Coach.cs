@@ -22,14 +22,24 @@ namespace TicketBus.Models
 
         public VehicleType? VehicleType { get; set; }
         public RegistForm? RegistForm { get; set; }
+
+        [ForeignKey("Brand")]
+        public int? IdBrand { get; set; }
+
+        public Brand? Brand { get; set; }
+
+        public string? RejectReason { get; set; }
     }
 
     public enum CoachState
     {
         [Display(Name = "Hoạt động")]
-        HoatDong,
+        HoatDong = 0,
 
         [Display(Name = "Không hoạt động")]
-        KhongHoatDong
+        KhongHoatDong =1,
+
+        [Display(Name = "Chờ phê duyệt")]
+        ChoPheDuyet =2
     }
 }
