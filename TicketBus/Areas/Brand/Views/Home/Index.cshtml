@@ -3,44 +3,90 @@
 
 @{
     ViewData["Title"] = "Trang quản lý hãng xe";
-    var notifications = ViewBag.Notifications as List<Notification>;
+    Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
+    var brandInfo = ViewBag.BrandInfo as Brand;
 }
 
-<div class="container mt-5">
-    <h1 class="text-center mb-4">@ViewData["Title"]</h1>
+<!-- Phần thông báo từ TempData -->
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-success" role="alert">
-            @TempData["Message"]
-        </div>
-    }
-
-    @if (notifications != null && notifications.Any())
-    {
-        <div class="mb-4">
-            <h3>Thông báo</h3>
-            @foreach (var notification in notifications)
+<!-- Nội dung chính -->
+<div class="brand-main">
+    <!-- Sidebar (Profile) -->
+    <div class="brand-sidebar">
+        <h3>Thông tin hãng xe</h3>
+        <div class="profile-info">
+            @if (brandInfo != null)
             {
-                <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
-                    <span>@notification.Message</span>
-                    <form asp-action="MarkNotificationAsRead" asp-route-id="@notification.Id" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Đã đọc</button>
-                    </form>
-                </div>
+                <p><strong>Tên hãng:</strong> @brandInfo.NameBrand</p>
+                @if (!string.IsNullOrEmpty(brandInfo.BrandCode))
+                {
+                    <p><strong>Mã hãng:</strong> @brandInfo.BrandCode</p>
+                }
+                <p><strong>Số điện thoại:</strong> @brandInfo.PhoneNumber</p>
+                <p><strong>Địa chỉ:</strong> @brandInfo.Address</p>
+                <p><strong>Trạng thái:</strong> @(brandInfo.State == BrandState.HoatDong ? "Hoạt động" : "Không hoạt động")</p>
+            }
+            else
+            {
+                <p class="text-danger">Hãng xe chưa được phê duyệt hoặc không tồn tại.</p>
             }
         </div>
-    }
+    </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-6 text-center">
-            <p>Chào mừng bạn đến với trang quản lý hãng xe!</p>
-            <p>
-                <a asp-page="/RegisterCoach" class="btn btn-primary">Đăng ký xe mới</a>
-            </p>
-            <p>
-                <a asp-action="GoToHomePage" class="btn btn-secondary">Quay về trang chủ</a>
-            </p>
+    <!-- Nội dung chính -->
+    <div class="brand-content">
+        <!-- Quản lý xe -->
+        <div class="management-section">
+            <h3>Quản lý xe</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Quản lý xe</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Quản lý các xe của hãng, đăng ký xe mới hoặc xem danh sách xe đã đăng ký.</p>
+                    <a asp-page="/RegisterCoach" class="btn btn-primary">Đăng ký xe mới</a>
+                    <a href="#" class="btn btn-outline-primary ms-2 disabled" aria-disabled="true">Danh sách xe (Sắp có)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quản lý tuyến -->
+        <div class="management-section">
+            <h3>Quản lý tuyến</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Quản lý tuyến</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Đăng ký và quản lý các tuyến đường cho xe của hãng.</p>
+                    <a href="#" class="btn btn-outline-primary disabled" aria-disabled="true">Quản lý tuyến (Sắp có)</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quản lý lịch trình -->
+        <div class="management-section">
+            <h3>Quản lý lịch trình</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Quản lý lịch trình</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Tạo và quản lý lịch trình cho các xe của hãng.</p>
+                    <a href="#" class="btn btn-outline-primary disabled" aria-disabled="true">Quản lý lịch trình (Sắp có)</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <!-- Nếu cần thêm JavaScript cho giao diện này, bạn có thể thêm ở đây -->
+}
