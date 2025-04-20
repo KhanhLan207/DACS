@@ -60,9 +60,10 @@
                             Dashboard
                         </a>
                         <div class="sb-sidenav-menu-heading">Quản lý</div>
-                        <a class="nav-link" asp-controller="CoachApproval" asp-action="Index" asp-area="Admin">
+                        <!-- Sửa liên kết từ CoachApproval sang BrandApproval -->
+                        <a class="nav-link" asp-controller="BrandApproval" asp-action="Index" asp-area="Admin">
                             <div class="sb-nav-link-icon"><i class="fas fa-car"></i></div>
-                            Phê duyệt xe
+                            Phê duyệt hãng xe
                         </a>
                     </div>
                 </div>
@@ -95,7 +96,6 @@
             </footer>
         </div>
     </div>
-
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

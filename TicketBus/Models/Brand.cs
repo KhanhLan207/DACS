@@ -12,7 +12,11 @@ namespace TicketBus.Models
         public string? Address { get; set; }
         [RegularExpression(@"^[0-9]+$", ErrorMessage = "PhoneNumber must contain only digits")]
         public string? PhoneNumber { get; set; }
+        public string? Image { get; set; }
         public BrandState State { get; set; }
+
+        public int? RegistFormId { get; set; }
+        public RegistForm? RegistForm { get; set; }
 
         // Thêm trường UserId để liên kết với ApplicationUser
         [ForeignKey("ApplicationUser")]
@@ -25,6 +29,9 @@ namespace TicketBus.Models
         HoatDong = 0,
 
         [Display(Name = "Không hoạt động")]
-        KhongHoatDong = 1
+        KhongHoatDong = 1,
+
+        [Display(Name = "Chờ phê duyệt")]
+        ChoPheDuyet = 2
     }
 }

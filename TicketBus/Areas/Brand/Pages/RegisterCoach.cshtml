@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="~/css/styleRegisterCoach.css" asp-append-version="true" />
 
 @{
-    ViewData["Title"] = "Đăng ký xe";
+    ViewData["Title"] = "Đăng ký hãng xe";
 }
 
 <div class="container mt-5">
@@ -23,7 +23,7 @@
 
                 <!-- Thông báo ràng buộc -->
                 <div class="alert alert-info" role="alert">
-                    Lưu ý: Mỗi tài khoản hãng xe chỉ được phép đăng ký một hãng xe.
+                    Lưu ý: Mỗi tài khoản hãng xe chỉ được phép đăng ký một hãng xe. Thông tin xe (biển số, loại xe) sẽ được thêm sau khi đăng ký được duyệt.
                 </div>
 
                 @if (Model.HasRegisteredBrand)
@@ -59,51 +59,31 @@
                     </div>
 
                     <div class="form-floating mb-3 input-group">
-                        <span class="input-group-text"><i class="fas fa-car"></i></span>
-                        <input asp-for="Input.NumberPlate" class="form-control" placeholder="Biển số xe" required />
-                        <label asp-for="Input.NumberPlate" class="form-label">Biển số xe</label>
-                        <span asp-validation-for="Input.NumberPlate" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-floating mb-3 input-group">
-                        <span class="input-group-text"><i class="fas fa-bus"></i></span>
-                        <select asp-for="Input.IdType" class="form-control" required>
-                            <option value="">-- Chọn loại xe --</option>
-                            @foreach (var vehicleType in Model.VehicleTypes)
-                            {
-                                <option value="@vehicleType.IdType">@vehicleType.NameType (Số ghế: @vehicleType.SeatCount)</option>
-                            }
-                        </select>
-                        <label asp-for="Input.IdType" class="form-label">Loại xe</label>
-                        <span asp-validation-for="Input.IdType" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-floating mb-3 input-group">
                         <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
                         <select asp-for="Input.State" class="form-control">
                             <option value="HoatDong">Hoạt động</option>
                             <option value="KhongHoatDong">Không hoạt động</option>
                             <option value="ChoPheDuyet" selected>Chờ phê duyệt</option>
                         </select>
-                        <label asp-for="Input.State" class="form-label">Tình trạng xe</label>
+                        <label asp-for="Input.State" class="form-label">Tình trạng hãng xe</label>
                         <span asp-validation-for="Input.State" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label asp-for="Input.ImageFile" class="form-label">Ảnh xe (tùy chọn)</label>
+                        <label asp-for="Input.ImageFile" class="form-label">Ảnh hãng xe (tùy chọn)</label>
                         <input asp-for="Input.ImageFile" class="form-control" type="file" accept="image/*" />
                         <span asp-validation-for="Input.ImageFile" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label asp-for="Input.DocumentFile" class="form-label">Tài liệu xe (PDF/Word, bắt buộc)</label>
+                        <label asp-for="Input.DocumentFile" class="form-label">Tài liệu hãng xe (PDF/Word, bắt buộc)</label>
                         <input asp-for="Input.DocumentFile" class="form-control" type="file" accept=".pdf,.doc,.docx" required />
                         <span asp-validation-for="Input.DocumentFile" class="text-danger"></span>
                     </div>
 
                     <div>
                         <button type="submit" class="w-100 btn btn-lg btn-primary glow-on-hover" @(Model.HasRegisteredBrand ? "disabled" : "")>
-                            Đăng ký xe
+                            Đăng ký hãng xe
                         </button>
                     </div>
                 </form>

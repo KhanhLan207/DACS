@@ -14,8 +14,8 @@ namespace TicketBus.Models
         public DateTime? CreateDate { get; set; }
         public RegistFormState State { get; set; }
         public string? Content { get; set; }
-
         public Brand? Brand { get; set; }
+        public string? RejectReason { get; set; }
     }
 
     public enum RegistFormState

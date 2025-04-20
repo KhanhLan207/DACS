@@ -7,8 +7,7 @@ namespace TicketBus.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class HomeController : Controller
     {
-
-        // GET: /Admin/Home/Index
+        // GET: /Admin/Home/AdminPanel
         public IActionResult AdminPanel()
         {
             return View();

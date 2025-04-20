@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 using TicketBus.Data;
 using TicketBus.Models;
 
-
 namespace TicketBus.Areas.Brand.Pages
 {
     [Authorize(Roles = "Brand")]
@@ -47,19 +46,10 @@ namespace TicketBus.Areas.Brand.Pages
             [Display(Name = "Số điện thoại liên hệ")]
             public string PhoneNumber { get; set; }
 
-            [Required(ErrorMessage = "Vui lòng nhập biển số xe.")]
-            [RegularExpression(@"^[0-9]{2}[A-Z]-[0-9]{3}\.[0-9]{2}$", ErrorMessage = "Biển số xe không hợp lệ. Định dạng: 51B-123.45")]
-            [Display(Name = "Biển số xe")]
-            public string NumberPlate { get; set; }
+            [Display(Name = "Tình trạng hãng xe")]
+            public BrandState State { get; set; } = BrandState.ChoPheDuyet;
 
-            [Required(ErrorMessage = "Vui lòng chọn loại xe.")]
-            [Display(Name = "Loại xe")]
-            public int IdType { get; set; }
-
-            [Display(Name = "Tình trạng xe")]
-            public CoachState State { get; set; } = CoachState.ChoPheDuyet;
-
-            [Display(Name = "Ảnh xe")]
+            [Display(Name = "Ảnh hãng xe")]
             public IFormFile ImageFile { get; set; }
 
             [Required(ErrorMessage = "Vui lòng upload tài liệu (PDF hoặc Word).")]
@@ -67,16 +57,10 @@ namespace TicketBus.Areas.Brand.Pages
             public IFormFile DocumentFile { get; set; }
         }
 
-        public List<VehicleType> VehicleTypes { get; set; }
-
         public bool HasRegisteredBrand { get; set; }
 
         public async Task OnGetAsync()
         {
-            VehicleTypes = await _context.VehicleTypes
-                .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                .ToListAsync();
-
             var user = await _userManager.GetUserAsync(User);
             if (user != null)
             {
@@ -92,10 +76,6 @@ namespace TicketBus.Areas.Brand.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            VehicleTypes = await _context.VehicleTypes
-                .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                .ToListAsync();
-
             if (!ModelState.IsValid)
             {
                 return Page();
@@ -123,14 +103,11 @@ namespace TicketBus.Areas.Brand.Pages
                 NameBrand = Input.BrandName,
                 Address = Input.BrandAddress,
                 PhoneNumber = Input.PhoneNumber,
-                State = BrandState.HoatDong,
+                State = Input.State,
                 UserId = user.Id
             };
 
-            _context.Brands.Add(brand);
-            await _context.SaveChangesAsync();
-
-            var imagesDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/coaches");
+            var imagesDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/brands");
             Directory.CreateDirectory(imagesDir);
 
             var documentsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/documents");
@@ -144,7 +121,8 @@ namespace TicketBus.Areas.Brand.Pages
                 var filePath = Path.Combine(imagesDir, fileName);
                 using var stream = new FileStream(filePath, FileMode.Create);
                 await Input.ImageFile.CopyToAsync(stream);
-                imagePath = $"/images/coaches/{fileName}";
+                imagePath = $"/images/brands/{fileName}";
+                brand.Image = imagePath;
             }
 
             // Lưu tài liệu
@@ -158,66 +136,37 @@ namespace TicketBus.Areas.Brand.Pages
                 documentPath = $"/documents/{docFileName}";
             }
 
+            _context.Brands.Add(brand);
+            await _context.SaveChangesAsync();
+
             var registForm = new RegistForm
             {
                 RegistCode = $"REGIST-{DateTime.Now:yyyyMMddHHmmss}",
                 IdBrand = brand.IdBrand,
                 CreateDate = DateTime.Now,
                 State = RegistFormState.ChuaXuLy,
-                Content = $"Yêu cầu đăng ký xe: Biển số {Input.NumberPlate}, Loại xe ID {Input.IdType}, Tài liệu: {documentPath}"
+                Content = $"Yêu cầu đăng ký hãng xe: Tên {Input.BrandName}, Ảnh: {imagePath ?? "Không có ảnh"}, Tài liệu: {documentPath}"
             };
             _context.RegistForms.Add(registForm);
             await _context.SaveChangesAsync();
 
-            var coach = new Coach
-            {
-                CoachCode = $"COACH-{DateTime.Now:yyyyMMddHHmmss}",
-                NumberPlate = Input.NumberPlate,
-                State = CoachState.ChoPheDuyet,
-                IdType = Input.IdType,
-                IdRegist = registForm.IdRegist,
-                IdBrand = brand.IdBrand,
-                Image = imagePath,
-                Document = documentPath
-            };
-
-            var vehicleType = await _context.VehicleTypes
-                .FirstOrDefaultAsync(vt => vt.IdType == Input.IdType);
-
-            if (vehicleType == null)
-            {
-                ModelState.AddModelError(string.Empty, "Loại xe không hợp lệ.");
-                return Page();
-            }
+            // Thiết lập mối quan hệ một-một bằng cách cập nhật RegistFormId trong Brand
+            brand.RegistFormId = registForm.IdRegist;
+            _context.Update(brand);
 
             try
             {
-                _context.Coaches.Add(coach);
                 await _context.SaveChangesAsync();
 
-                for (int i = 1; i <= vehicleType.SeatCount; i++)
-                {
-                    var seat = new Seat
-                    {
-                        SeatCode = $"SEAT-{coach.IdCoach}-{i}",
-                        SeatNumber = i,
-                        State = SeatState.Trong,
-                        IdCoach = coach.IdCoach
-                    };
-                    _context.Seats.Add(seat);
-                }
+                _logger.LogInformation("Đăng ký Brand thành công: BrandName={BrandName}, BrandCode={BrandCode}", Input.BrandName, brand.BrandCode);
 
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Đăng ký Coach thành công: BrandName={BrandName}, CoachCode={CoachCode}", Input.BrandName, coach.CoachCode);
-
-                TempData["Message"] = "Đơn đăng ký của bạn đã được chuyển đến để phê duyệt.";
+                TempData["Message"] = "Đơn đăng ký hãng xe của bạn đã được chuyển đến để phê duyệt.";
                 return RedirectToAction("Index", "Home", new { area = "Brand" });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi khi đăng ký coach cho user {Email}", user.Email);
-                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi đăng ký xe. Vui lòng thử lại.");
+                _logger.LogError(ex, "Lỗi khi đăng ký hãng xe cho user {Email}", user.Email);
+                ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi đăng ký hãng xe. Vui lòng thử lại.");
                 return Page();
             }
         }

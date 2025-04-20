@@ -40,14 +40,35 @@ namespace TicketBus.Areas.Brand.Controllers
             // Truyền thông tin hãng xe vào ViewBag
             ViewBag.BrandInfo = brand;
 
-            // Lấy danh sách thông báo của hãng xe
+            return View();
+        }
+
+        // GET: /Brand/Home/GetNotifications
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { unreadCount = 0, notifications = new List<object>() });
+            }
+
             var notifications = await _context.Notifications
                 .Where(n => n.UserId == userId && !n.IsRead)
                 .OrderByDescending(n => n.CreatedDate)
+                .Take(10) // Giới hạn 10 thông báo
+                .Select(n => new
+                {
+                    id = n.Id,
+                    message = n.Message,
+                    createdDate = n.CreatedDate.ToString("o"), // Định dạng ISO để JavaScript xử lý
+                    isRead = n.IsRead
+                })
                 .ToListAsync();
 
-            ViewBag.Notifications = notifications;
-            return View();
+            var unreadCount = notifications.Count;
+
+            return Json(new { unreadCount, notifications });
         }
 
         public IActionResult GoToHomePage()
@@ -59,18 +80,24 @@ namespace TicketBus.Areas.Brand.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkNotificationAsRead(int id)
         {
-            var notification = await _context.Notifications.FindAsync(id);
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Không thể xác định người dùng." });
+            }
+
+            var notification = await _context.Notifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
             if (notification != null)
             {
                 notification.IsRead = true;
                 await _context.SaveChangesAsync();
-                TempData["Message"] = "Đã đánh dấu thông báo là đã đọc.";
+                return Json(new { success = true, message = "Đã đánh dấu thông báo là đã đọc." });
             }
             else
             {
-                TempData["Message"] = "Thông báo không tồn tại.";
+                return Json(new { success = false, message = "Thông báo không tồn tại." });
             }
-            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -19,33 +19,12 @@
                 </div>
                 <div class="notification-bell position-relative">
                     <i class="fas fa-bell fa-lg text-light" id="notificationBell" style="cursor: pointer;"></i>
-                    @if (ViewBag.Notifications != null && ((List<Notification>)ViewBag.Notifications).Any())
-                    {
-                        var notificationCount = ((List<Notification>)ViewBag.Notifications).Count;
-                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
-                            @notificationCount
-                        </span>
-                    }
+                    <span id="notificationCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill" style="display: none;">0</span>
                     <!-- Dropdown thông báo -->
                     <div class="notification-dropdown" id="notificationDropdown">
-                        @if (ViewBag.Notifications != null && ((List<Notification>)ViewBag.Notifications).Any())
-                        {
-                            foreach (var notification in (List<Notification>)ViewBag.Notifications)
-                            {
-                                <div class="notification-item d-flex justify-content-between align-items-center">
-                                    <span>@notification.Message</span>
-                                    <form asp-area="Brand" asp-controller="Home" asp-action="MarkNotificationAsRead" asp-route-id="@notification.Id" method="post" style="display:inline;">
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">Đã đọc</button>
-                                    </form>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="notification-item text-center">
-                                <span>Không có thông báo mới.</span>
-                            </div>
-                        }
+                        <div id="notificationList" class="notification-list">
+                            <!-- Danh sách thông báo sẽ được cập nhật qua AJAX -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,7 +36,7 @@
         <footer class="brand-footer">
             <div class="footer-content text-center">
                 <a asp-area="Brand" asp-controller="Home" asp-action="GoToHomePage" class="btn btn-secondary mb-3">Quay về trang chủ</a>
-                <p class="text-light mb-1">&copy; 2025 TicketBus - Hệ thống quản lý vé xe</p>
+                <p class="text-light mb-1">© 2025 TicketBus - Hệ thống quản lý vé xe</p>
                 <p class="text-light mb-0">Liên hệ: <a href="mailto:support@ticketbus.com" class="text-light text-decoration-underline">support@ticketbus.com</a></p>
             </div>
         </footer>
@@ -67,9 +46,63 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
+            // Hàm tải danh sách thông báo
+            function loadNotifications() {
+                $.ajax({
+                    url: '@Url.Action("GetNotifications", "Home", new { area = "Brand" })',
+                    type: 'GET',
+                    success: function (data) {
+                        var notificationCount = data.unreadCount;
+                        var notifications = data.notifications;
+
+                        // Cập nhật số lượng thông báo chưa đọc
+                        var notificationCountElement = $('#notificationCount');
+                        if (notificationCount > 0) {
+                            notificationCountElement.text(notificationCount).show();
+                        } else {
+                            notificationCountElement.hide();
+                        }
+
+                        // Cập nhật danh sách thông báo
+                        var notificationList = $('#notificationList');
+                        notificationList.empty();
+
+                        if (notifications.length > 0) {
+                            notifications.forEach(function (notification) {
+                                var messageText = notification.message || 'Không có nội dung thông báo.';
+                                var createdDate = new Date(notification.createdDate).toLocaleString('vi-VN');
+                                var notificationItem = $('<div class="notification-item"></div>');
+                                var message = $('<span class="message"></span>').text(messageText);
+                                var time = $('<span class="time"></span>').text(createdDate);
+                                var markAsReadForm = $('<form method="post" style="display:inline;"></form>')
+                                    .attr('action', '@Url.Action("MarkNotificationAsRead", "Home", new { area = "Brand" })')
+                                    .append($('<input type="hidden" name="id">').val(notification.id))
+                                    .append($('<input type="hidden" name="__RequestVerificationToken">').val($('input[name="__RequestVerificationToken"]').val()))
+                                    .append($('<button type="submit" class="btn btn-sm btn-outline-primary">Đã đọc</button>'));
+
+                                notificationItem.append(message).append(time).append(markAsReadForm);
+                                notificationList.append(notificationItem);
+                            });
+                        } else {
+                            notificationList.append('<div class="notification-item text-center"><span>Không có thông báo mới.</span></div>');
+                        }
+                    },
+                    error: function () {
+                        console.log('Lỗi khi tải thông báo.');
+                        $('#notificationList').html('<div class="notification-item text-center"><span>Lỗi tải thông báo.</span></div>');
+                    }
+                });
+            }
+
+            // Tải thông báo khi trang được tải
+            loadNotifications();
+
             // Hiển thị/ẩn dropdown khi nhấn vào chuông
-            $('#notificationBell').click(function () {
+            $('#notificationBell').click(function (e) {
+                e.stopPropagation();
                 $('#notificationDropdown').toggleClass('show');
+                // Tải lại thông báo mỗi khi mở dropdown để đảm bảo cập nhật
+                loadNotifications();
             });
 
             // Ẩn dropdown khi nhấn ra ngoài
@@ -77,6 +110,24 @@
                 if (!$(e.target).closest('.notification-bell').length) {
                     $('#notificationDropdown').removeClass('show');
                 }
+            });
+
+            // Xử lý sự kiện khi nhấn nút "Đã đọc" (sử dụng AJAX)
+            $(document).on('submit', '.notification-item form', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (response) {
+                        // Tải lại danh sách thông báo sau khi đánh dấu đã đọc
+                        loadNotifications();
+                    },
+                    error: function () {
+                        console.log('Lỗi khi đánh dấu thông báo là đã đọc.');
+                    }
+                });
             });
         });
     </script>

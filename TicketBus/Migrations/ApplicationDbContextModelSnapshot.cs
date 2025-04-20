@@ -273,11 +273,17 @@ namespace TicketBus.Migrations
                     b.Property<string>("BrandCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("NameBrand")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("RegistFormId")
+                        .HasColumnType("int");
 
                     b.Property<int>("State")
                         .HasColumnType("int");
@@ -286,6 +292,8 @@ namespace TicketBus.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("IdBrand");
+
+                    b.HasIndex("RegistFormId");
 
                     b.HasIndex("UserId");
 
@@ -371,9 +379,6 @@ namespace TicketBus.Migrations
                     b.Property<string>("NumberPlate")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("RejectReason")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("State")
                         .HasColumnType("int");
@@ -771,6 +776,9 @@ namespace TicketBus.Migrations
                     b.Property<string>("RegistCode")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("State")
                         .HasColumnType("int");
 
@@ -1080,11 +1088,17 @@ namespace TicketBus.Migrations
 
             modelBuilder.Entity("TicketBus.Models.Brand", b =>
                 {
+                    b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
+                        .WithMany()
+                        .HasForeignKey("RegistFormId");
+
                     b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("RegistForm");
                 });
 
             modelBuilder.Entity("TicketBus.Models.BusRoute", b =>

@@ -127,6 +127,54 @@ body {
         border-bottom: none;
     }
 
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    min-width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+    .notification-dropdown.show {
+        display: block;
+    }
+
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item .message {
+        display: block;
+        color: #333;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+
+    .notification-item .time {
+        font-size: 0.8em;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .notification-item form {
+        margin-left: auto;
+    }
+
 /* Responsive */
 @media (max-width: 768px) {
     .brand-main {

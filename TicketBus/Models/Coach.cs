@@ -27,8 +27,6 @@ namespace TicketBus.Models
         public int? IdBrand { get; set; }
 
         public Brand? Brand { get; set; }
-
-        public string? RejectReason { get; set; }
     }
 
     public enum CoachState
