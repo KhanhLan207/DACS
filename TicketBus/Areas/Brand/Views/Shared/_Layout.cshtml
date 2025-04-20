@@ -9,6 +9,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
 </head>
 <body>
+    @Html.AntiForgeryToken()
+
     <div class="brand-container">
         <!-- Header -->
         <header class="brand-header">
@@ -71,14 +73,20 @@
                             notifications.forEach(function (notification) {
                                 var messageText = notification.message || 'Không có nội dung thông báo.';
                                 var createdDate = new Date(notification.createdDate).toLocaleString('vi-VN');
-                                var notificationItem = $('<div class="notification-item"></div>');
+                                var notificationItem = $('<div class="notification-item"></div>')
+                                    .attr('data-id', notification.id); // Thêm data-id để xác định thông báo
+                                if (notification.isRead) {
+                                    notificationItem.addClass('read');
+                                }
                                 var message = $('<span class="message"></span>').text(messageText);
                                 var time = $('<span class="time"></span>').text(createdDate);
-                                var markAsReadForm = $('<form method="post" style="display:inline;"></form>')
-                                    .attr('action', '@Url.Action("MarkNotificationAsRead", "Home", new { area = "Brand" })')
-                                    .append($('<input type="hidden" name="id">').val(notification.id))
-                                    .append($('<input type="hidden" name="__RequestVerificationToken">').val($('input[name="__RequestVerificationToken"]').val()))
-                                    .append($('<button type="submit" class="btn btn-sm btn-outline-primary">Đã đọc</button>'));
+                                var markAsReadForm = notification.isRead ?
+                                    $('<span class="text-muted">Đã đọc</span>') :
+                                    $('<form method="post" style="display:inline;"></form>')
+                                        .attr('action', '@Url.Action("MarkNotificationAsRead", "Home", new { area = "Brand" })')
+                                        .append($('<input type="hidden" name="id">').val(notification.id))
+                                        .append($('<input type="hidden" name="__RequestVerificationToken">').val($('input[name="__RequestVerificationToken"]').val()))
+                                        .append($('<button type="submit" class="btn btn-sm btn-outline-primary">Đã đọc</button>'));
 
                                 notificationItem.append(message).append(time).append(markAsReadForm);
                                 notificationList.append(notificationItem);
@@ -87,8 +95,8 @@
                             notificationList.append('<div class="notification-item text-center"><span>Không có thông báo mới.</span></div>');
                         }
                     },
-                    error: function () {
-                        console.log('Lỗi khi tải thông báo.');
+                    error: function (xhr, status, error) {
+                        console.log('Lỗi khi tải thông báo:', status, error);
                         $('#notificationList').html('<div class="notification-item text-center"><span>Lỗi tải thông báo.</span></div>');
                     }
                 });
@@ -116,16 +124,36 @@
             $(document).on('submit', '.notification-item form', function (e) {
                 e.preventDefault();
                 var form = $(this);
+                var notificationItem = form.closest('.notification-item');
+                var notificationId = notificationItem.attr('data-id');
+
                 $.ajax({
                     url: form.attr('action'),
                     type: 'POST',
                     data: form.serialize(),
                     success: function (response) {
-                        // Tải lại danh sách thông báo sau khi đánh dấu đã đọc
-                        loadNotifications();
+                        console.log('Đánh dấu đã đọc thành công:', response);
+                        if (response.success) {
+                            // Cập nhật giao diện: làm mờ thông báo và thay nút "Đã đọc" bằng text
+                            notificationItem.addClass('read');
+                            form.replaceWith('<span class="text-muted">Đã đọc</span>');
+
+                            // Cập nhật số lượng thông báo chưa đọc
+                            var currentCount = parseInt($('#notificationCount').text()) || 0;
+                            if (currentCount > 0) {
+                                currentCount--;
+                                $('#notificationCount').text(currentCount);
+                                if (currentCount === 0) {
+                                    $('#notificationCount').hide();
+                                }
+                            }
+                        } else {
+                            console.log('Lỗi từ server:', response.message);
+                        }
                     },
-                    error: function () {
-                        console.log('Lỗi khi đánh dấu thông báo là đã đọc.');
+                    error: function (xhr, status, error) {
+                        console.log('Lỗi khi đánh dấu thông báo là đã đọc:', status, error);
+                        console.log('Phản hồi server:', xhr.responseText);
                     }
                 });
             });

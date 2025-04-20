@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Data;
 using TicketBus.Models;
+using Microsoft.Extensions.Logging;
 
 namespace TicketBus.Areas.Brand.Controllers
 {
@@ -11,15 +12,16 @@ namespace TicketBus.Areas.Brand.Controllers
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, ILogger<HomeController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            // Lấy UserId của người dùng hiện tại
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -27,7 +29,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
 
-            // Lấy thông tin hãng xe của người dùng hiện tại
             var brand = await _context.Brands
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == userId && b.State == BrandState.HoatDong);
@@ -37,13 +38,10 @@ namespace TicketBus.Areas.Brand.Controllers
                 TempData["Message"] = "Hãng xe của bạn chưa được phê duyệt hoặc không tồn tại.";
             }
 
-            // Truyền thông tin hãng xe vào ViewBag
             ViewBag.BrandInfo = brand;
-
             return View();
         }
 
-        // GET: /Brand/Home/GetNotifications
         [HttpGet]
         public async Task<IActionResult> GetNotifications()
         {
@@ -54,19 +52,19 @@ namespace TicketBus.Areas.Brand.Controllers
             }
 
             var notifications = await _context.Notifications
-                .Where(n => n.UserId == userId && !n.IsRead)
+                .Where(n => n.UserId == userId)
                 .OrderByDescending(n => n.CreatedDate)
-                .Take(10) // Giới hạn 10 thông báo
+                .Take(10)
                 .Select(n => new
                 {
                     id = n.Id,
                     message = n.Message,
-                    createdDate = n.CreatedDate.ToString("o"), // Định dạng ISO để JavaScript xử lý
+                    createdDate = n.CreatedDate.ToString("o"),
                     isRead = n.IsRead
                 })
                 .ToListAsync();
 
-            var unreadCount = notifications.Count;
+            var unreadCount = notifications.Count(n => !n.isRead);
 
             return Json(new { unreadCount, notifications });
         }
@@ -83,20 +81,30 @@ namespace TicketBus.Areas.Brand.Controllers
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
+                _logger.LogWarning("MarkNotificationAsRead: UserId is null or empty.");
                 return Json(new { success = false, message = "Không thể xác định người dùng." });
             }
 
             var notification = await _context.Notifications
                 .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
-            if (notification != null)
+            if (notification == null)
+            {
+                _logger.LogWarning("MarkNotificationAsRead: Notification with ID {Id} not found for UserId {UserId}.", id, userId);
+                return Json(new { success = false, message = "Thông báo không tồn tại." });
+            }
+
+            try
             {
                 notification.IsRead = true;
+                _context.Update(notification);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("MarkNotificationAsRead: Notification {Id} marked as read for UserId {UserId}.", id, userId);
                 return Json(new { success = true, message = "Đã đánh dấu thông báo là đã đọc." });
             }
-            else
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Thông báo không tồn tại." });
+                _logger.LogError(ex, "MarkNotificationAsRead: Failed to mark notification {Id} as read for UserId {UserId}.", id, userId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu thông báo. Vui lòng thử lại." });
             }
         }
     }

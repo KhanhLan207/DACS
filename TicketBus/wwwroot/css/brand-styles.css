@@ -49,6 +49,16 @@ body {
     margin: 0.5rem 0;
 }
 
+/* Hình ảnh hãng xe */
+.brand-image img {
+    border: 2px solid #0d6efd;
+    transition: transform 0.3s ease;
+}
+
+    .brand-image img:hover {
+        transform: scale(1.05);
+    }
+
 /* Nội dung chính */
 .brand-content {
     flex: 1;
@@ -99,37 +109,6 @@ body {
 .notification-dropdown {
     display: none;
     position: absolute;
-    right: 0;
-    top: 2.5rem;
-    background-color: white;
-    min-width: 250px;
-    max-height: 300px;
-    overflow-y: auto;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    padding: 1rem;
-    z-index: 1000;
-}
-
-    .notification-dropdown.show {
-        display: block;
-    }
-
-.notification-item {
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-    .notification-item:last-child {
-        border-bottom: none;
-    }
-
-.notification-dropdown {
-    display: none;
-    position: absolute;
     top: 100%;
     right: 0;
     background-color: white;
@@ -156,6 +135,10 @@ body {
 
     .notification-item:last-child {
         border-bottom: none;
+    }
+
+    .notification-item.read {
+        opacity: 0.5;
     }
 
     .notification-item .message {
