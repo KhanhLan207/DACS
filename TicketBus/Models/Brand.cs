@@ -14,7 +14,6 @@ namespace TicketBus.Models
         public string? PhoneNumber { get; set; }
         public string? Image { get; set; }
         public BrandState State { get; set; }
-
         public int? RegistFormId { get; set; }
         public RegistForm? RegistForm { get; set; }
 

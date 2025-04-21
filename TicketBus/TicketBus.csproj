@@ -28,7 +28,7 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Brand\Data\" />
     <Folder Include="Areas\Brand\Models\" />
-    <Folder Include="wwwroot\documents\" />
+    <Folder Include="wwwroot\documents\coaches\" />
     <Folder Include="wwwroot\images\coaches\" />
   </ItemGroup>
 

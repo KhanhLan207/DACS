@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Bus Company Management";
+    ViewData["HeaderTitle"] = "<i class='fas fa-bus-alt me-2 text-primary'></i>Bus Company Management";
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
     var brandInfo = ViewBag.BrandInfo as Brand;
 }
@@ -58,9 +59,8 @@
                     <h5 class="card-title">Quản lý xe</h5>
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Quản lý các xe của hãng, đăng ký xe mới hoặc xem danh sách xe đã đăng ký.</p>
-                    <a asp-page="/RegisterCoach" class="btn btn-primary">Đăng ký xe mới</a>
-                    <a href="#" class="btn btn-outline-primary ms-2 disabled" aria-disabled="true">Danh sách xe (Sắp có)</a>
+                    <p class="card-text">Quản lý các xe của hãng hoặc xem danh sách xe đã đăng ký.</p>
+                    <a href="#" class="btn btn-outline-primary disabled" aria-disabled="true">Danh sách xe (Sắp có)</a>
                 </div>
             </div>
         </div>
@@ -96,5 +96,4 @@
 </div>
 
 @section Scripts {
-    <!-- Nếu cần thêm JavaScript cho giao diện này, bạn có thể thêm ở đây -->
 }

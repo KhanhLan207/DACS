@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Models;
+using System.Text.Json;
 
 namespace TicketBus.Data
 {
@@ -41,40 +42,46 @@ namespace TicketBus.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Cấu hình ánh xạ List<string> sang JSON cho thuộc tính Images
+            modelBuilder.Entity<Coach>()
+                .Property(c => c.Images)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
+                    v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>()
+                );
+
             // Dữ liệu mẫu cho VehicleType
             modelBuilder.Entity<VehicleType>().HasData(
-                new VehicleType
-                {
-                    IdType = 1,
-                    TypeCode = "VT001",
-                    NameType = "Xe khách 16 chỗ",
-                    SeatCount = 16,
-                    State = VehicleTypeState.HoatDong
-                },
-                new VehicleType
-                {
-                    IdType = 2,
-                    TypeCode = "VT002",
-                    NameType = "Xe khách 29 chỗ",
-                    SeatCount = 29,
-                    State = VehicleTypeState.HoatDong
-                },
-                new VehicleType
-                {
-                    IdType = 3,
-                    TypeCode = "VT003",
-                    NameType = "Xe khách 45 chỗ",
-                    SeatCount = 45,
-                    State = VehicleTypeState.HoatDong
-                },
-                new VehicleType
-                {
-                    IdType = 4,
-                    TypeCode = "VT004",
-                    NameType = "Xe limousine 9 chỗ",
-                    SeatCount = 9,
-                    State = VehicleTypeState.HoatDong
-                }
+                new VehicleType { IdType = 1, TypeCode = "VT001", NameType = "Giường nằm CLC 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 2, TypeCode = "VT002", NameType = "Giường nằm CLC 40 chỗ", SeatCount = 40, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 3, TypeCode = "VT003", NameType = "Giường nằm CLC VIP 20 chỗ", SeatCount = 20, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 4, TypeCode = "VT004", NameType = "Giường nằm massage 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 5, TypeCode = "VT005", NameType = "Giường nằm massage 40 chỗ", SeatCount = 40, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 6, TypeCode = "VT006", NameType = "Giường nằm đôi VIP 22 chỗ", SeatCount = 22, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 7, TypeCode = "VT007", NameType = "Ghé Nằm CLC 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 8, TypeCode = "VT008", NameType = "Ghé Nằm CLC 40 chỗ", SeatCount = 40, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 9, TypeCode = "VT009", NameType = "Ghé Nằm VIP 20 chỗ", SeatCount = 20, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 10, TypeCode = "VT010", NameType = "Ghé Nằm massage 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 11, TypeCode = "VT011", NameType = "Ghế ngồi CLC 45 chỗ", SeatCount = 45, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 12, TypeCode = "VT012", NameType = "Ghế ngồi CLC 50 chỗ", SeatCount = 50, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 13, TypeCode = "VT013", NameType = "Ghế ngồi VIP 32 chỗ", SeatCount = 32, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 14, TypeCode = "VT014", NameType = "Ghế ngồi Limousine 28 chỗ", SeatCount = 28, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 15, TypeCode = "VT015", NameType = "Limousine DCar VIP 9 chỗ", SeatCount = 9, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 16, TypeCode = "VT016", NameType = "Limousine President 11 chỗ", SeatCount = 11, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 17, TypeCode = "VT017", NameType = "Limousine Fuso Rosa 17 chỗ", SeatCount = 17, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 18, TypeCode = "VT018", NameType = "Limousine Skybus 19 chỗ", SeatCount = 19, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 19, TypeCode = "VT019", NameType = "Limousine Jet VIP 22 chỗ", SeatCount = 22, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 20, TypeCode = "VT020", NameType = "Limousine Auto Kingdom 26 chỗ", SeatCount = 26, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 21, TypeCode = "VT021", NameType = "Xe khách giường nằm 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 22, TypeCode = "VT022", NameType = "Xe khách giường nằm 40 chỗ", SeatCount = 40, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 23, TypeCode = "VT023", NameType = "Xe khách giường đôi 20 chỗ", SeatCount = 20, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 24, TypeCode = "VT024", NameType = "Xe khách giường đôi 34 chỗ", SeatCount = 34, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 25, TypeCode = "VT025", NameType = "Xe ghế ngồi 12 chỗ Transit", SeatCount = 12, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 26, TypeCode = "VT026", NameType = "Xe ghế ngồi 29 chỗ County", SeatCount = 29, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 27, TypeCode = "VT027", NameType = "Xe ghế ngồi 34 chỗ Thaco Garden", SeatCount = 34, State = VehicleTypeState.KhongHoatDong },
+                new VehicleType { IdType = 28, TypeCode = "VT028", NameType = "Xe ghế ngồi 50 chỗ Giáp Bát Express", SeatCount = 50, State = VehicleTypeState.KhongHoatDong },
+                new VehicleType { IdType = 29, TypeCode = "VT029", NameType = "Xe giường nằm massage 38 chỗ", SeatCount = 38, State = VehicleTypeState.HoatDong },
+                new VehicleType { IdType = 30, TypeCode = "VT030", NameType = "Xe giường nằm CLC 32 chỗ", SeatCount = 32, State = VehicleTypeState.HoatDong }
             );
 
             // Cấu hình khóa chính
@@ -309,6 +316,5 @@ namespace TicketBus.Data
                 .HasForeignKey(t => t.IdEmployee)
                 .OnDelete(DeleteBehavior.Restrict);
         }
-
     }
 }

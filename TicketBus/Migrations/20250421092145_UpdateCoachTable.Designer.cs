@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250421092145_UpdateCoachTable")]
+    partial class UpdateCoachTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -361,8 +364,7 @@ namespace TicketBus.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Documents")
-                        .IsRequired()
+                    b.Property<string>("Document")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("IdBrand")
@@ -374,8 +376,7 @@ namespace TicketBus.Migrations
                     b.Property<int?>("IdType")
                         .HasColumnType("int");
 
-                    b.Property<string>("Images")
-                        .IsRequired()
+                    b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NumberPlate")
@@ -996,242 +997,34 @@ namespace TicketBus.Migrations
                         new
                         {
                             IdType = 1,
-                            NameType = "Giường nằm CLC 34 chỗ",
-                            SeatCount = 34,
+                            NameType = "Xe khách 16 chỗ",
+                            SeatCount = 16,
                             State = 0,
                             TypeCode = "VT001"
                         },
                         new
                         {
                             IdType = 2,
-                            NameType = "Giường nằm CLC 40 chỗ",
-                            SeatCount = 40,
+                            NameType = "Xe khách 29 chỗ",
+                            SeatCount = 29,
                             State = 0,
                             TypeCode = "VT002"
                         },
                         new
                         {
                             IdType = 3,
-                            NameType = "Giường nằm CLC VIP 20 chỗ",
-                            SeatCount = 20,
+                            NameType = "Xe khách 45 chỗ",
+                            SeatCount = 45,
                             State = 0,
                             TypeCode = "VT003"
                         },
                         new
                         {
                             IdType = 4,
-                            NameType = "Giường nằm massage 34 chỗ",
-                            SeatCount = 34,
-                            State = 0,
-                            TypeCode = "VT004"
-                        },
-                        new
-                        {
-                            IdType = 5,
-                            NameType = "Giường nằm massage 40 chỗ",
-                            SeatCount = 40,
-                            State = 0,
-                            TypeCode = "VT005"
-                        },
-                        new
-                        {
-                            IdType = 6,
-                            NameType = "Giường nằm đôi VIP 22 chỗ",
-                            SeatCount = 22,
-                            State = 0,
-                            TypeCode = "VT006"
-                        },
-                        new
-                        {
-                            IdType = 7,
-                            NameType = "Ghé Nằm CLC 34 chỗ",
-                            SeatCount = 34,
-                            State = 0,
-                            TypeCode = "VT007"
-                        },
-                        new
-                        {
-                            IdType = 8,
-                            NameType = "Ghé Nằm CLC 40 chỗ",
-                            SeatCount = 40,
-                            State = 0,
-                            TypeCode = "VT008"
-                        },
-                        new
-                        {
-                            IdType = 9,
-                            NameType = "Ghé Nằm VIP 20 chỗ",
-                            SeatCount = 20,
-                            State = 0,
-                            TypeCode = "VT009"
-                        },
-                        new
-                        {
-                            IdType = 10,
-                            NameType = "Ghé Nằm massage 34 chỗ",
-                            SeatCount = 34,
-                            State = 0,
-                            TypeCode = "VT010"
-                        },
-                        new
-                        {
-                            IdType = 11,
-                            NameType = "Ghế ngồi CLC 45 chỗ",
-                            SeatCount = 45,
-                            State = 0,
-                            TypeCode = "VT011"
-                        },
-                        new
-                        {
-                            IdType = 12,
-                            NameType = "Ghế ngồi CLC 50 chỗ",
-                            SeatCount = 50,
-                            State = 0,
-                            TypeCode = "VT012"
-                        },
-                        new
-                        {
-                            IdType = 13,
-                            NameType = "Ghế ngồi VIP 32 chỗ",
-                            SeatCount = 32,
-                            State = 0,
-                            TypeCode = "VT013"
-                        },
-                        new
-                        {
-                            IdType = 14,
-                            NameType = "Ghế ngồi Limousine 28 chỗ",
-                            SeatCount = 28,
-                            State = 0,
-                            TypeCode = "VT014"
-                        },
-                        new
-                        {
-                            IdType = 15,
-                            NameType = "Limousine DCar VIP 9 chỗ",
+                            NameType = "Xe limousine 9 chỗ",
                             SeatCount = 9,
                             State = 0,
-                            TypeCode = "VT015"
-                        },
-                        new
-                        {
-                            IdType = 16,
-                            NameType = "Limousine President 11 chỗ",
-                            SeatCount = 11,
-                            State = 0,
-                            TypeCode = "VT016"
-                        },
-                        new
-                        {
-                            IdType = 17,
-                            NameType = "Limousine Fuso Rosa 17 chỗ",
-                            SeatCount = 17,
-                            State = 0,
-                            TypeCode = "VT017"
-                        },
-                        new
-                        {
-                            IdType = 18,
-                            NameType = "Limousine Skybus 19 chỗ",
-                            SeatCount = 19,
-                            State = 0,
-                            TypeCode = "VT018"
-                        },
-                        new
-                        {
-                            IdType = 19,
-                            NameType = "Limousine Jet VIP 22 chỗ",
-                            SeatCount = 22,
-                            State = 0,
-                            TypeCode = "VT019"
-                        },
-                        new
-                        {
-                            IdType = 20,
-                            NameType = "Limousine Auto Kingdom 26 chỗ",
-                            SeatCount = 26,
-                            State = 0,
-                            TypeCode = "VT020"
-                        },
-                        new
-                        {
-                            IdType = 21,
-                            NameType = "Xe khách giường nằm 34 chỗ",
-                            SeatCount = 34,
-                            State = 0,
-                            TypeCode = "VT021"
-                        },
-                        new
-                        {
-                            IdType = 22,
-                            NameType = "Xe khách giường nằm 40 chỗ",
-                            SeatCount = 40,
-                            State = 0,
-                            TypeCode = "VT022"
-                        },
-                        new
-                        {
-                            IdType = 23,
-                            NameType = "Xe khách giường đôi 20 chỗ",
-                            SeatCount = 20,
-                            State = 0,
-                            TypeCode = "VT023"
-                        },
-                        new
-                        {
-                            IdType = 24,
-                            NameType = "Xe khách giường đôi 34 chỗ",
-                            SeatCount = 34,
-                            State = 0,
-                            TypeCode = "VT024"
-                        },
-                        new
-                        {
-                            IdType = 25,
-                            NameType = "Xe ghế ngồi 12 chỗ Transit",
-                            SeatCount = 12,
-                            State = 0,
-                            TypeCode = "VT025"
-                        },
-                        new
-                        {
-                            IdType = 26,
-                            NameType = "Xe ghế ngồi 29 chỗ County",
-                            SeatCount = 29,
-                            State = 0,
-                            TypeCode = "VT026"
-                        },
-                        new
-                        {
-                            IdType = 27,
-                            NameType = "Xe ghế ngồi 34 chỗ Thaco Garden",
-                            SeatCount = 34,
-                            State = 1,
-                            TypeCode = "VT027"
-                        },
-                        new
-                        {
-                            IdType = 28,
-                            NameType = "Xe ghế ngồi 50 chỗ Giáp Bát Express",
-                            SeatCount = 50,
-                            State = 1,
-                            TypeCode = "VT028"
-                        },
-                        new
-                        {
-                            IdType = 29,
-                            NameType = "Xe giường nằm massage 38 chỗ",
-                            SeatCount = 38,
-                            State = 0,
-                            TypeCode = "VT029"
-                        },
-                        new
-                        {
-                            IdType = 30,
-                            NameType = "Xe giường nằm CLC 32 chỗ",
-                            SeatCount = 32,
-                            State = 0,
-                            TypeCode = "VT030"
+                            TypeCode = "VT004"
                         });
                 });
 

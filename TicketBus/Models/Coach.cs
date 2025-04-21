@@ -16,9 +16,9 @@ namespace TicketBus.Models
         public int? IdType { get; set; }
         [ForeignKey("RegistForm")]
         public int? IdRegist { get; set; }
-        public string? Image { get; set; }
+        public List<string> Images { get; set; } = new List<string>();
 
-        public string? Document { get; set; }
+        public List<string> Documents { get; set; } = new List<string>();
 
         public VehicleType? VehicleType { get; set; }
         public RegistForm? RegistForm { get; set; }
