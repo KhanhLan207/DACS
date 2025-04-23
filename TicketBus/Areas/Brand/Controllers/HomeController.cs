@@ -43,6 +43,39 @@ namespace TicketBus.Areas.Brand.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetApprovedCoaches()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { coaches = new List<object>() });
+            }
+
+            var brand = await _context.Brands
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.State == BrandState.HoatDong);
+
+            if (brand == null)
+            {
+                return Json(new { coaches = new List<object>() });
+            }
+
+            var coaches = await _context.Coaches
+                .Where(c => c.IdBrand == brand.IdBrand && c.State == CoachState.DaPheDuyet)
+                .Include(c => c.VehicleType)
+                .Select(c => new
+                {
+                    coachCode = c.CoachCode,
+                    numberPlate = c.NumberPlate,
+                    vehicleType = c.VehicleType != null ? c.VehicleType.NameType : null,
+                    state = (int)c.State
+                })
+                .ToListAsync();
+
+            return Json(new { coaches });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetNotifications()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;

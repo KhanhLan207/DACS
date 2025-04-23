@@ -78,7 +78,7 @@ namespace TicketBus.Areas.Admin.Controllers
         // POST: /Admin/Coach/Reject/1
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Reject(int id)
+        public async Task<IActionResult> Reject(int id, string rejectReason)
         {
             var coach = await _context.Coaches
                 .Include(c => c.Brand)
@@ -101,7 +101,7 @@ namespace TicketBus.Areas.Admin.Controllers
                 var notification = new Notification
                 {
                     UserId = coach.Brand.UserId,
-                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã bị từ chối.",
+                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã bị từ chối. Lý do: {rejectReason}",
                     CreatedDate = DateTime.Now,
                     IsRead = false
                 };

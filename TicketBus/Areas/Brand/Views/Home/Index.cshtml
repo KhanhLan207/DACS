@@ -60,7 +60,10 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text">Quản lý các xe của hãng hoặc xem danh sách xe đã đăng ký.</p>
-                    <a href="#" class="btn btn-outline-primary disabled" aria-disabled="true">Danh sách xe (Sắp có)</a>
+                    <button class="btn btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#coachListModal">Xem danh sách xe</button>
+                    <a asp-area="Brand" asp-controller="Coach" asp-action="Register" class="btn btn-primary">
+                        <i class="fas fa-bus-alt me-1"></i> Đăng ký xe mới
+                    </a>
                 </div>
             </div>
         </div>
@@ -95,5 +98,79 @@
     </div>
 </div>
 
+<!-- Modal hiển thị danh sách xe -->
+<div class="modal fade" id="coachListModal" tabindex="-1" aria-labelledby="coachListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="coachListModalLabel">Danh sách xe đã được phê duyệt</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="coachListContent">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Mã xe</th>
+                                <th>Biển số</th>
+                                <th>Loại xe</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coachListTableBody">
+                            <!-- Dữ liệu sẽ được tải qua AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Khi modal được mở, tải danh sách xe
+            $('#coachListModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '@Url.Action("GetApprovedCoaches", "Home", new { area = "Brand" })',
+                    type: 'GET',
+                    success: function (data) {
+                        var coachListTableBody = $('#coachListTableBody');
+                        coachListTableBody.empty();
+
+                        if (data.coaches && data.coaches.length > 0) {
+                            data.coaches.forEach(function (coach) {
+                                var row = $('<tr></tr>');
+                                row.append($('<td></td>').text(coach.coachCode));
+                                row.append($('<td></td>').text(coach.numberPlate));
+                                row.append($('<td></td>').text(coach.vehicleType || 'N/A'));
+
+                                var stateText = '';
+                                switch (coach.state) {
+                                    case 0: stateText = 'Hoạt động'; break;
+                                    case 1: stateText = 'Không hoạt động'; break;
+                                    case 2: stateText = 'Chờ phê duyệt'; break;
+                                    case 3: stateText = 'Đã phê duyệt'; break;
+                                    case 4: stateText = 'Từ chối'; break;
+                                    default: stateText = 'Không xác định'; break;
+                                }
+                                row.append($('<td></td>').text(stateText));
+
+                                coachListTableBody.append(row);
+                            });
+                        } else {
+                            coachListTableBody.append('<tr><td colspan="4" class="text-center">Không có xe nào đã được phê duyệt.</td></tr>');
+                        }
+                    },
+                    error: function () {
+                        $('#coachListTableBody').html('<tr><td colspan="4" class="text-center">Lỗi khi tải danh sách xe.</td></tr>');
+                    }
+                });
+            });
+        });
+    </script>
 }

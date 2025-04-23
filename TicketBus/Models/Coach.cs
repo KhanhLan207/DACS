@@ -41,6 +41,12 @@ namespace TicketBus.Models
         KhongHoatDong =1,
 
         [Display(Name = "Chờ phê duyệt")]
-        ChoPheDuyet =2
+        ChoPheDuyet = 2,
+
+        [Display(Name = "Đã phê duyệt")]
+        DaPheDuyet = 3,
+
+        [Display(Name = "Từ chối")]
+        TuChoi = 4
     }
 }
