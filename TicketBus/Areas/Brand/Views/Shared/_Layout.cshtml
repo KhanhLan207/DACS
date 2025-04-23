@@ -11,8 +11,6 @@
 <body>
     @Html.AntiForgeryToken()
 
-
-
     <div class="brand-container">
         <!-- Header -->
         <header class="brand-header">
@@ -22,6 +20,17 @@
                     <h1>@(ViewData["HeaderTitle"] != null ? new HtmlString(ViewData["HeaderTitle"].ToString()) : ViewData["Title"])</h1>
                 </div>
                 <div class="d-flex align-items-center">
+                    @{
+                        var userId = UserManager.GetUserId(User);
+                        var hasBrand = userId != null && DbContext.Brands.Any(b => b.UserId == userId);
+                    }
+                    @if (!hasBrand)
+                    {
+                        <!-- Nút Đăng ký hãng xe -->
+                        <a asp-area="Brand" asp-page="/RegisterCoach" class="btn btn-light me-3">
+                            <i class="fas fa-building me-1"></i> Đăng ký hãng xe
+                        </a>
+                    }
                     <!-- Chuông thông báo -->
                     <div class="notification-bell position-relative">
                         <i class="fas fa-bell fa-lg text-light" id="notificationBell" style="cursor: pointer;"></i>
@@ -37,7 +46,23 @@
             </div>
         </header>
 
-        @RenderBody()
+        <!-- Nội dung chính -->
+        @if (hasBrand)
+        {
+            @RenderBody()
+        }
+        else
+        {
+            <div class="container mt-5 text-center">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Vui lòng đăng ký hãng xe!</h4>
+                    <p>Bạn cần đăng ký một hãng xe để sử dụng các chức năng quản lý.</p>
+                    <a asp-area="Brand" asp-page="/RegisterCoach" class="btn btn-primary">
+                        <i class="fas fa-building me-1"></i> Đăng ký ngay
+                    </a>
+                </div>
+            </div>
+        }
 
         <!-- Footer -->
         <footer class="brand-footer">

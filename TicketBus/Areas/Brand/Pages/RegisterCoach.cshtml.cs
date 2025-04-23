@@ -46,9 +46,6 @@ namespace TicketBus.Areas.Brand.Pages
             [Display(Name = "Số điện thoại liên hệ")]
             public string PhoneNumber { get; set; }
 
-            [Display(Name = "Tình trạng hãng xe")]
-            public BrandState State { get; set; } = BrandState.ChoPheDuyet;
-
             [Display(Name = "Ảnh hãng xe")]
             public IFormFile ImageFile { get; set; }
 
@@ -103,7 +100,7 @@ namespace TicketBus.Areas.Brand.Pages
                 NameBrand = Input.BrandName,
                 Address = Input.BrandAddress,
                 PhoneNumber = Input.PhoneNumber,
-                State = Input.State,
+                State = BrandState.ChoPheDuyet, // Trạng thái mặc định là "Chờ phê duyệt"
                 UserId = user.Id
             };
 

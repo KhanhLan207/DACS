@@ -58,17 +58,6 @@
                         <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
                     </div>
 
-                    <div class="form-floating mb-3 input-group">
-                        <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
-                        <select asp-for="Input.State" class="form-control">
-                            <option value="HoatDong">Hoạt động</option>
-                            <option value="KhongHoatDong">Không hoạt động</option>
-                            <option value="ChoPheDuyet" selected>Chờ phê duyệt</option>
-                        </select>
-                        <label asp-for="Input.State" class="form-label">Tình trạng hãng xe</label>
-                        <span asp-validation-for="Input.State" class="text-danger"></span>
-                    </div>
-
                     <div class="form-group mb-3">
                         <label asp-for="Input.ImageFile" class="form-label">Ảnh hãng xe (tùy chọn)</label>
                         <input asp-for="Input.ImageFile" class="form-control" type="file" accept="image/*" />

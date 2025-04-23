@@ -1,6 +1,4 @@
-﻿@inject UserManager<TicketBus.Models.ApplicationUser> UserManager
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -36,7 +34,6 @@
                 else if (User.IsInRole("Brand"))
                 {
                     <a href="@Url.Action("Index", "Home", new { area = "Brand" })">Quản lý hãng xe</a>
-                    <a asp-area="Brand" asp-page="/RegisterCoach">Đăng ký xe</a>
                 }
             }
         </nav>
