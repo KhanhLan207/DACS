@@ -21,6 +21,9 @@ namespace TicketBus.Models
         [ForeignKey("ApplicationUser")]
         public string? UserId { get; set; }
         public ApplicationUser? ApplicationUser { get; set; }
+
+        //Thiết lập quan 1 - n với Coach
+        public List<Coach> Coaches { get; set; } = new List<Coach>();
     }
     public enum BrandState
     {

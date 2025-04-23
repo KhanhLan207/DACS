@@ -1,5 +1,5 @@
-﻿@using TicketBus.Models
-@model TicketBus.Models.Coach
+﻿@using TicketBus.Models.ViewModels
+@model CoachViewModel
 
 @{
     ViewData["Title"] = "FORM REGISTER";
@@ -7,133 +7,127 @@
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
 }
 
-<!-- Phần thông báo từ TempData -->
-@if (TempData["Message"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["Message"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-
 <div class="container mt-4">
-    <form asp-action="Register" method="post" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
+    <h3>Đăng ký xe</h3>
+    <form id="registerForm" method="post" enctype="multipart/form-data">
         <div class="mb-3">
-            <label asp-for="CoachCode" class="form-label">Mã xe</label>
-            <input asp-for="CoachCode" class="form-control" />
-            <span asp-validation-for="CoachCode" class="text-danger"></span>
+            <label for="CoachCode" class="form-label">Mã xe</label>
+            <input type="text" class="form-control" id="CoachCode" name="CoachCode" placeholder="Nhập mã xe (ví dụ: COACH003)" required />
         </div>
 
         <div class="mb-3">
-            <label asp-for="NumberPlate" class="form-label">Biển số xe</label>
-            <input asp-for="NumberPlate" class="form-control" />
-            <span asp-validation-for="NumberPlate" class="text-danger"></span>
+            <label for="NumberPlate" class="form-label">Biển số xe</label>
+            <input type="text" class="form-control" id="NumberPlate" name="NumberPlate" placeholder="Nhập biển số xe (ví dụ: 51D-123.45)" required />
         </div>
 
         <div class="mb-3">
-            <label asp-for="IdType" class="form-label">Loại xe</label>
-            <select asp-for="IdType" class="form-select">
-                <option value="">-- Chọn loại xe --</option>
-                @if (ViewBag.VehicleTypes != null)
+            <label for="IdType" class="form-label">Loại xe</label>
+            <select class="form-select" id="IdType" name="IdType" required>
+                <option value="" disabled selected>Chọn loại xe</option>
+                @foreach (var vehicleType in ViewBag.VehicleTypes)
                 {
-                    foreach (var vt in (List<SelectListItem>)ViewBag.VehicleTypes)
-                    {
-                        <option value="@vt.Value">@vt.Text</option>
-                    }
+                    <option value="@vehicleType.IdType">@vehicleType.NameType</option>
                 }
             </select>
-            <span asp-validation-for="IdType" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="State" class="form-label">Trạng thái</label>
-            <select asp-for="State" class="form-select">
-                <option value="@CoachState.ChoPheDuyet">Chờ phê duyệt</option>
-                <option value="@CoachState.HoatDong">Hoạt động</option>
-                <option value="@CoachState.KhongHoatDong">Không hoạt động</option>
-            </select>
-            <span asp-validation-for="State" class="text-danger"></span>
+            <label class="form-label">Ảnh xe</label>
+            <div id="imageInputs">
+                <div class="input-group mb-2">
+                    <input type="file" class="form-control" name="ImageList" accept="image/*" />
+                    <button type="button" class="btn btn-danger remove-image">Xóa</button>
+                </div>
+            </div>
+            <button type="button" id="addImage" class="btn btn-secondary">Thêm ảnh</button>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Hình ảnh xe (có thể chọn nhiều ảnh)</label>
-            <input type="file" id="imageFiles" name="imageFiles" class="form-control" accept="image/*" multiple onchange="handleFileSelect(this, 'imageFiles', 'selectedImageFiles')" />
-            <div id="selectedImageFiles" class="mt-2"></div>
+            <label class="form-label">Tài liệu</label>
+            <div id="documentInputs">
+                <div class="input-group mb-2">
+                    <input type="file" class="form-control" name="DocumentList" accept=".pdf,.doc,.docx" />
+                    <button type="button" class="btn btn-danger remove-document">Xóa</button>
+                </div>
+            </div>
+            <button type="button" id="addDocument" class="btn btn-secondary">Thêm tài liệu</button>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Tài liệu xe (có thể chọn nhiều file PDF hoặc Word)</label>
-            <input type="file" id="documentFiles" name="documentFiles" class="form-control" accept=".pdf,.doc,.docx" multiple onchange="handleFileSelect(this, 'documentFiles', 'selectedDocumentFiles')" />
-            <div id="selectedDocumentFiles" class="mt-2"></div>
-        </div>
-
-        <!-- Ẩn IdBrand vì đã được điền sẵn trong controller -->
-        <input type="hidden" asp-for="IdBrand" />
+        <input type="hidden" name="State" value="2" />
+        <input type="hidden" name="IdBrand" value="1" />
 
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Đăng ký</button>
-            <a asp-action="Index" asp-controller="Home" class="btn btn-secondary ms-2">Hủy</a>
         </div>
     </form>
+
+    <div id="resultMessage" class="mt-3"></div>
 </div>
 
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        // Object để lưu trữ danh sách file đã chọn cho từng input
-        const fileSelections = {
-            imageFiles: [],
-            documentFiles: []
-        };
+        $(document).ready(function () {
+            let imageIndex = 1;
+            let documentIndex = 1;
 
-        function handleFileSelect(input, inputId, outputId) {
-            const files = input.files;
-            const output = document.getElementById(outputId);
-            output.innerHTML = '';
+            $("#addImage").click(function () {
+                $("#imageInputs").append(`
+                    <div class="input-group mb-2">
+                        <input type="file" class="form-control" name="ImageList" accept="image/*" />
+                        <button type="button" class="btn btn-danger remove-image">Xóa</button>
+                    </div>
+                `);
+                imageIndex++;
+            });
 
-            // Thêm các file mới vào danh sách tương ứng
-            for (let i = 0; i < files.length; i++) {
-                // Kiểm tra file có trùng không (dựa trên tên file)
-                if (!fileSelections[inputId].some(f => f.name === files[i].name)) {
-                    fileSelections[inputId].push(files[i]);
-                }
-            }
+            $("#addDocument").click(function () {
+                $("#documentInputs").append(`
+                    <div class="input-group mb-2">
+                        <input type="file" class="form-control" name="DocumentList" accept=".pdf,.doc,.docx" />
+                        <button type="button" class="btn btn-danger remove-document">Xóa</button>
+                    </div>
+                `);
+                documentIndex++;
+            });
 
-            // Hiển thị danh sách file đã chọn
-            if (fileSelections[inputId].length > 0) {
-                const ul = document.createElement('ul');
-                fileSelections[inputId].forEach((file, index) => {
-                    const li = document.createElement('li');
-                    li.textContent = file.name + ' ';
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = 'Xóa';
-                    removeBtn.className = 'btn btn-danger btn-sm ms-2';
-                    removeBtn.onclick = () => {
-                        fileSelections[inputId].splice(index, 1);
-                        handleFileSelect({ files: [] }, inputId, outputId); // Cập nhật lại UI
-                    };
-                    li.appendChild(removeBtn);
-                    ul.appendChild(li);
+            $(document).on("click", ".remove-image", function () {
+                $(this).closest(".input-group").remove();
+            });
+
+            $(document).on("click", ".remove-document", function () {
+                $(this).closest(".input-group").remove();
+            });
+
+            $("#registerForm").on("submit", function (e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+                console.log("Form data before submit:", formData);
+
+                $.ajax({
+                    url: '/Brand/Coach/Register',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        console.log("Response:", response);
+                        if (response.success) {
+                            $("#resultMessage").html('<div class="alert alert-success">' + response.message + '</div>');
+                        } else {
+                            $("#resultMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        $("#resultMessage").html('<div class="alert alert-danger">Lỗi: ' + xhr.responseText + '</div>');
+                    }
                 });
-                output.appendChild(ul);
-            } else {
-                output.textContent = 'Chưa chọn file nào.';
-            }
-
-            // Cập nhật input file để gửi
-            const dataTransfer = new DataTransfer();
-            fileSelections[inputId].forEach(file => dataTransfer.items.add(file));
-            input.files = dataTransfer.files;
-
-            // Debug: Kiểm tra số lượng file trong input
-            console.log(`Số lượng file trong ${inputId}:`, input.files.length);
-        }
-
-        // Đảm bảo input file được đặt lại khi tải lại trang
-        document.getElementById('imageFiles').value = null;
-        document.getElementById('documentFiles').value = null;
+            });
+        });
     </script>
 }

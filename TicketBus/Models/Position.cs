@@ -15,7 +15,10 @@ namespace TicketBus.Models
 
     public enum PositionState
     {
-        Hoạt_động,
-        Không_hoạt_động
+        [Display(Name = "Hoạt động")]
+        HoatDong = 0,
+
+        [Display(Name = "Không hoạt động")]
+        KhongHoatDong = 1
     }
 }

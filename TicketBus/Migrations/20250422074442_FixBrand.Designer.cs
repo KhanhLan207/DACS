@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250422074442_FixBrand")]
+    partial class FixBrand
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1295,13 +1298,11 @@ namespace TicketBus.Migrations
                 {
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
-                        .HasForeignKey("RegistFormId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("RegistFormId");
 
                     b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("UserId");
 
                     b.Navigation("ApplicationUser");
 
@@ -1322,11 +1323,10 @@ namespace TicketBus.Migrations
                 {
                     b.HasOne("TicketBus.Models.Brand", "Brand")
                         .WithMany("Coaches")
-                        .HasForeignKey("IdBrand")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("IdBrand");
 
                     b.HasOne("TicketBus.Models.VehicleType", "VehicleType")
-                        .WithMany("Coaches")
+                        .WithMany()
                         .HasForeignKey("IdType")
                         .OnDelete(DeleteBehavior.Restrict);
 
@@ -1575,11 +1575,6 @@ namespace TicketBus.Migrations
                 });
 
             modelBuilder.Entity("TicketBus.Models.Brand", b =>
-                {
-                    b.Navigation("Coaches");
-                });
-
-            modelBuilder.Entity("TicketBus.Models.VehicleType", b =>
                 {
                     b.Navigation("Coaches");
                 });

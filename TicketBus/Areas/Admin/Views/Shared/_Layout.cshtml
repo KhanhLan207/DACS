@@ -21,6 +21,21 @@
     <link href="~/Assets/admin/css/styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <style>
+        .sb-sidenav .nav-link[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .sb-sidenav .nav-link .fa-chevron-down {
+            transition: transform 0.2s;
+            float: right;
+            margin-top: 5px;
+        }
+
+        .sb-sidenav .collapse .nav-link {
+            padding-left: 2.5rem !important;
+        }
+    </style>
     @RenderSection("Styles", required: false)
 </head>
 <body class="sb-nav-fixed">
@@ -61,9 +76,23 @@
                         </a>
                         <div class="sb-sidenav-menu-heading">Quản lý</div>
 
-                        <a class="nav-link" asp-controller="BrandApproval" asp-action="Index" asp-area="Admin">
+                        <a class="nav-link collapsed" href="#busCompanySubmenu" data-bs-toggle="collapse" data-bs-target="#busCompanySubmenu" aria-expanded="false" aria-controls="busCompanySubmenu">
                             <div class="sb-nav-link-icon"><i class="fas fa-car"></i></div>
                             Bus Company Approval
+                            <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <div class="collapse" id="busCompanySubmenu" aria-labelledby="busCompanySubmenu" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="BrandApproval" asp-action="Index" asp-area="Admin">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-list"></i></div>
+                                    Danh sách hãng xe
+                                </a>
+                            </nav>
+                        </div>
+
+                        <a class="nav-link" asp-controller="Coach" asp-action="Index" asp-area="Admin">
+                            <div class="sb-nav-link-icon"><i class="fas fa-bus"></i></div>
+                            Quản lý xe
                         </a>
                     </div>
                 </div>

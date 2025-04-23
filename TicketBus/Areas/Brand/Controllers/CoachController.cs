@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Data;
 using TicketBus.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using TicketBus.Models.ViewModels;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace TicketBus.Areas.Brand.Controllers
 {
@@ -12,188 +15,154 @@ namespace TicketBus.Areas.Brand.Controllers
     public class CoachController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<CoachController> _logger;
+        private readonly IWebHostEnvironment _environment;
 
-        public CoachController(ApplicationDbContext context)
+        public CoachController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            ILogger<CoachController> logger,
+            IWebHostEnvironment environment)
         {
             _context = context;
+            _userManager = userManager;
+            _logger = logger;
+            _environment = environment;
         }
 
         // GET: /Brand/Coach/Register
         public async Task<IActionResult> Register()
         {
-            // Lấy danh sách loại xe (VehicleType) để hiển thị trong dropdown
-            var vehicleTypes = await _context.VehicleTypes
-                .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                .Select(vt => new SelectListItem
-                {
-                    Value = vt.IdType.ToString(),
-                    Text = vt.NameType + " (" + vt.SeatCount + " ghế)"
-                })
-                .ToListAsync();
-
-            // Debug: Kiểm tra số lượng loại xe
-            Console.WriteLine($"Số lượng loại xe tìm được: {vehicleTypes.Count}");
-            foreach (var vt in vehicleTypes)
+            var viewModel = new CoachViewModel
             {
-                Console.WriteLine($"Loại xe: {vt.Text}, Value: {vt.Value}");
-            }
-
-            ViewBag.VehicleTypes = vehicleTypes;
-
-            // Lấy IdBrand của hãng xe hiện tại
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var brand = await _context.Brands
-                .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.UserId == userId && b.State == BrandState.HoatDong);
-
-            if (brand == null)
-            {
-                TempData["Message"] = "Hãng xe của bạn chưa được phê duyệt hoặc không tồn tại.";
-                return RedirectToAction("Index", "Home");
-            }
-
-            // Tạo model Coach mới với IdBrand được điền sẵn
-            var coach = new Coach
-            {
-                IdBrand = brand.IdBrand,
-                State = CoachState.ChoPheDuyet // Mặc định trạng thái là "Chờ phê duyệt"
+                State = (int)CoachState.ChoPheDuyet
             };
 
-            return View(coach);
+            // Lấy danh sách VehicleTypes từ cơ sở dữ liệu
+            var vehicleTypes = await _context.VehicleTypes
+                .Where(vt => vt.State == VehicleTypeState.HoatDong)
+                .ToListAsync();
+            ViewBag.VehicleTypes = vehicleTypes;
+
+            return View(viewModel);
         }
 
         // POST: /Brand/Coach/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(Coach coach, IFormFile[] imageFiles, IFormFile[] documentFiles)
+        public async Task<IActionResult> Register(CoachViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            _logger.LogInformation("Register POST: Received data - CoachCode: {CoachCode}, NumberPlate: {NumberPlate}, IdType: {IdType}, IdBrand: {IdBrand}, State: {State}",
+                viewModel.CoachCode, viewModel.NumberPlate, viewModel.IdType, viewModel.IdBrand, viewModel.State);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                // Debug: Kiểm tra số lượng file hình ảnh nhận được
-                if (imageFiles != null)
-                {
-                    Console.WriteLine($"Số lượng file hình ảnh nhận được: {imageFiles.Length}");
-                    foreach (var file in imageFiles)
-                    {
-                        Console.WriteLine($"File hình ảnh: {file.FileName}, Size: {file.Length}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Không nhận được file hình ảnh nào.");
-                }
-
-                // Debug: Kiểm tra số lượng file tài liệu nhận được
-                if (documentFiles != null)
-                {
-                    Console.WriteLine($"Số lượng file tài liệu nhận được: {documentFiles.Length}");
-                    foreach (var file in documentFiles)
-                    {
-                        Console.WriteLine($"File tài liệu: {file.FileName}, Size: {file.Length}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Không nhận được file tài liệu nào.");
-                }
-
-                // Xử lý upload nhiều hình ảnh
-                if (imageFiles != null && imageFiles.Length > 0)
-                {
-                    var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/coaches");
-                    if (!Directory.Exists(imagePath))
-                    {
-                        Directory.CreateDirectory(imagePath);
-                    }
-
-                    foreach (var imageFile in imageFiles)
-                    {
-                        if (imageFile != null && imageFile.Length > 0)
-                        {
-                            var imageFileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
-                            var imageFullPath = Path.Combine(imagePath, imageFileName);
-
-                            using (var stream = new FileStream(imageFullPath, FileMode.Create))
-                            {
-                                await imageFile.CopyToAsync(stream);
-                            }
-
-                            coach.Images.Add("/images/coaches/" + imageFileName);
-                        }
-                    }
-                }
-
-                // Xử lý upload nhiều tài liệu (PDF và Word)
-                if (documentFiles != null && documentFiles.Length > 0)
-                {
-                    var docPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/documents/coaches");
-                    if (!Directory.Exists(docPath))
-                    {
-                        Directory.CreateDirectory(docPath);
-                    }
-
-                    foreach (var documentFile in documentFiles)
-                    {
-                        if (documentFile != null && documentFile.Length > 0)
-                        {
-                            // Kiểm tra định dạng file (chỉ cho phép PDF và Word)
-                            var extension = Path.GetExtension(documentFile.FileName).ToLower();
-                            if (extension == ".pdf" || extension == ".doc" || extension == ".docx")
-                            {
-                                var docFileName = Guid.NewGuid().ToString() + extension;
-                                var docFullPath = Path.Combine(docPath, docFileName);
-
-                                using (var stream = new FileStream(docFullPath, FileMode.Create))
-                                {
-                                    await documentFile.CopyToAsync(stream);
-                                }
-
-                                coach.Documents.Add("/documents/coaches/" + docFileName);
-                            }
-                            else
-                            {
-                                ModelState.AddModelError("documentFiles", $"File {documentFile.FileName} không hợp lệ. Chỉ chấp nhận file PDF hoặc Word (.doc, .docx).");
-                            }
-                        }
-                    }
-                }
-
-                // Nếu có lỗi validation (ví dụ: file không hợp lệ), trả lại form
-                if (!ModelState.IsValid)
-                {
-                    var vehicleTypes = await _context.VehicleTypes
-                        .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                        .Select(vt => new SelectListItem
-                        {
-                            Value = vt.IdType.ToString(),
-                            Text = vt.NameType + " (" + vt.SeatCount + " ghế)"
-                        })
-                        .ToListAsync();
-
-                    ViewBag.VehicleTypes = vehicleTypes;
-                    return View(coach);
-                }
-
-                // Lưu Coach vào database
-                _context.Add(coach);
-                await _context.SaveChangesAsync();
-
-                TempData["Message"] = "Đăng ký xe thành công! Xe đang chờ phê duyệt.";
-                return RedirectToAction("Index", "Home");
+                _logger.LogWarning("Register POST: User not found.");
+                return Json(new { success = false, message = "Không thể xác định người dùng. Vui lòng đăng nhập lại." });
             }
 
-            // Nếu ModelState không hợp lệ, trả lại form với danh sách loại xe
-            var vehicleTypesError = await _context.VehicleTypes
-                .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                .Select(vt => new SelectListItem
-                {
-                    Value = vt.IdType.ToString(),
-                    Text = vt.NameType + " (" + vt.SeatCount + " ghế)"
-                })
-                .ToListAsync();
+            var brand = await _context.Brands.FirstOrDefaultAsync(b => b.UserId == user.Id);
+            if (brand == null)
+            {
+                _logger.LogWarning("Register POST: Brand not found for UserId {UserId}.", user.Id);
+                return Json(new { success = false, message = "Không tìm thấy hãng xe." });
+            }
 
-            ViewBag.VehicleTypes = vehicleTypesError;
-            return View(coach);
+            try
+            {
+                // Danh sách đường dẫn ảnh và tài liệu sau khi upload
+                var imagePaths = new List<string>();
+                var documentPaths = new List<string>();
+
+                // Đường dẫn thư mục lưu file
+                var imagesFolder = Path.Combine(_environment.WebRootPath, "images", "coaches");
+                var documentsFolder = Path.Combine(_environment.WebRootPath, "documents", "coaches");
+
+                // Tạo thư mục nếu chưa tồn tại
+                if (!Directory.Exists(imagesFolder))
+                {
+                    Directory.CreateDirectory(imagesFolder);
+                }
+                if (!Directory.Exists(documentsFolder))
+                {
+                    Directory.CreateDirectory(documentsFolder);
+                }
+
+                // Xử lý upload ảnh
+                if (viewModel.ImageList != null && viewModel.ImageList.Any())
+                {
+                    foreach (var image in viewModel.ImageList.Where(img => img != null && img.Length > 0))
+                    {
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                        var filePath = Path.Combine(imagesFolder, uniqueFileName);
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await image.CopyToAsync(fileStream);
+                        }
+                        // Lưu đường dẫn tương đối để truy cập từ web
+                        imagePaths.Add($"/images/coaches/{uniqueFileName}");
+                    }
+                }
+
+                // Xử lý upload tài liệu
+                if (viewModel.DocumentList != null && viewModel.DocumentList.Any())
+                {
+                    foreach (var doc in viewModel.DocumentList.Where(doc => doc != null && doc.Length > 0))
+                    {
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + doc.FileName;
+                        var filePath = Path.Combine(documentsFolder, uniqueFileName);
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await doc.CopyToAsync(fileStream);
+                        }
+                        documentPaths.Add($"/documents/coaches/{uniqueFileName}");
+                    }
+                }
+
+                // Chuyển danh sách đường dẫn thành JSON
+                var imagesJson = JsonSerializer.Serialize(imagePaths);
+                var documentsJson = JsonSerializer.Serialize(documentPaths);
+
+                var coach = new Coach
+                {
+                    CoachCode = viewModel.CoachCode,
+                    NumberPlate = viewModel.NumberPlate,
+                    IdType = viewModel.IdType,
+                    IdBrand = brand.IdBrand,
+                    State = CoachState.ChoPheDuyet,
+                    Images = imagesJson,
+                    Documents = documentsJson
+                };
+
+                _context.Coaches.Add(coach);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Register POST: Successfully saved Coach {CoachCode}.", coach.CoachCode);
+
+                var notification = new Notification
+                {
+                    UserId = user.Id,
+                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã được đăng ký và đang chờ phê duyệt.",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Đăng ký xe thành công!" });
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                _logger.LogError(ex, "Register POST: Failed to save Coach. Inner exception: {InnerException}", innerMessage);
+                return Json(new { success = false, message = $"Lỗi chi tiết: {innerMessage}" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Register POST: Failed to save Coach. Error: {Error}", ex.Message);
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
         }
     }
 }

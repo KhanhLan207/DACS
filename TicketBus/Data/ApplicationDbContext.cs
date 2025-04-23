@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Models;
 using System.Text.Json;
@@ -11,6 +10,7 @@ namespace TicketBus.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
         public DbSet<Bill> Bills { get; set; }
         public DbSet<Brand> Brands { get; set; }
         public DbSet<City> Cities { get; set; }
@@ -41,14 +41,6 @@ namespace TicketBus.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // Cấu hình ánh xạ List<string> sang JSON cho thuộc tính Images
-            modelBuilder.Entity<Coach>()
-                .Property(c => c.Images)
-                .HasConversion(
-                    v => JsonSerializer.Serialize(v, new JsonSerializerOptions()),
-                    v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions()) ?? new List<string>()
-                );
 
             // Dữ liệu mẫu cho VehicleType
             modelBuilder.Entity<VehicleType>().HasData(
@@ -119,24 +111,39 @@ namespace TicketBus.Data
                 .HasKey(svd => new { svd.IdType, svd.IdService });
 
             // Cấu hình mối quan hệ
+            // Brand và Coach (1-N)
+            modelBuilder.Entity<Brand>()
+                .HasMany(b => b.Coaches)
+                .WithOne(c => c.Brand)
+                .HasForeignKey(c => c.IdBrand)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Brand và ApplicationUser (1-N)
+            modelBuilder.Entity<Brand>()
+                .HasOne(b => b.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Brand và RegistForm (1-1)
+            modelBuilder.Entity<Brand>()
+                .HasOne(b => b.RegistForm)
+                .WithMany()
+                .HasForeignKey(b => b.RegistFormId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // VehicleType và Coach (1-N)
+            modelBuilder.Entity<VehicleType>()
+                .HasMany(vt => vt.Coaches)
+                .WithOne(c => c.VehicleType)
+                .HasForeignKey(c => c.IdType)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Bill
             modelBuilder.Entity<Bill>()
                 .HasOne(b => b.Passenger)
                 .WithMany()
                 .HasForeignKey(b => b.IdPassenger)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Coach
-            modelBuilder.Entity<Coach>()
-                .HasOne(c => c.VehicleType)
-                .WithMany()
-                .HasForeignKey(c => c.IdType)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Coach>()
-                .HasOne(c => c.RegistForm)
-                .WithMany()
-                .HasForeignKey(c => c.IdRegist)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // DiscountDetails

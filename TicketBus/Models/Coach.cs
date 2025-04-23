@@ -7,21 +7,24 @@ namespace TicketBus.Models
     {
         [Key]
         public int IdCoach { get; set; }
+
         [StringLength(50)]
         public string? CoachCode { get; set; }
+
         [StringLength(10)]
+        [RegularExpression(@"^51D-\d{3}\.\d{2}$", ErrorMessage = "Biển số xe phải có định dạng 51D-123.45")]
         public string? NumberPlate { get; set; }
+
         public CoachState State { get; set; }
+
         [ForeignKey("VehicleType")]
         public int? IdType { get; set; }
-        [ForeignKey("RegistForm")]
-        public int? IdRegist { get; set; }
-        public List<string> Images { get; set; } = new List<string>();
 
-        public List<string> Documents { get; set; } = new List<string>();
+        public string Images { get; set; }
+
+        public string Documents { get; set; }
 
         public VehicleType? VehicleType { get; set; }
-        public RegistForm? RegistForm { get; set; }
 
         [ForeignKey("Brand")]
         public int? IdBrand { get; set; }

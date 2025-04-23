@@ -11,6 +11,9 @@ namespace TicketBus.Models
         [Range(4, int.MaxValue, ErrorMessage = "SeatCount must be greater than 3")]
         public int? SeatCount { get; set; }
         public VehicleTypeState State { get; set; }
+
+        //Thiết lập quan 1 - n với Coach
+        public List<Coach> Coaches { get; set; } = new List<Coach>();
     }
 
     public enum VehicleTypeState
