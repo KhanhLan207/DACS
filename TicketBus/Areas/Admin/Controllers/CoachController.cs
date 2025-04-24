@@ -22,15 +22,30 @@ namespace TicketBus.Areas.Admin.Controllers
         }
 
         // GET: /Admin/Coach/PendingApproval
-        public async Task<IActionResult> PendingApproval()
+        public async Task<IActionResult> PendingApproval(string filter = "pending")
         {
-            var pendingCoaches = await _context.Coaches
-                .Where(c => c.State == CoachState.ChoPheDuyet)
+            IQueryable<Coach> coachesQuery = _context.Coaches
                 .Include(c => c.VehicleType)
-                .Include(c => c.Brand)
-                .ToListAsync();
+                .Include(c => c.Brand);
 
-            return View(pendingCoaches);
+            switch (filter)
+            {
+                case "approved":
+                    coachesQuery = coachesQuery.Where(c => c.State == CoachState.DaPheDuyet);
+                    break;
+                case "rejected":
+                    coachesQuery = coachesQuery.Where(c => c.State == CoachState.TuChoi);
+                    break;
+                case "pending":
+                default:
+                    coachesQuery = coachesQuery.Where(c => c.State == CoachState.ChoPheDuyet);
+                    break;
+            }
+
+            var coaches = await coachesQuery.ToListAsync();
+            ViewBag.Filter = filter;
+
+            return View(coaches);
         }
 
         // POST: /Admin/Coach/Approve/1

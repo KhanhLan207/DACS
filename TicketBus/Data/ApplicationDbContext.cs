@@ -15,8 +15,6 @@ namespace TicketBus.Data
         public DbSet<Brand> Brands { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Coach> Coaches { get; set; }
-        public DbSet<Coupon> Coupons { get; set; }
-        public DbSet<DiscountDetails> DiscountDetails { get; set; }
         public DbSet<District> Districts { get; set; }
         public DbSet<DropOff> DropOffs { get; set; }
         public DbSet<Employee> Employees { get; set; }
@@ -81,7 +79,6 @@ namespace TicketBus.Data
             modelBuilder.Entity<Brand>().HasKey(b => b.IdBrand);
             modelBuilder.Entity<City>().HasKey(c => c.IdCity);
             modelBuilder.Entity<Coach>().HasKey(c => c.IdCoach);
-            modelBuilder.Entity<Coupon>().HasKey(c => c.IdCoupon);
             modelBuilder.Entity<District>().HasKey(d => d.IdDistrict);
             modelBuilder.Entity<DropOff>().HasKey(d => d.IdDropOff);
             modelBuilder.Entity<Employee>().HasKey(e => e.IdEmployee);
@@ -101,9 +98,6 @@ namespace TicketBus.Data
             modelBuilder.Entity<VehicleType>().HasKey(vt => vt.IdType);
 
             // Cấu hình khóa chính tổ hợp
-            modelBuilder.Entity<DiscountDetails>()
-                .HasKey(dd => new { dd.IdCoupon, dd.IdBill });
-
             modelBuilder.Entity<ScheduleDetails>()
                 .HasKey(sd => new { sd.IdCoach, sd.IdRoute });
 
@@ -144,19 +138,6 @@ namespace TicketBus.Data
                 .HasOne(b => b.Passenger)
                 .WithMany()
                 .HasForeignKey(b => b.IdPassenger)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // DiscountDetails
-            modelBuilder.Entity<DiscountDetails>()
-                .HasOne(dd => dd.Coupon)
-                .WithMany()
-                .HasForeignKey(dd => dd.IdCoupon)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<DiscountDetails>()
-                .HasOne(dd => dd.Bill)
-                .WithMany()
-                .HasForeignKey(dd => dd.IdBill)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // District

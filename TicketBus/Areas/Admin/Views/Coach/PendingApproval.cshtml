@@ -5,6 +5,14 @@
     ViewData["Title"] = "Phê duyệt xe";
     ViewData["HeaderTitle"] = "<i class='fas fa-bus-alt me-2 text-primary'></i>Phê duyệt xe";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+
+    // Tạo danh sách các tùy chọn cho bộ lọc
+    var filterOptions = new List<(string Value, string Text, bool Selected)>
+    {
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "pending" }), "Chờ phê duyệt", ViewBag.Filter == "pending"),
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "approved" }), "Đã phê duyệt", ViewBag.Filter == "approved"),
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "rejected" }), "Từ chối", ViewBag.Filter == "rejected")
+    };
 }
 
 <main>
@@ -14,6 +22,25 @@
             <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-area="Admin">Dashboard</a></li>
             <li class="breadcrumb-item active">Phê duyệt xe</li>
         </ol>
+
+        <!-- Bộ lọc -->
+        <div class="mb-4">
+            <label for="filterSelect" class="form-label me-2">Lọc theo trạng thái:</label>
+            <select id="filterSelect" class="form-select d-inline-block w-auto" onchange="location = this.value;">
+                @foreach (var option in filterOptions)
+                {
+                    if (option.Selected)
+                    {
+                        <option value="@option.Value" selected>@option.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@option.Value">@option.Text</option>
+                    }
+                }
+            </select>
+        </div>
+
         <div class="card mb-4">
             <div class="card-header">
                 <i class="fas fa-bus me-1"></i>
@@ -135,7 +162,19 @@
                 else
                 {
                     <div class="alert alert-info text-center">
-                        Không có xe nào đang chờ phê duyệt.
+                        @switch (ViewBag.Filter)
+                        {
+                            case "approved":
+                                @: Không có xe nào đã được phê duyệt.
+                                break;
+                            case "rejected":
+                                @: Không có xe nào bị từ chối.
+                                break;
+                            case "pending":
+                            default:
+                                @: Không có xe nào đang chờ phê duyệt.
+                                break;
+                        }
                     </div>
                 }
             </div>

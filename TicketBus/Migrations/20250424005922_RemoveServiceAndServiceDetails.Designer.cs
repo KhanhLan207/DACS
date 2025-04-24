@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424005922_RemoveServiceAndServiceDetails")]
+    partial class RemoveServiceAndServiceDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,15 +246,6 @@ namespace TicketBus.Migrations
                     b.Property<string>("BillCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("DiscountPercentage")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DiscountedAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("FinalTotal")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int?>("IdPassenger")
                         .HasColumnType("int");
 
@@ -398,6 +392,48 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdType");
 
                     b.ToTable("Coaches");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Coupon", b =>
+                {
+                    b.Property<int>("IdCoupon")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdCoupon"));
+
+                    b.Property<string>("CouponCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Percentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ReleaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("IdCoupon");
+
+                    b.ToTable("Coupons");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.DiscountDetails", b =>
+                {
+                    b.Property<int>("IdCoupon")
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
+
+                    b.Property<int>("IdBill")
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
+
+                    b.HasKey("IdCoupon", "IdBill");
+
+                    b.HasIndex("IdBill");
+
+                    b.ToTable("DiscountDetails");
                 });
 
             modelBuilder.Entity("TicketBus.Models.District", b =>
@@ -1264,6 +1300,25 @@ namespace TicketBus.Migrations
                     b.Navigation("Brand");
 
                     b.Navigation("VehicleType");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.DiscountDetails", b =>
+                {
+                    b.HasOne("TicketBus.Models.Bill", "Bill")
+                        .WithMany()
+                        .HasForeignKey("IdBill")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TicketBus.Models.Coupon", "Coupon")
+                        .WithMany()
+                        .HasForeignKey("IdCoupon")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bill");
+
+                    b.Navigation("Coupon");
                 });
 
             modelBuilder.Entity("TicketBus.Models.District", b =>
