@@ -28,6 +28,12 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Brand\Data\" />
     <Folder Include="Areas\Brand\Models\" />
+    <Folder Include="Areas\NhanVien\Data\" />
+    <Folder Include="Areas\NhanVien\Models\" />
+    <Folder Include="Areas\NhanVien\Views\" />
+    <Folder Include="Areas\Passenger\Data\" />
+    <Folder Include="Areas\Passenger\Models\" />
+    <Folder Include="Areas\Passenger\Views\" />
     <Folder Include="wwwroot\documents\coaches\" />
     <Folder Include="wwwroot\images\coaches\" />
   </ItemGroup>

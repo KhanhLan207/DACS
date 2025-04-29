@@ -29,11 +29,15 @@
                 }
                 else if (User.IsInRole("NhanVien"))
                 {
-                    <a href="@Url.Action("EmployeePanel", "Home", new { area = "Admin" })">Quản lý nhân viên</a>
+                    <a href="@Url.Action("Index", "Home", new { area = "NhanVien" })">Quản lý nhân viên</a>
                 }
                 else if (User.IsInRole("Brand"))
                 {
                     <a href="@Url.Action("Index", "Home", new { area = "Brand" })">Quản lý hãng xe</a>
+                }
+                else if (User.IsInRole("Passenger"))
+                {
+                    <a href="@Url.Action("Index", "Home", new { area = "Passenger" })">Hành khách</a>
                 }
             }
         </nav>

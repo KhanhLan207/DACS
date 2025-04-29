@@ -19,7 +19,7 @@
     <title>@ViewData["Title"] - TicketBus Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="~/Assets/admin/css/styles.css" rel="stylesheet" />
-    <link href="~/Assets/admin/css/sidebar.css" rel="stylesheet" /> <!-- Thêm liên kết đến sidebar.css -->
+    <link href="~/Assets/admin/css/sidebar.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     @RenderSection("Styles", required: false)
@@ -64,7 +64,7 @@
 
                         <a class="nav-link collapsed" href="#busCompanySubmenu" data-bs-toggle="collapse" data-bs-target="#busCompanySubmenu" aria-expanded="false" aria-controls="busCompanySubmenu">
                             <div class="sb-nav-link-icon"><i class="fas fa-car"></i></div>
-                            Bus Company Approval
+                            Phê duyệt hãng xe
                             <i class="fas fa-chevron-down"></i>
                         </a>
                         <div class="collapse" id="busCompanySubmenu" aria-labelledby="busCompanySubmenu" data-bs-parent="#sidenavAccordion">
@@ -80,7 +80,6 @@
                             </nav>
                         </div>
 
-                        <!-- Thêm submenu mới cho Quản lý tuyến xe -->
                         <a class="nav-link collapsed" href="#busRouteSubmenu" data-bs-toggle="collapse" data-bs-target="#busRouteSubmenu" aria-expanded="false" aria-controls="busRouteSubmenu">
                             <div class="sb-nav-link-icon"><i class="fas fa-road"></i></div>
                             Quản lý tuyến xe

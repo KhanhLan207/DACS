@@ -47,7 +47,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 // Chuyển hướng /Admin đến /Admin/Home/Index
 app.MapGet("/Admin", context =>
 {
@@ -64,16 +63,15 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
 app.MapRazorPages(); // Thêm để Identity UI (Razor Pages) hoạt động
 
-// Tạo vai trò Admin, NhanVien và Brand với xử lý lỗi và logging
+// Tạo vai trò Admin, NhanVien, Brand và Passenger với xử lý lỗi và logging
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    string[] roleNames = { "Admin", "NhanVien", "Brand" }; // Thêm vai trò Brand
+    string[] roleNames = { "Admin", "NhanVien", "Brand", "Passenger" }; // Thêm vai trò Passenger
     foreach (var roleName in roleNames)
     {
         try

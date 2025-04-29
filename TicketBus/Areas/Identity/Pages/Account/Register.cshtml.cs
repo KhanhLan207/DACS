@@ -161,13 +161,17 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     {
                         return RedirectToAction("AdminPanel", "Home", new { area = "Admin" });
                     }
+                    else if (Input.Role == "NhanVien")
+                    {
+                        return RedirectToAction("EmployeePanel", "Home", new { area = "Admin" });
+                    }
                     else if (Input.Role == "Brand")
                     {
                         return RedirectToAction("Index", "Home", new { area = "Brand" });
                     }
-                    else if (Input.Role == "NhanVien")
+                    else if (Input.Role == "Passenger")
                     {
-                        return RedirectToAction("EmployeePanel", "Home", new { area = "Admin" });
+                        return RedirectToAction("Index", "Home", new { area = "" }); // Điều hướng hành khách đến trang chính
                     }
                     else
                     {
