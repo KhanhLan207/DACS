@@ -1,0 +1,194 @@
+﻿@model TicketBus.Models.BusRoute
+
+@{
+    ViewData["Title"] = "Chi tiết tuyến xe";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Chi tiết tuyến xe</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-area="Admin">Dashboard</a></li>
+        <li class="breadcrumb-item"><a asp-controller="BusRouteApproval" asp-action="PendingApproval" asp-area="Admin">Danh sách tuyến xe chờ phê duyệt</a></li>
+        <li class="breadcrumb-item active">Chi tiết tuyến xe</li>
+    </ol>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle me-1"></i>
+            Thông tin tuyến xe
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">Tên tuyến</dt>
+                <dd class="col-sm-10">@Model.NameRoute</dd>
+
+                <dt class="col-sm-2">Hãng xe</dt>
+                <dd class="col-sm-10">@Model.Brand?.NameBrand</dd>
+
+                <dt class="col-sm-2">Địa chỉ</dt>
+                <dd class="col-sm-10">@Model.Address</dd>
+
+                <dt class="col-sm-2">Khoảng cách</dt>
+                <dd class="col-sm-10">@Model.Distance km</dd>
+
+                <dt class="col-sm-2">Thành phố xuất phát</dt>
+                <dd class="col-sm-10">@Model.StartCity?.NameCity</dd>
+
+                <dt class="col-sm-2">Thành phố kết thúc</dt>
+                <dd class="col-sm-10">@Model.EndCity?.NameCity</dd>
+
+                <dt class="col-sm-2">Thời gian hành trình</dt>
+                <dd class="col-sm-10">
+                    @(Model.TravelTime.HasValue ? $"{Model.TravelTime.Value.Hours:D2}:{Model.TravelTime.Value.Minutes:D2}" : "Không có")
+                </dd>
+
+                <dt class="col-sm-2">Giờ xuất bến</dt>
+                <dd class="col-sm-10">
+                    @if (Model.DepartureTimes != null && Model.DepartureTimes.Any())
+                    {
+                        <ul>
+                            @foreach (var time in Model.DepartureTimes)
+                            {
+                                <li>@($"{time.Hours:D2}:{time.Minutes:D2}")</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>Không có</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-2">Tần suất chạy</dt>
+                <dd class="col-sm-10">@Model.Frequency</dd>
+
+                <dt class="col-sm-2">Ngày bắt đầu hoạt động</dt>
+                <dd class="col-sm-10">
+                    @(Model.StartDate.HasValue ? String.Format("{0:dd/MM/yyyy}", Model.StartDate.Value) : "Không có")
+                </dd>
+            </dl>
+
+            <h4>Điểm dừng</h4>
+            @if (Model.RouteStops != null && Model.RouteStops.Any())
+            {
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Thứ tự</th>
+                            <th>Tên điểm dừng</th>
+                            <th>Thành phố</th>
+                            <th>Quận/Huyện</th>
+                            <th>Địa chỉ</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stop in Model.RouteStops.OrderBy(rs => rs.StopOrder))
+                        {
+                            <tr>
+                                <td>@stop.StopOrder</td>
+                                <td>@stop.StopName</td>
+                                <td>@stop.City?.NameCity</td>
+                                <td>@stop.District?.NameDistrict</td>
+                                <td>@stop.Address</td>
+                                <td>
+                                    @(stop.Time.HasValue ? $"{stop.Time.Value.Hours:D2}:{stop.Time.Value.Minutes:D2}" : "Không có")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Không có điểm dừng.</p>
+            }
+
+            <div>
+                <!-- Nút "Phê duyệt" -->
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#reasonModal" data-action="Approve">Phê duyệt</button>
+
+                <!-- Nút "Từ chối" -->
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#reasonModal" data-action="Reject">Từ chối</button>
+
+                <a asp-controller="BusRouteApproval" asp-action="PendingApproval" asp-area="Admin" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal nhập lý do -->
+<div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reasonModalLabel">Xác nhận hành động</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reasonForm" method="post">
+                    <input type="hidden" name="id" value="@Model.IdRoute" />
+                    <input type="hidden" id="actionInput" name="action" value="" />
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý do (bắt buộc nếu từ chối):</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3"></textarea>
+                        <div class="invalid-feedback">
+                            Vui lòng nhập lý do khi từ chối.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmButton">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Khi modal được mở, thiết lập hành động và tiêu đề
+            $('#reasonModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); // Nút đã kích hoạt modal
+                var action = button.data('action'); // Lấy hành động (Approve hoặc Reject)
+                var modal = $(this);
+
+                // Thiết lập tiêu đề modal
+                modal.find('.modal-title').text(action === 'Approve' ? 'Xác nhận phê duyệt' : 'Xác nhận từ chối');
+
+                // Thiết lập hành động cho form
+                modal.find('#actionInput').val(action);
+
+                // Xóa thông báo lỗi và giá trị lý do cũ
+                modal.find('#reason').val('');
+                modal.find('#reason').removeClass('is-invalid');
+            });
+
+            // Khi bấm "Xác nhận" trong modal
+            $('#confirmButton').click(function () {
+                var action = $('#actionInput').val();
+                var reason = $('#reason').val().trim();
+                var form = $('#reasonForm');
+
+                // Kiểm tra lý do nếu hành động là "Từ chối"
+                if (action === 'Reject' && !reason) {
+                    $('#reason').addClass('is-invalid');
+                    return;
+                }
+
+                // Thiết lập action của form dựa trên hành động
+                if (action === 'Approve') {
+                    form.attr('action', '@Url.Action("Approve", "BusRouteApproval", new { area = "Admin" })');
+                } else {
+                    form.attr('action', '@Url.Action("Reject", "BusRouteApproval", new { area = "Admin" })');
+                }
+
+                // Gửi form
+                form.submit();
+            });
+        });
+    </script>
+}

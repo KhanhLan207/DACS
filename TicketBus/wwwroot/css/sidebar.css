@@ -1,0 +1,14 @@
+﻿/* Style cho sidebar và menu điều hướng */
+.sb-sidenav .nav-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+.sb-sidenav .nav-link .fa-chevron-down {
+    transition: transform 0.2s;
+    float: right;
+    margin-top: 5px;
+}
+
+.sb-sidenav .collapse .nav-link {
+    padding-left: 2.5rem !important;
+}

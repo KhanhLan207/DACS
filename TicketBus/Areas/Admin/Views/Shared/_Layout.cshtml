@@ -19,23 +19,9 @@
     <title>@ViewData["Title"] - TicketBus Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
     <link href="~/Assets/admin/css/styles.css" rel="stylesheet" />
+    <link href="~/Assets/admin/css/sidebar.css" rel="stylesheet" /> <!-- Thêm liên kết đến sidebar.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    <style>
-        .sb-sidenav .nav-link[aria-expanded="true"] .fa-chevron-down {
-            transform: rotate(180deg);
-        }
-
-        .sb-sidenav .nav-link .fa-chevron-down {
-            transition: transform 0.2s;
-            float: right;
-            margin-top: 5px;
-        }
-
-        .sb-sidenav .collapse .nav-link {
-            padding-left: 2.5rem !important;
-        }
-    </style>
     @RenderSection("Styles", required: false)
 </head>
 <body class="sb-nav-fixed">
@@ -94,10 +80,20 @@
                             </nav>
                         </div>
 
-                        <a class="nav-link" asp-controller="Coach" asp-action="Index" asp-area="Admin">
-                            <div class="sb-nav-link-icon"><i class="fas fa-bus"></i></div>
-                            Quản lý xe
+                        <!-- Thêm submenu mới cho Quản lý tuyến xe -->
+                        <a class="nav-link collapsed" href="#busRouteSubmenu" data-bs-toggle="collapse" data-bs-target="#busRouteSubmenu" aria-expanded="false" aria-controls="busRouteSubmenu">
+                            <div class="sb-nav-link-icon"><i class="fas fa-road"></i></div>
+                            Quản lý tuyến xe
+                            <i class="fas fa-chevron-down"></i>
                         </a>
+                        <div class="collapse" id="busRouteSubmenu" aria-labelledby="busRouteSubmenu" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" asp-controller="BusRouteApproval" asp-action="PendingApproval" asp-area="Admin">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
+                                    Phê duyệt tuyến xe
+                                </a>
+                            </nav>
+                        </div>
                     </div>
                 </div>
                 <div class="sb-sidenav-footer">

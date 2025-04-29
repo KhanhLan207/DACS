@@ -1,0 +1,242 @@
+﻿@model TicketBus.Models.ViewModels.BusRouteViewModel
+
+<link rel="stylesheet" href="~/css/CreateBusRoute.css" asp-append-version="true" />
+
+<h2>Đăng ký tuyến xe mới</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<form asp-action="Create" method="post" id="createForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="NameRoute" class="control-label">Tên tuyến</label>
+        <input asp-for="NameRoute" class="form-control" />
+        <span asp-validation-for="NameRoute" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Address" class="control-label">Địa chỉ</label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Distance" class="control-label">Khoảng cách (km)</label>
+        <input asp-for="Distance" class="form-control" />
+        <span asp-validation-for="Distance" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdBrand" class="control-label">Hãng xe</label>
+        <select asp-for="IdBrand" asp-items="Model.Brands" class="form-control">
+            <option value="">Chọn hãng xe</option>
+        </select>
+        <span asp-validation-for="IdBrand" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdStartCity" class="control-label">Thành phố xuất phát</label>
+        <select asp-for="IdStartCity" asp-items="Model.Cities" class="form-control">
+            <option value="">Chọn thành phố</option>
+        </select>
+        <span asp-validation-for="IdStartCity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="IdEndCity" class="control-label">Thành phố kết thúc</label>
+        <select asp-for="IdEndCity" asp-items="Model.Cities" class="form-control">
+            <option value="">Chọn thành phố</option>
+        </select>
+        <span asp-validation-for="IdEndCity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="TravelTime" class="control-label">Thời gian hành trình (HH:mm)</label>
+        <input asp-for="TravelTime" class="form-control" placeholder="07:00" />
+        <span asp-validation-for="TravelTime" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="DepartureTimes" class="control-label">Giờ xuất bến (HH:mm)</label>
+        <div id="departure-times">
+            @for (int i = 0; i < Model.DepartureTimes.Count; i++)
+            {
+                <div class="input-group mb-2 departure-time-entry">
+                    <input type="text" name="DepartureTimes[@i]" class="form-control" placeholder="08:00" value="@Model.DepartureTimes[i]" required pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-danger remove-departure-time">Xóa</button>
+                    </div>
+                    <span class="text-danger field-validation-error" data-valmsg-for="DepartureTimes[@i]" data-valmsg-replace="true"></span>
+                </div>
+            }
+        </div>
+        <button type="submit" asp-action="AddDepartureTime" class="btn btn-secondary">Thêm giờ xuất bến</button>
+        <span asp-validation-for="DepartureTimes" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Frequency" class="control-label">Tần suất chạy</label>
+        <input asp-for="Frequency" class="form-control" placeholder="3 chuyến/ngày" />
+        <span asp-validation-for="Frequency" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="StartDate" class="control-label">Ngày bắt đầu hoạt động</label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+
+    <h4>Điểm dừng</h4>
+    <div id="route-stops">
+        @for (int i = 0; i < Model.RouteStops.Count; i++)
+        {
+            <div class="form-group route-stop" data-index="@i">
+                <h5>Điểm dừng @(i + 1)</h5>
+                <input type="hidden" asp-for="RouteStops[i].StopOrder" />
+                <div class="form-group">
+                    <label asp-for="RouteStops[i].StopName" class="control-label">Tên điểm dừng</label>
+                    <input asp-for="RouteStops[i].StopName" class="form-control" id="@($"RouteStops_{i}_StopName")" />
+                    <span asp-validation-for="RouteStops[i].StopName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RouteStops[i].IdCity" class="control-label">Thành phố</label>
+                    <select asp-for="RouteStops[i].IdCity" asp-items="Model.RouteStops[i].Cities" class="form-control stop-city-select" id="@($"RouteStops_{i}_IdCity")"></select>
+                    <span asp-validation-for="RouteStops[i].IdCity" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RouteStops[i].NameDistrict" class="control-label">Quận/Huyện</label>
+                    <input asp-for="RouteStops[i].NameDistrict" class="form-control stop-district-input" placeholder="Nhập quận/huyện" id="@($"RouteStops_{i}_NameDistrict")" />
+                    <span class="text-danger district-error" id="@($"district-error-{i}")"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RouteStops[i].Address" class="control-label">Địa chỉ</label>
+                    <input asp-for="RouteStops[i].Address" class="form-control" id="@($"RouteStops_{i}_Address")" />
+                    <span asp-validation-for="RouteStops[i].Address" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RouteStops[i].Time" class="control-label">Thời gian (HH:mm)</label>
+                    <input asp-for="RouteStops[i].Time" class="form-control" placeholder="14:30" id="@($"RouteStops_{i}_Time")" />
+                    <span asp-validation-for="RouteStops[i].Time" class="text-danger"></span>
+                </div>
+                <button type="button" class="btn btn-danger remove-route-stop">Xóa</button>
+            </div>
+        }
+    </div>
+    <button type="submit" asp-action="AddRouteStop" class="btn btn-secondary">Thêm điểm dừng</button>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Đăng ký" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            console.log("jQuery loaded and document ready");
+
+            // Xử lý xóa giờ xuất bến
+            $(document).on('click', '.remove-departure-time', function () {
+                console.log("Remove departure time clicked");
+                $(this).closest('.departure-time-entry').remove();
+                // Cập nhật lại name của các trường DepartureTimes
+                $('#departure-times .departure-time-entry').each(function (index) {
+                    $(this).find('input').attr('name', `DepartureTimes[${index}]`);
+                    $(this).find('span').attr('data-valmsg-for', `DepartureTimes[${index}]`);
+                });
+            });
+
+            // Xử lý xóa điểm dừng
+            $(document).on('click', '.remove-route-stop', function () {
+                console.log("Remove route stop clicked");
+                $(this).closest('.route-stop').remove();
+                // Cập nhật lại name và id của các trường RouteStops
+                $('#route-stops .route-stop').each(function (index) {
+                    $(this).attr('data-index', index);
+                    $(this).find('h5').text(`Điểm dừng ${index + 1}`);
+                    $(this).find('input[type="hidden"]').attr('name', `RouteStops[${index}].StopOrder`).val(index);
+                    $(this).find('input[name$="StopName"]').attr('name', `RouteStops[${index}].StopName`).attr('id', `RouteStops_${index}_StopName`);
+                    $(this).find('select[name$="IdCity"]').attr('name', `RouteStops[${index}].IdCity`).attr('id', `RouteStops_${index}_IdCity`);
+                    $(this).find('input[name$="NameDistrict"]').attr('name', `RouteStops[${index}].NameDistrict`).attr('id', `RouteStops_${index}_NameDistrict`);
+                    $(this).find('input[name$="Address"]').attr('name', `RouteStops[${index}].Address`).attr('id', `RouteStops_${index}_Address`);
+                    $(this).find('input[name$="Time"]').attr('name', `RouteStops[${index}].Time`).attr('id', `RouteStops_${index}_Time`);
+                    $(this).find('.district-error').attr('id', `district-error-${index}`);
+                    $(this).find('span[data-valmsg-for$="StopName"]').attr('data-valmsg-for', `RouteStops[${index}].StopName`);
+                    $(this).find('span[data-valmsg-for$="IdCity"]').attr('data-valmsg-for', `RouteStops[${index}].IdCity`);
+                    $(this).find('span[data-valmsg-for$="Time"]').attr('data-valmsg-for', `RouteStops[${index}].Time`);
+                });
+            });
+
+            // Kiểm tra số lượng điểm dừng trước khi submit
+            $('#createForm').on('submit', function (e) {
+                const routeStops = document.querySelectorAll('.route-stop');
+                if (routeStops.length < 2) {
+                    e.preventDefault();
+                    alert('Tuyến xe phải có ít nhất 2 điểm dừng (điểm bắt đầu và điểm kết thúc).');
+                }
+            });
+
+            // Validation quận/huyện
+            $(document).on('change', '.stop-city-select', function () {
+                console.log("City select changed");
+                const districtInput = $(this).closest('.route-stop').find('.stop-district-input');
+                districtInput.val('');
+                districtInput.trigger('input');
+            });
+
+            $(document).on('input', '.stop-district-input', function () {
+                console.log("District input changed");
+                validateDistrict(this);
+            });
+
+            // Khởi tạo validation cho các trường đã có giá trị
+            $('.stop-city-select').each(function () {
+                if ($(this).val()) {
+                    const districtInput = $(this).closest('.route-stop').find('.stop-district-input');
+                    if (districtInput.val()) {
+                        validateDistrict(districtInput[0]);
+                    }
+                }
+            });
+
+            function validateDistrict(districtInputElement) {
+                const districtInput = $(districtInputElement);
+                const districtName = districtInput.val().trim();
+                const citySelect = districtInput.closest('.route-stop').find('.stop-city-select');
+                const cityId = parseInt(citySelect.val());
+                const index = districtInput.closest('.route-stop').data('index');
+                const errorSpan = $(`#district-error-${index}`);
+
+                errorSpan.text('');
+
+                if (!districtName || isNaN(cityId) || cityId <= 0) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Brand/BusRoute/CheckDistrict',
+                    type: 'GET',
+                    data: { cityId: cityId, districtName: districtName },
+                    success: function (response) {
+                        if (response.isValid) {
+                            errorSpan.text('');
+                        } else {
+                            errorSpan.text(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error checking district:', error);
+                        errorSpan.text('Lỗi khi kiểm tra quận/huyện. Vui lòng thử lại.');
+                    }
+                });
+            }
+        });
+    </script>
+}

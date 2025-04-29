@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace TicketBus.Models
 {
@@ -12,11 +13,19 @@ namespace TicketBus.Models
 
         public string? NameRoute { get; set; }
 
+        public string? Address { get; set; }
+
+        [ForeignKey("District")]
+        public int? IdDistrict { get; set; }
+
         [Range(1, int.MaxValue, ErrorMessage = "Distance must be greater than 0")]
         public int? Distance { get; set; }
 
         [ForeignKey("Brand")]
         public int IdBrand { get; set; }
+
+        [ForeignKey("RegistForm")]
+        public int? IdRegist { get; set; }
 
         [ForeignKey("StartCity")]
         public int? IdStartCity { get; set; }
@@ -24,15 +33,31 @@ namespace TicketBus.Models
         [ForeignKey("EndCity")]
         public int? IdEndCity { get; set; }
 
-        [ForeignKey("RegistForm")]
-        public int? IdRegist { get; set; }
-
         public BusRouteState State { get; set; }
 
+        public TimeSpan? TravelTime { get; set; }
+
+        [Column(TypeName = "nvarchar(max)")]
+        public string? DepartureTimesJson { get; set; }
+
+        [NotMapped]
+        public List<TimeSpan> DepartureTimes
+        {
+            get => string.IsNullOrEmpty(DepartureTimesJson)
+                ? new List<TimeSpan>()
+                : JsonSerializer.Deserialize<List<TimeSpan>>(DepartureTimesJson);
+            set => DepartureTimesJson = JsonSerializer.Serialize(value);
+        }
+
+        public string? Frequency { get; set; }
+        public DateTime? StartDate { get; set; }
+
         public Brand Brand { get; set; }
+        public RegistForm? RegistForm { get; set; }
         public City? StartCity { get; set; }
         public City? EndCity { get; set; }
-        public RegistForm? RegistForm { get; set; }
+        public District? District { get; set; }
+        public List<RouteStop> RouteStops { get; set; } = new List<RouteStop>();
     }
     public enum BusRouteState
     {

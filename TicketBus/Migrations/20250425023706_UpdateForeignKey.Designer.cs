@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250425023706_UpdateForeignKey")]
+    partial class UpdateForeignKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -317,22 +320,10 @@ namespace TicketBus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdRoute"));
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DepartureTimesJson")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("Distance")
                         .HasColumnType("int");
 
-                    b.Property<string>("Frequency")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("IdBrand")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdDistrict")
                         .HasColumnType("int");
 
                     b.Property<int?>("IdEndCity")
@@ -350,20 +341,12 @@ namespace TicketBus.Migrations
                     b.Property<string>("RouteCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("State")
                         .HasColumnType("int");
-
-                    b.Property<TimeSpan?>("TravelTime")
-                        .HasColumnType("time");
 
                     b.HasKey("IdRoute");
 
                     b.HasIndex("IdBrand");
-
-                    b.HasIndex("IdDistrict");
 
                     b.HasIndex("IdEndCity");
 
@@ -5924,16 +5907,7 @@ namespace TicketBus.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdStop"));
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("BusRouteIdRoute")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdCity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdDistrict")
                         .HasColumnType("int");
 
                     b.Property<int?>("IdRoute")
@@ -5954,10 +5928,6 @@ namespace TicketBus.Migrations
                     b.HasKey("IdStop");
 
                     b.HasIndex("BusRouteIdRoute");
-
-                    b.HasIndex("IdCity");
-
-                    b.HasIndex("IdDistrict");
 
                     b.HasIndex("IdRoute");
 
@@ -6434,7 +6404,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Passenger", "Passenger")
                         .WithMany()
                         .HasForeignKey("IdPassenger")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Passenger");
                 });
@@ -6444,12 +6414,12 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
                         .HasForeignKey("RegistFormId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ApplicationUser");
 
@@ -6464,28 +6434,20 @@ namespace TicketBus.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TicketBus.Models.District", "District")
-                        .WithMany()
-                        .HasForeignKey("IdDistrict");
-
                     b.HasOne("TicketBus.Models.City", "EndCity")
-                        .WithMany("EndRoutes")
-                        .HasForeignKey("IdEndCity")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .WithMany()
+                        .HasForeignKey("IdEndCity");
 
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
                         .HasForeignKey("IdRegist")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.City", "StartCity")
-                        .WithMany("StartRoutes")
-                        .HasForeignKey("IdStartCity")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .WithMany()
+                        .HasForeignKey("IdStartCity");
 
                     b.Navigation("Brand");
-
-                    b.Navigation("District");
 
                     b.Navigation("EndCity");
 
@@ -6504,7 +6466,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.VehicleType", "VehicleType")
                         .WithMany("Coaches")
                         .HasForeignKey("IdType")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Brand");
 
@@ -6514,9 +6476,9 @@ namespace TicketBus.Migrations
             modelBuilder.Entity("TicketBus.Models.District", b =>
                 {
                     b.HasOne("TicketBus.Models.City", "City")
-                        .WithMany("Districts")
+                        .WithMany()
                         .HasForeignKey("IdCity")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("City");
                 });
@@ -6526,12 +6488,12 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.City", "City")
                         .WithMany()
                         .HasForeignKey("IdCity")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
                         .HasForeignKey("IdRegist")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("City");
 
@@ -6543,12 +6505,12 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("IdBrand")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.Position", "Position")
                         .WithMany()
                         .HasForeignKey("IdPos")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Brand");
 
@@ -6560,7 +6522,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Passenger", "Passenger")
                         .WithMany()
                         .HasForeignKey("IdPassenger")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Passenger");
                 });
@@ -6570,7 +6532,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.TypeNews", "TypeNews")
                         .WithMany()
                         .HasForeignKey("IdTypeNews")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("TypeNews");
                 });
@@ -6589,12 +6551,12 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.City", "City")
                         .WithMany()
                         .HasForeignKey("IdCity")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.RegistForm", "RegistForm")
                         .WithMany()
                         .HasForeignKey("IdRegist")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("City");
 
@@ -6606,22 +6568,22 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Coach", "Coach")
                         .WithMany()
                         .HasForeignKey("IdCoach")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.BusRoute", "BusRoute")
                         .WithMany()
                         .HasForeignKey("IdRoute")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.RouteStop", "RouteStopEnd")
                         .WithMany()
                         .HasForeignKey("IdStopEnd")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.RouteStop", "RouteStopStart")
                         .WithMany()
                         .HasForeignKey("IdStopStart")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("BusRoute");
 
@@ -6637,7 +6599,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("IdBrand")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Brand");
                 });
@@ -6648,24 +6610,12 @@ namespace TicketBus.Migrations
                         .WithMany("RouteStops")
                         .HasForeignKey("BusRouteIdRoute");
 
-                    b.HasOne("TicketBus.Models.City", "City")
-                        .WithMany()
-                        .HasForeignKey("IdCity");
-
-                    b.HasOne("TicketBus.Models.District", "District")
-                        .WithMany()
-                        .HasForeignKey("IdDistrict");
-
                     b.HasOne("TicketBus.Models.BusRoute", "BusRoute")
                         .WithMany()
                         .HasForeignKey("IdRoute")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("BusRoute");
-
-                    b.Navigation("City");
-
-                    b.Navigation("District");
                 });
 
             modelBuilder.Entity("TicketBus.Models.ScheduleDetails", b =>
@@ -6673,13 +6623,13 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Coach", "Coach")
                         .WithMany()
                         .HasForeignKey("IdCoach")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TicketBus.Models.BusRoute", "BusRoute")
                         .WithMany()
                         .HasForeignKey("IdRoute")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("BusRoute");
@@ -6692,7 +6642,7 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Coach", "Coach")
                         .WithMany()
                         .HasForeignKey("IdCoach")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Coach");
                 });
@@ -6702,13 +6652,13 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Service", "Service")
                         .WithMany()
                         .HasForeignKey("IdService")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TicketBus.Models.VehicleType", "VehicleType")
                         .WithMany()
                         .HasForeignKey("IdType")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Service");
@@ -6721,22 +6671,22 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("IdEmployee")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.Passenger", "Passenger")
                         .WithMany()
                         .HasForeignKey("IdPassenger")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.Price", "Price")
                         .WithMany()
                         .HasForeignKey("IdPrice")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TicketBus.Models.Seat", "Seat")
                         .WithMany()
                         .HasForeignKey("IdSeat")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Employee");
 
@@ -6755,15 +6705,6 @@ namespace TicketBus.Migrations
             modelBuilder.Entity("TicketBus.Models.BusRoute", b =>
                 {
                     b.Navigation("RouteStops");
-                });
-
-            modelBuilder.Entity("TicketBus.Models.City", b =>
-                {
-                    b.Navigation("Districts");
-
-                    b.Navigation("EndRoutes");
-
-                    b.Navigation("StartRoutes");
                 });
 
             modelBuilder.Entity("TicketBus.Models.VehicleType", b =>

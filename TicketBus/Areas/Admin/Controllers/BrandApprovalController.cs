@@ -20,12 +20,34 @@ namespace TicketBus.Areas.Admin.Controllers
         }
 
         // GET: /Admin/BrandApproval/Index
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string filter = "pending")
         {
-            var brands = await _context.Brands
+            // Thiết lập giá trị filter mặc định là "pending" (Chờ phê duyệt)
+            ViewBag.Filter = filter;
+
+            // Truy vấn cơ bản, khai báo rõ ràng là IQueryable<Brand>
+            IQueryable<TicketBus.Models.Brand> query = _context.Brands
                 .AsNoTracking()
                 .Include(b => b.RegistForm)
-                .Include(b => b.ApplicationUser)
+                .Include(b => b.ApplicationUser);
+
+            // Lọc theo trạng thái
+            switch (filter)
+            {
+                case "approved":
+                    query = query.Where(b => b.State == BrandState.HoatDong);
+                    break;
+                case "rejected":
+                    query = query.Where(b => b.State == BrandState.KhongHoatDong);
+                    break;
+                case "pending":
+                default:
+                    query = query.Where(b => b.State == BrandState.ChoPheDuyet);
+                    break;
+            }
+
+            // Sắp xếp và lấy danh sách
+            var brands = await query
                 .OrderBy(b => b.IdBrand)
                 .ToListAsync();
 

@@ -1,7 +1,13 @@
-﻿﻿@{
+﻿@model dynamic
+@using TicketBus.Models
+
+@{
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Dashboard";
 }
+
+<!-- Liên kết file CSS -->
+<link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 
 <main>
     <div class="container-fluid px-4">
@@ -12,36 +18,36 @@
         <div class="row">
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-primary text-white mb-4">
-                    <div class="card-body">Primary Card</div>
+                    <div class="card-body">Hãng xe chờ phê duyệt: @ViewBag.PendingBrandsCount</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <a class="small text-white stretched-link" asp-controller="BrandApproval" asp-action="Index" asp-area="Admin">Xem chi tiết</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-warning text-white mb-4">
-                    <div class="card-body">Warning Card</div>
+                    <div class="card-body">Tuyến xe chờ phê duyệt: @ViewBag.PendingBusRoutesCount</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <a class="small text-white stretched-link" asp-controller="BusRouteApproval" asp-action="PendingApproval" asp-area="Admin">Xem chi tiết</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-success text-white mb-4">
-                    <div class="card-body">Success Card</div>
+                    <div class="card-body">Xe chờ phê duyệt: @ViewBag.PendingCoachesCount</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <a class="small text-white stretched-link" asp-controller="Coach" asp-action="PendingApproval" asp-area="Admin">Xem chi tiết</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="card bg-danger text-white mb-4">
-                    <div class="card-body">Danger Card</div>
+                    <div class="card-body">Tổng số thông báo: @(((List<Notification>)ViewBag.Notifications).Count)</div>
                     <div class="card-footer d-flex align-items-center justify-content-between">
-                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <a class="small text-white stretched-link" href="#">Xem chi tiết</a>
                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
                     </div>
                 </div>
@@ -52,78 +58,217 @@
                 <div class="card mb-4">
                     <div class="card-header">
                         <i class="fas fa-chart-area me-1"></i>
-                        Area Chart Example
+                        Số tuyến xe theo trạng thái
                     </div>
-                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                    <div class="card-body"><canvas id="myAreaChart1" width="100%" height="40"></canvas></div>
                 </div>
             </div>
             <div class="col-xl-6">
                 <div class="card mb-4">
                     <div class="card-header">
                         <i class="fas fa-chart-bar me-1"></i>
-                        Bar Chart Example
+                        Số xe theo hãng xe
                     </div>
                     <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-area me-1"></i>
+                        Số thông báo theo tháng (6 tháng gần nhất)
+                    </div>
+                    <div class="card-body"><canvas id="myAreaChart2" width="100%" height="40"></canvas></div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-1"></i>
+                        Tỷ lệ thông báo đã đọc/chưa đọc
+                    </div>
+                    <div class="card-body"><canvas id="myPieChart" width="100%" height="40"></canvas></div>
                 </div>
             </div>
         </div>
         <div class="card mb-4">
             <div class="card-header">
                 <i class="fas fa-table me-1"></i>
-                DataTable Example
+                Thông báo gần đây
             </div>
             <div class="card-body">
-                <table id="datatablesSimple">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Start date</th>
-                            <th>Salary</th>
-                        </tr>
-                    </thead>
-                    <tfoot>
-                        <tr>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Office</th>
-                            <th>Age</th>
-                            <th>Start date</th>
-                            <th>Salary</th>
-                        </tr>
-                    </tfoot>
-                    <tbody>
-                        <tr>
-                            <td>Tiger Nixon</td>
-                            <td>System Architect</td>
-                            <td>Edinburgh</td>
-                            <td>61</td>
-                            <td>2011/04/25</td>
-                            <td>$320,800</td>
-                        </tr>
-                        <tr>
-                            <td>Garrett Winters</td>
-                            <td>Accountant</td>
-                            <td>Tokyo</td>
-                            <td>63</td>
-                            <td>2011/07/25</td>
-                            <td>$170,750</td>
-                        </tr>
-                        <!-- Dữ liệu mẫu giữ nguyên như bạn cung cấp -->
-                        <!-- ... -->
-                        <tr>
-                            <td>Donna Snider</td>
-                            <td>Customer Support</td>
-                            <td>New York</td>
-                            <td>27</td>
-                            <td>2011/01/25</td>
-                            <td>$112,000</td>
-                        </tr>
-                    </tbody>
-                </table>
+                @if (ViewBag.Notifications != null && ((List<Notification>)ViewBag.Notifications).Any())
+                {
+                    <table id="datatablesSimple" class="table">
+                        <thead>
+                            <tr>
+                                <th>Thông báo</th>
+                                <th>Ngày tạo</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var notification in (List<Notification>)ViewBag.Notifications)
+                            {
+                                <tr>
+                                    <td>@notification.Message</td>
+                                    <td>@notification.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (notification.IsRead)
+                                        {
+                                            <span class="badge bg-success">Đã đọc</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Chưa đọc</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        Không có thông báo nào.
+                    </div>
+                }
             </div>
         </div>
     </div>
 </main>
+
+@section Scripts {
+    <script>
+        // Vẽ Area Chart 1: Số tuyến xe theo trạng thái
+        const ctxArea1 = document.getElementById('myAreaChart1').getContext('2d');
+        const myAreaChart1 = new Chart(ctxArea1, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.LabelsAreaChart1)),
+                datasets: [{
+                    label: 'Số tuyến xe',
+                    data: @Html.Raw(Json.Serialize(ViewBag.DataAreaChart1)),
+                    fill: true,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng tuyến xe'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Trạng thái'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vẽ Area Chart 2: Số thông báo theo tháng
+        const ctxArea2 = document.getElementById('myAreaChart2').getContext('2d');
+        const myAreaChart2 = new Chart(ctxArea2, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.LabelsAreaChart2)),
+                datasets: [{
+                    label: 'Số thông báo',
+                    data: @Html.Raw(Json.Serialize(ViewBag.DataAreaChart2)),
+                    fill: true,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng thông báo'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Tháng'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vẽ Bar Chart: Số xe theo hãng xe
+        const ctxBar = document.getElementById('myBarChart').getContext('2d');
+        const myBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.LabelsBarChart)),
+                datasets: [{
+                    label: 'Số xe',
+                    data: @Html.Raw(Json.Serialize(ViewBag.DataBarChart)),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Số lượng xe'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Hãng xe'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Vẽ Pie Chart: Tỷ lệ thông báo đã đọc/chưa đọc
+        const ctxPie = document.getElementById('myPieChart').getContext('2d');
+        const myPieChart = new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Json.Serialize(ViewBag.LabelsPieChart)),
+                datasets: [{
+                    label: 'Số thông báo',
+                    data: @Html.Raw(Json.Serialize(ViewBag.DataPieChart)),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 99, 132, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,116 @@
+﻿@model IEnumerable<TicketBus.Models.BusRoute>
+
+@{
+    ViewData["Title"] = "Danh sách tuyến xe chờ phê duyệt";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml"; // Chỉ định layout
+
+    // Tạo danh sách các tùy chọn cho bộ lọc
+    var filterOptions = new List<(string Value, string Text, bool Selected)>
+    {
+        (Url.Action("PendingApproval", "BusRouteApproval", new { area = "Admin", filter = "pending" }), "Chờ phê duyệt", ViewBag.Filter == "pending"),
+        (Url.Action("PendingApproval", "BusRouteApproval", new { area = "Admin", filter = "approved" }), "Đã phê duyệt", ViewBag.Filter == "approved"),
+        (Url.Action("PendingApproval", "BusRouteApproval", new { area = "Admin", filter = "rejected" }), "Đã từ chối", ViewBag.Filter == "rejected")
+    };
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Danh sách tuyến xe</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-area="Admin">Dashboard</a></li>
+        <li class="breadcrumb-item active">Danh sách tuyến xe</li>
+    </ol>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Bộ lọc -->
+    <div class="mb-4">
+        <label for="filterSelect" class="form-label me-2">Lọc theo trạng thái:</label>
+        <select id="filterSelect" class="form-select d-inline-block w-auto" onchange="location = this.value;">
+            @foreach (var option in filterOptions)
+            {
+                if (option.Selected)
+                {
+                    <option value="@option.Value" selected>@option.Text</option>
+                }
+                else
+                {
+                    <option value="@option.Value">@option.Text</option>
+                }
+            }
+        </select>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table me-1"></i>
+                Danh sách tuyến xe
+            </div>
+            <div class="card-body">
+                <table id="datatablesSimple" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tên tuyến</th>
+                            <th>Hãng xe</th>
+                            <th>Thành phố xuất phát</th>
+                            <th>Thành phố kết thúc</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var route in Model)
+                        {
+                            <tr>
+                                <td>@route.NameRoute</td>
+                                <td>@route.Brand?.NameBrand</td>
+                                <td>@route.StartCity?.NameCity</td>
+                                <td>@route.EndCity?.NameCity</td>
+                                <td>
+                                    <a asp-action="Details" asp-controller="BusRouteApproval" asp-area="Admin" asp-route-id="@route.IdRoute" class="btn btn-primary btn-sm">Xem chi tiết</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            @switch (ViewBag.Filter)
+            {
+                case "approved":
+                    @: Không có tuyến xe nào đã được phê duyệt.
+                    break;
+                case "rejected":
+                    @: Không có tuyến xe nào bị từ chối.
+                    break;
+                case "pending":
+                default:
+                    @: Không có tuyến xe nào đang chờ phê duyệt.
+                    break;
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Khởi tạo simple-datatables
+        window.addEventListener('DOMContentLoaded', () => {
+            const dataTable = new simpleDatatables.DataTable("#datatablesSimple", {
+                searchable: true,
+                fixedHeight: true,
+                perPage: 10
+            });
+        });
+    </script>
+}
