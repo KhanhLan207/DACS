@@ -67,12 +67,10 @@
         <div id="departure-times">
             @for (int i = 0; i < Model.DepartureTimes.Count; i++)
             {
-                <div class="input-group mb-2 departure-time-entry">
-                    <input type="text" name="DepartureTimes[@i]" class="form-control" placeholder="08:00" value="@Model.DepartureTimes[i]" required pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" />
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-danger remove-departure-time">Xóa</button>
-                    </div>
-                    <span class="text-danger field-validation-error" data-valmsg-for="DepartureTimes[@i]" data-valmsg-replace="true"></span>
+                <div class="departure-time-entry mb-2 d-flex align-items-center">
+                    <input type="text" name="DepartureTimes[@i]" class="form-control me-2" placeholder="08:00" value="@Model.DepartureTimes[i]" required pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" style="width: 100px;" />
+                    <a href="#" class="remove-departure-time text-danger">Xóa</a>
+                    <span class="text-danger field-validation-error ms-2" data-valmsg-for="DepartureTimes[@i]" data-valmsg-replace="true"></span>
                 </div>
             }
         </div>
@@ -146,7 +144,6 @@
             $(document).on('click', '.remove-departure-time', function () {
                 console.log("Remove departure time clicked");
                 $(this).closest('.departure-time-entry').remove();
-                // Cập nhật lại name của các trường DepartureTimes
                 $('#departure-times .departure-time-entry').each(function (index) {
                     $(this).find('input').attr('name', `DepartureTimes[${index}]`);
                     $(this).find('span').attr('data-valmsg-for', `DepartureTimes[${index}]`);
@@ -157,7 +154,6 @@
             $(document).on('click', '.remove-route-stop', function () {
                 console.log("Remove route stop clicked");
                 $(this).closest('.route-stop').remove();
-                // Cập nhật lại name và id của các trường RouteStops
                 $('#route-stops .route-stop').each(function (index) {
                     $(this).attr('data-index', index);
                     $(this).find('h5').text(`Điểm dừng ${index + 1}`);
@@ -174,12 +170,27 @@
                 });
             });
 
-            // Kiểm tra số lượng điểm dừng trước khi submit
+            // Kiểm tra số lượng điểm dừng và lỗi quận/huyện trước khi submit
             $('#createForm').on('submit', function (e) {
                 const routeStops = document.querySelectorAll('.route-stop');
                 if (routeStops.length < 2) {
                     e.preventDefault();
                     alert('Tuyến xe phải có ít nhất 2 điểm dừng (điểm bắt đầu và điểm kết thúc).');
+                    return;
+                }
+
+                // Kiểm tra lỗi quận/huyện
+                let hasDistrictError = false;
+                $('.district-error').each(function () {
+                    if ($(this).text()) {
+                        hasDistrictError = true;
+                    }
+                });
+
+                if (hasDistrictError) {
+                    e.preventDefault();
+                    alert('Vui lòng sửa các lỗi quận/huyện trước khi gửi form.');
+                    return;
                 }
             });
 

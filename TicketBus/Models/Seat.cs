@@ -10,9 +10,9 @@ namespace TicketBus.Models
         public int IdSeat { get; set; }
         public string? SeatCode { get; set; }
         public SeatState State { get; set; }
-        public int? SeatNumber { get; set; }
+        public int SeatNumber { get; set; }
         [ForeignKey("Coach")]
-        public int? IdCoach { get; set; }
+        public int IdCoach { get; set; }
 
         public Coach? Coach { get; set; }
     }

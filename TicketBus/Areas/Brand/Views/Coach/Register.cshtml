@@ -53,9 +53,6 @@
             <button type="button" id="addDocument" class="btn btn-secondary">Thêm tài liệu</button>
         </div>
 
-        <input type="hidden" name="State" value="2" />
-        <input type="hidden" name="IdBrand" value="1" />
-
         <div class="mb-3">
             <button type="submit" class="btn btn-primary">Đăng ký</button>
         </div>
@@ -118,6 +115,19 @@
                         console.log("Response:", response);
                         if (response.success) {
                             $("#resultMessage").html('<div class="alert alert-success">' + response.message + '</div>');
+                            $("#registerForm")[0].reset();
+                            $("#imageInputs").html(`
+                                <div class="input-group mb-2">
+                                    <input type="file" class="form-control" name="ImageList" accept="image/*" />
+                                    <button type="button" class="btn btn-danger remove-image">Xóa</button>
+                                </div>
+                            `);
+                            $("#documentInputs").html(`
+                                <div class="input-group mb-2">
+                                    <input type="file" class="form-control" name="DocumentList" accept=".pdf,.doc,.docx" />
+                                    <button type="button" class="btn btn-danger remove-document">Xóa</button>
+                                </div>
+                            `);
                         } else {
                             $("#resultMessage").html('<div class="alert alert-danger">' + response.message + '</div>');
                         }

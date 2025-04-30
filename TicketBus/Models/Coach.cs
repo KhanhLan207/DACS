@@ -18,7 +18,7 @@ namespace TicketBus.Models
         public CoachState State { get; set; }
 
         [ForeignKey("VehicleType")]
-        public int? IdType { get; set; }
+        public int IdType { get; set; }
 
         public string Images { get; set; }
 
@@ -27,9 +27,11 @@ namespace TicketBus.Models
         public VehicleType? VehicleType { get; set; }
 
         [ForeignKey("Brand")]
-        public int? IdBrand { get; set; }
+        public int IdBrand { get; set; }
 
         public Brand? Brand { get; set; }
+
+        public ICollection<Seat> Seats { get; set; } = new List<Seat>(); // Khởi tạo để tránh null
     }
 
     public enum CoachState

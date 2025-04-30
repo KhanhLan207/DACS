@@ -15,7 +15,7 @@ namespace TicketBus.Models.ViewModels
         public int? IdCity { get; set; }
 
         [Required(ErrorMessage = "Quận/Huyện là bắt buộc")]
-        public string? NameDistrict { get; set; } // Thay IdDistrict bằng NameDistrict
+        public string? NameDistrict { get; set; }
 
         public int StopOrder { get; set; }
 

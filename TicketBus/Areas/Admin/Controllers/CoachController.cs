@@ -36,6 +36,12 @@ namespace TicketBus.Areas.Admin.Controllers
                 case "rejected":
                     coachesQuery = coachesQuery.Where(c => c.State == CoachState.TuChoi);
                     break;
+                case "active":
+                    coachesQuery = coachesQuery.Where(c => c.State == CoachState.HoatDong);
+                    break;
+                case "inactive":
+                    coachesQuery = coachesQuery.Where(c => c.State == CoachState.KhongHoatDong);
+                    break;
                 case "pending":
                 default:
                     coachesQuery = coachesQuery.Where(c => c.State == CoachState.ChoPheDuyet);
@@ -55,6 +61,7 @@ namespace TicketBus.Areas.Admin.Controllers
         {
             var coach = await _context.Coaches
                 .Include(c => c.Brand)
+                .Include(c => c.VehicleType)
                 .FirstOrDefaultAsync(c => c.IdCoach == id && c.State == CoachState.ChoPheDuyet);
 
             if (coach == null)
@@ -70,11 +77,46 @@ namespace TicketBus.Areas.Admin.Controllers
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Approve: Coach {CoachCode} has been approved.", coach.CoachCode);
 
+                // Sinh ghế tự động dựa trên SeatCount của VehicleType
+                if (coach.VehicleType != null && coach.VehicleType.SeatCount > 0)
+                {
+                    // Xóa ghế cũ nếu có
+                    var existingSeats = await _context.Seats
+                        .Where(s => s.IdCoach == coach.IdCoach)
+                        .ToListAsync();
+                    if (existingSeats.Any())
+                    {
+                        _context.Seats.RemoveRange(existingSeats);
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Removed {SeatCount} existing seats for Coach {CoachCode}.", existingSeats.Count, coach.CoachCode);
+                    }
+
+                    // Sinh ghế mới
+                    int seatCount = coach.VehicleType.SeatCount;
+                    for (int i = 1; i <= seatCount; i++)
+                    {
+                        var seat = new Seat
+                        {
+                            SeatCode = $"S{i:D2}", // Ví dụ: S01, S02, ..., S34
+                            SeatNumber = i,        // Số thứ tự ghế
+                            State = SeatState.Trong, // Ghế mặc định là trống
+                            IdCoach = coach.IdCoach // Liên kết với xe
+                        };
+                        _context.Seats.Add(seat);
+                    }
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Generated {SeatCount} seats for Coach {CoachCode}.", seatCount, coach.CoachCode);
+                }
+                else
+                {
+                    _logger.LogWarning("VehicleType or SeatCount not found for Coach {CoachCode}.", coach.CoachCode);
+                }
+
                 // Tạo thông báo cho hãng xe
                 var notification = new Notification
                 {
                     UserId = coach.Brand.UserId,
-                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã được phê duyệt.",
+                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã được phê duyệt và đã sinh {coach.VehicleType.SeatCount} ghế.",
                     CreatedDate = DateTime.Now,
                     IsRead = false
                 };
@@ -138,6 +180,7 @@ namespace TicketBus.Areas.Admin.Controllers
             var coach = await _context.Coaches
                 .Include(c => c.VehicleType)
                 .Include(c => c.Brand)
+                .Include(c => c.Seats)
                 .FirstOrDefaultAsync(c => c.IdCoach == id);
 
             if (coach == null)
@@ -145,14 +188,61 @@ namespace TicketBus.Areas.Admin.Controllers
                 return NotFound("Không tìm thấy xe.");
             }
 
-            // Deserialize JSON thành danh sách
             var images = System.Text.Json.JsonSerializer.Deserialize<List<string>>(coach.Images) ?? new List<string>();
             var documents = System.Text.Json.JsonSerializer.Deserialize<List<string>>(coach.Documents) ?? new List<string>();
+            var seats = coach.Seats; // Sử dụng navigation property Seats
 
             ViewBag.Images = images;
             ViewBag.Documents = documents;
+            ViewBag.Seats = seats;
 
             return View(coach);
+        }
+
+        // GET: /Admin/Coach/GenerateSeatsForApprovedCoaches
+        [HttpGet]
+        public async Task<IActionResult> GenerateSeatsForApprovedCoaches()
+        {
+            try
+            {
+                var approvedCoaches = await _context.Coaches
+                    .Include(c => c.VehicleType)
+                    .Where(c => c.State == CoachState.DaPheDuyet)
+                    .ToListAsync();
+
+                foreach (var coach in approvedCoaches)
+                {
+                    // Kiểm tra xem xe đã có ghế chưa
+                    var existingSeats = await _context.Seats
+                        .Where(s => s.IdCoach == coach.IdCoach)
+                        .ToListAsync();
+
+                    if (!existingSeats.Any() && coach.VehicleType != null && coach.VehicleType.SeatCount > 0)
+                    {
+                        int seatCount = coach.VehicleType.SeatCount;
+                        for (int i = 1; i <= seatCount; i++)
+                        {
+                            var seat = new Seat
+                            {
+                                SeatCode = $"S{i:D2}",
+                                SeatNumber = i,
+                                State = SeatState.Trong,
+                                IdCoach = coach.IdCoach
+                            };
+                            _context.Seats.Add(seat);
+                        }
+                        _logger.LogInformation("Generated {SeatCount} seats for Coach {CoachCode}.", seatCount, coach.CoachCode);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Đã sinh ghế cho tất cả xe đã phê duyệt." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GenerateSeatsForApprovedCoaches: Failed to generate seats. Error: {Error}", ex.Message);
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
         }
     }
 }

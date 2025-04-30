@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Data;
 using TicketBus.Models;
-using TicketBus.Models.ViewModels;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
+using TicketBus.Models.ViewModels;
 
 namespace TicketBus.Areas.Brand.Controllers
 {
@@ -15,37 +15,25 @@ namespace TicketBus.Areas.Brand.Controllers
     public class CoachController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<CoachController> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CoachController(
-            ApplicationDbContext context,
-            UserManager<ApplicationUser> userManager,
-            ILogger<CoachController> logger,
-            IWebHostEnvironment environment)
+        public CoachController(ApplicationDbContext context, ILogger<CoachController> logger, IWebHostEnvironment environment, UserManager<ApplicationUser> userManager)
         {
             _context = context;
-            _userManager = userManager;
             _logger = logger;
             _environment = environment;
+            _userManager = userManager;
         }
 
         // GET: /Brand/Coach/Register
-        public async Task<IActionResult> Register()
+        public IActionResult Register()
         {
-            var viewModel = new CoachViewModel
-            {
-                State = (int)CoachState.ChoPheDuyet
-            };
-
-            // Lấy danh sách VehicleTypes từ cơ sở dữ liệu
-            var vehicleTypes = await _context.VehicleTypes
-                .Where(vt => vt.State == VehicleTypeState.HoatDong)
-                .ToListAsync();
-            ViewBag.VehicleTypes = vehicleTypes;
-
-            return View(viewModel);
+            ViewBag.VehicleTypes = _context.VehicleTypes
+                .Where(v => v.State == VehicleTypeState.HoatDong)
+                .ToList();
+            return View();
         }
 
         // POST: /Brand/Coach/Register
@@ -72,25 +60,15 @@ namespace TicketBus.Areas.Brand.Controllers
 
             try
             {
-                // Danh sách đường dẫn ảnh và tài liệu sau khi upload
                 var imagePaths = new List<string>();
                 var documentPaths = new List<string>();
 
-                // Đường dẫn thư mục lưu file
                 var imagesFolder = Path.Combine(_environment.WebRootPath, "images", "coaches");
                 var documentsFolder = Path.Combine(_environment.WebRootPath, "documents", "coaches");
 
-                // Tạo thư mục nếu chưa tồn tại
-                if (!Directory.Exists(imagesFolder))
-                {
-                    Directory.CreateDirectory(imagesFolder);
-                }
-                if (!Directory.Exists(documentsFolder))
-                {
-                    Directory.CreateDirectory(documentsFolder);
-                }
+                if (!Directory.Exists(imagesFolder)) Directory.CreateDirectory(imagesFolder);
+                if (!Directory.Exists(documentsFolder)) Directory.CreateDirectory(documentsFolder);
 
-                // Xử lý upload ảnh
                 if (viewModel.ImageList != null && viewModel.ImageList.Any())
                 {
                     foreach (var image in viewModel.ImageList.Where(img => img != null && img.Length > 0))
@@ -101,12 +79,10 @@ namespace TicketBus.Areas.Brand.Controllers
                         {
                             await image.CopyToAsync(fileStream);
                         }
-                        // Lưu đường dẫn tương đối để truy cập từ web
                         imagePaths.Add($"/images/coaches/{uniqueFileName}");
                     }
                 }
 
-                // Xử lý upload tài liệu
                 if (viewModel.DocumentList != null && viewModel.DocumentList.Any())
                 {
                     foreach (var doc in viewModel.DocumentList.Where(doc => doc != null && doc.Length > 0))
@@ -121,7 +97,6 @@ namespace TicketBus.Areas.Brand.Controllers
                     }
                 }
 
-                // Chuyển danh sách đường dẫn thành JSON
                 var imagesJson = JsonSerializer.Serialize(imagePaths);
                 var documentsJson = JsonSerializer.Serialize(documentPaths);
 
@@ -151,12 +126,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Đăng ký xe thành công!" });
-            }
-            catch (DbUpdateException ex)
-            {
-                var innerMessage = ex.InnerException?.Message ?? ex.Message;
-                _logger.LogError(ex, "Register POST: Failed to save Coach. Inner exception: {InnerException}", innerMessage);
-                return Json(new { success = false, message = $"Lỗi chi tiết: {innerMessage}" });
             }
             catch (Exception ex)
             {

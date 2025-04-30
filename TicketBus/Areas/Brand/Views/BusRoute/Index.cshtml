@@ -41,6 +41,7 @@
                                 <th>Thành phố xuất phát</th>
                                 <th>Thành phố kết thúc</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th> <!-- Thêm cột Hành động -->
                             </tr>
                         </thead>
                         <tbody>
@@ -72,6 +73,9 @@
                                     <td>@(item.StartCity != null ? item.StartCity.NameCity : "N/A")</td>
                                     <td>@(item.EndCity != null ? item.EndCity.NameCity : "N/A")</td>
                                     <td>@item.State</td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@item.IdRoute" class="btn btn-info btn-sm">Xem chi tiết</a>
+                                    </td>
                                 </tr>
                             }
                         </tbody>

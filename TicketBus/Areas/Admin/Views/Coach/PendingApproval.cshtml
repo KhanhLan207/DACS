@@ -11,7 +11,9 @@
     {
         (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "pending" }), "Chờ phê duyệt", ViewBag.Filter == "pending"),
         (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "approved" }), "Đã phê duyệt", ViewBag.Filter == "approved"),
-        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "rejected" }), "Từ chối", ViewBag.Filter == "rejected")
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "rejected" }), "Từ chối", ViewBag.Filter == "rejected"),
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "active" }), "Hoạt động", ViewBag.Filter == "active"),
+        (Url.Action("PendingApproval", "Coach", new { area = "Admin", filter = "inactive" }), "Không hoạt động", ViewBag.Filter == "inactive")
     };
 }
 
@@ -97,21 +99,27 @@
                                         }
                                     </td>
                                     <td class="state-@coach.IdCoach">
-                                        @if (coach.State == TicketBus.Models.CoachState.ChoPheDuyet)
+                                        @switch (coach.State)
                                         {
-                                            <span class="badge bg-warning text-dark">Chờ phê duyệt</span>
-                                        }
-                                        else if (coach.State == TicketBus.Models.CoachState.DaPheDuyet)
-                                        {
-                                            <span class="badge bg-success">Đã phê duyệt</span>
-                                        }
-                                        else if (coach.State == TicketBus.Models.CoachState.TuChoi)
-                                        {
-                                            <span class="badge bg-danger">Từ chối</span>
+                                            case CoachState.HoatDong:
+                                                <span class="badge bg-success">Hoạt động</span>
+                                                break;
+                                            case CoachState.KhongHoatDong:
+                                                <span class="badge bg-secondary">Không hoạt động</span>
+                                                break;
+                                            case CoachState.ChoPheDuyet:
+                                                <span class="badge bg-warning text-dark">Chờ phê duyệt</span>
+                                                break;
+                                            case CoachState.DaPheDuyet:
+                                                <span class="badge bg-primary">Đã phê duyệt</span>
+                                                break;
+                                            case CoachState.TuChoi:
+                                                <span class="badge bg-danger">Từ chối</span>
+                                                break;
                                         }
                                     </td>
                                     <td class="action-@coach.IdCoach">
-                                        @if (coach.State == TicketBus.Models.CoachState.ChoPheDuyet)
+                                        @if (coach.State == CoachState.ChoPheDuyet)
                                         {
                                             <button class="btn btn-success btn-sm me-1 approve-btn" data-id="@coach.IdCoach">
                                                 <i class="fas fa-check"></i> Phê duyệt
@@ -120,16 +128,28 @@
                                                 <i class="fas fa-times"></i> Từ chối
                                             </button>
                                         }
-                                        else if (coach.State == TicketBus.Models.CoachState.DaPheDuyet)
+                                        else if (coach.State == CoachState.DaPheDuyet)
                                         {
-                                            <button class="btn btn-secondary btn-sm me-1" disabled>
+                                            <button class="btn btn-primary btn-sm me-1" disabled>
                                                 <i class="fas fa-check"></i> Đã phê duyệt
                                             </button>
                                         }
-                                        else if (coach.State == TicketBus.Models.CoachState.TuChoi)
+                                        else if (coach.State == CoachState.TuChoi)
+                                        {
+                                            <button class="btn btn-danger btn-sm" disabled>
+                                                <i class="fas fa-times"></i> Từ chối
+                                            </button>
+                                        }
+                                        else if (coach.State == CoachState.HoatDong)
+                                        {
+                                            <button class="btn btn-success btn-sm me-1" disabled>
+                                                <i class="fas fa-bus"></i> Hoạt động
+                                            </button>
+                                        }
+                                        else if (coach.State == CoachState.KhongHoatDong)
                                         {
                                             <button class="btn btn-secondary btn-sm" disabled>
-                                                <i class="fas fa-times"></i> Từ chối
+                                                <i class="fas fa-bus"></i> Không hoạt động
                                             </button>
                                         }
                                     </td>
@@ -170,6 +190,12 @@
                             case "rejected":
                                 @: Không có xe nào bị từ chối.
                                 break;
+                            case "active":
+                                @: Không có xe nào đang hoạt động.
+                                break;
+                            case "inactive":
+                                @: Không có xe nào không hoạt động.
+                                break;
                             case "pending":
                             default:
                                 @: Không có xe nào đang chờ phê duyệt.
@@ -198,9 +224,9 @@
                     success: function (response) {
                         if (response.success) {
                             // Cập nhật trạng thái
-                            $(`.state-${coachId}`).html('<span class="badge bg-success">Đã phê duyệt</span>');
+                            $(`.state-${coachId}`).html('<span class="badge bg-primary">Đã phê duyệt</span>');
                             // Cập nhật nút hành động
-                            $(`.action-${coachId}`).html('<button class="btn btn-secondary btn-sm me-1" disabled><i class="fas fa-check"></i> Đã phê duyệt</button>');
+                            $(`.action-${coachId}`).html('<button class="btn btn-primary btn-sm me-1" disabled><i class="fas fa-check"></i> Đã phê duyệt</button>');
                             // Hiển thị thông báo
                             toastr.success(response.message);
                         } else {
@@ -236,7 +262,7 @@
                             // Cập nhật trạng thái
                             $(`.state-${coachId}`).html('<span class="badge bg-danger">Từ chối</span>');
                             // Cập nhật nút hành động
-                            $(`.action-${coachId}`).html('<button class="btn btn-secondary btn-sm" disabled><i class="fas fa-times"></i> Từ chối</button>');
+                            $(`.action-${coachId}`).html('<button class="btn btn-danger btn-sm" disabled><i class="fas fa-times"></i> Từ chối</button>');
                             // Đóng modal
                             $(`#rejectModal-${coachId}`).modal('hide');
                             // Hiển thị thông báo

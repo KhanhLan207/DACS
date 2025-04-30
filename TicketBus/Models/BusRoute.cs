@@ -43,9 +43,19 @@ namespace TicketBus.Models
         [NotMapped]
         public List<TimeSpan> DepartureTimes
         {
-            get => string.IsNullOrEmpty(DepartureTimesJson)
-                ? new List<TimeSpan>()
-                : JsonSerializer.Deserialize<List<TimeSpan>>(DepartureTimesJson);
+            get
+            {
+                try
+                {
+                    return string.IsNullOrEmpty(DepartureTimesJson)
+                        ? new List<TimeSpan>()
+                        : JsonSerializer.Deserialize<List<TimeSpan>>(DepartureTimesJson);
+                }
+                catch
+                {
+                    return new List<TimeSpan>();
+                }
+            }
             set => DepartureTimesJson = JsonSerializer.Serialize(value);
         }
 

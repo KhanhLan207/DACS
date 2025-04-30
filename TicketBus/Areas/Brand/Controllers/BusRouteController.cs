@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace TicketBus.Areas.Brand.Controllers
 {
@@ -16,10 +17,12 @@ namespace TicketBus.Areas.Brand.Controllers
     public class BusRouteController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public BusRouteController(ApplicationDbContext context)
+        public BusRouteController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Hiển thị form đăng ký tuyến (không điền sẵn dữ liệu)
@@ -27,11 +30,11 @@ namespace TicketBus.Areas.Brand.Controllers
         {
             var model = new BusRouteViewModel
             {
-                DepartureTimes = new List<string>(), // Khởi tạo danh sách rỗng cho DepartureTimes
+                DepartureTimes = new List<string>(),
                 RouteStops = new List<RouteStopViewModel>
                 {
-                    new RouteStopViewModel(), // Thêm 1 điểm dừng mặc định
-                    new RouteStopViewModel()  // Thêm 1 điểm dừng mặc định (đáp ứng yêu cầu tối thiểu 2 điểm dừng)
+                    new RouteStopViewModel(),
+                    new RouteStopViewModel()
                 },
                 Brands = _context.Brands
                     .Select(b => new SelectListItem
@@ -68,14 +71,12 @@ namespace TicketBus.Areas.Brand.Controllers
         [HttpPost]
         public IActionResult AddDepartureTime(BusRouteViewModel model)
         {
-            // Thêm một giờ xuất bến mới vào danh sách
             if (model.DepartureTimes == null)
             {
                 model.DepartureTimes = new List<string>();
             }
-            model.DepartureTimes.Add(""); // Thêm một giờ xuất bến rỗng
+            model.DepartureTimes.Add("");
 
-            // Tái tạo dữ liệu dropdown
             model.Brands = _context.Brands
                 .Select(b => new SelectListItem
                 {
@@ -110,13 +111,11 @@ namespace TicketBus.Areas.Brand.Controllers
         [HttpPost]
         public IActionResult AddRouteStop(BusRouteViewModel model)
         {
-            // Thêm một điểm dừng mới vào danh sách
             if (model.RouteStops == null)
             {
                 model.RouteStops = new List<RouteStopViewModel>();
             }
 
-            // Đảm bảo rằng danh sách Cities được tái tạo cho tất cả các điểm dừng hiện có
             foreach (var stop in model.RouteStops)
             {
                 stop.Cities = _context.Cities
@@ -129,7 +128,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             }
 
-            // Thêm điểm dừng mới
             var newStop = new RouteStopViewModel
             {
                 StopOrder = model.RouteStops.Count,
@@ -144,7 +142,6 @@ namespace TicketBus.Areas.Brand.Controllers
             newStop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             model.RouteStops.Add(newStop);
 
-            // Tái tạo dữ liệu dropdown cho Brands và Cities
             model.Brands = _context.Brands
                 .Select(b => new SelectListItem
                 {
@@ -231,7 +228,6 @@ namespace TicketBus.Areas.Brand.Controllers
                         ModelState.AddModelError("", $"Thành phố không hợp lệ cho điểm dừng {stop.StopName}.");
                         break;
                     }
-                    // Kiểm tra NameDistrict
                     if (string.IsNullOrEmpty(stop.NameDistrict) || stop.IdCity == null || !await _context.Districts.AnyAsync(d => d.IdCity == stop.IdCity && d.NameDistrict.ToLower() == stop.NameDistrict.ToLower()))
                     {
                         ModelState.AddModelError("", $"Quận/Huyện '{stop.NameDistrict}' không hợp lệ cho điểm dừng {stop.StopName}.");
@@ -344,7 +340,6 @@ namespace TicketBus.Areas.Brand.Controllers
                         timeSpan = new TimeSpan(int.Parse(parts[0]), int.Parse(parts[1]), 0);
                     }
 
-                    // Lấy IdDistrict từ NameDistrict
                     var district = _context.Districts
                         .FirstOrDefault(d => d.IdCity == rs.IdCity && d.NameDistrict.ToLower() == rs.NameDistrict.ToLower());
 
@@ -431,7 +426,6 @@ namespace TicketBus.Areas.Brand.Controllers
         // GET: Hiển thị danh sách tuyến xe của Brand hiện tại, đã được phê duyệt
         public async Task<IActionResult> Index()
         {
-            // Lấy UserId của Brand hiện tại
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -439,7 +433,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
 
-            // Tìm Brand dựa trên UserId
             var brand = await _context.Brands
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.UserId == userId);
@@ -450,7 +443,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 return View(new List<BusRoute>());
             }
 
-            // Lấy danh sách tuyến xe của Brand này, đã được phê duyệt
             var busRoutes = await _context.BusRoutes
                 .Where(r => r.IdBrand == brand.IdBrand && r.State == BusRouteState.DaPheDuyet)
                 .Include(r => r.Brand)
@@ -460,11 +452,50 @@ namespace TicketBus.Areas.Brand.Controllers
                 .Include(r => r.RouteStops)
                 .ToListAsync();
 
-            // Tải trước danh sách Districts để hiển thị Quận/Huyện
             var districts = await _context.Districts.ToDictionaryAsync(d => d.IdDistrict, d => d.NameDistrict);
             ViewBag.Districts = districts;
 
             return View(busRoutes);
+        }
+
+        // GET: /Brand/BusRoute/Details/1
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["Message"] = "Không thể xác định người dùng. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            var brand = await _context.Brands
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.UserId == userId);
+            if (brand == null)
+            {
+                TempData["Message"] = "Hãng xe của bạn chưa được phê duyệt hoặc không tồn tại.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var busRoute = await _context.BusRoutes
+                .Include(r => r.StartCity)
+                .Include(r => r.EndCity)
+                .Include(r => r.Brand)
+                .Include(r => r.RouteStops)
+                .ThenInclude(rs => rs.District)
+                .FirstOrDefaultAsync(r => r.IdRoute == id && r.IdBrand == brand.IdBrand);
+
+            if (busRoute == null)
+            {
+                return NotFound();
+            }
+
+            return View(busRoute);
         }
     }
 }

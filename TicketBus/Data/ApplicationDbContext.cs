@@ -1098,11 +1098,9 @@ namespace TicketBus.Data
             modelBuilder.Entity<Ticket>().HasKey(t => t.IdTicket);
             modelBuilder.Entity<TypeNews>().HasKey(tn => tn.IdTypeNews);
             modelBuilder.Entity<VehicleType>().HasKey(vt => vt.IdType);
+            modelBuilder.Entity<ScheduleDetails>().HasKey(sd => sd.IdSchedule); // Sửa: Sử dụng khóa chính đơn IdSchedule
 
             // Cấu hình khóa chính tổ hợp
-            modelBuilder.Entity<ScheduleDetails>()
-                .HasKey(sd => new { sd.IdCoach, sd.IdRoute });
-
             modelBuilder.Entity<ServiceDetails>()
                 .HasKey(svd => new { svd.IdType, svd.IdService });
 
@@ -1143,14 +1141,14 @@ namespace TicketBus.Data
             // BusRoute và StartCity
             modelBuilder.Entity<BusRoute>()
                 .HasOne(r => r.StartCity)
-                .WithMany(c => c.StartRoutes) // Thêm navigation property ngược lại
+                .WithMany(c => c.StartRoutes)
                 .HasForeignKey(r => r.IdStartCity)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // BusRoute và EndCity
             modelBuilder.Entity<BusRoute>()
                 .HasOne(r => r.EndCity)
-                .WithMany(c => c.EndRoutes) // Thêm navigation property ngược lại
+                .WithMany(c => c.EndRoutes)
                 .HasForeignKey(r => r.IdEndCity)
                 .OnDelete(DeleteBehavior.NoAction);
 
@@ -1171,7 +1169,7 @@ namespace TicketBus.Data
             // District
             modelBuilder.Entity<District>()
                 .HasOne(d => d.City)
-                .WithMany(c => c.Districts) // Thêm navigation property ngược lại
+                .WithMany(c => c.Districts)
                 .HasForeignKey(d => d.IdCity)
                 .OnDelete(DeleteBehavior.NoAction);
 

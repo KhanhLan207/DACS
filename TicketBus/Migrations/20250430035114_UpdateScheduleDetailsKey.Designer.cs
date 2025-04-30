@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250430035114_UpdateScheduleDetailsKey")]
+    partial class UpdateScheduleDetailsKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5966,33 +5969,21 @@ namespace TicketBus.Migrations
 
             modelBuilder.Entity("TicketBus.Models.ScheduleDetails", b =>
                 {
-                    b.Property<int>("IdSchedule")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdSchedule"));
-
-                    b.Property<TimeSpan>("ArriveTime")
-                        .HasColumnType("time");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan>("DepartTime")
-                        .HasColumnType("time");
-
                     b.Property<int>("IdCoach")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
 
                     b.Property<int>("IdRoute")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
 
-                    b.Property<int>("State")
-                        .HasColumnType("int");
+                    b.Property<TimeSpan?>("ArriveTime")
+                        .HasColumnType("time");
 
-                    b.HasKey("IdSchedule");
+                    b.Property<TimeSpan?>("DepartTime")
+                        .HasColumnType("time");
 
-                    b.HasIndex("IdCoach");
+                    b.HasKey("IdCoach", "IdRoute");
 
                     b.HasIndex("IdRoute");
 

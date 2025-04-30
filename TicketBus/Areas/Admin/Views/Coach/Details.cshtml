@@ -1,0 +1,113 @@
+﻿@model TicketBus.Models.Coach
+
+@{
+    ViewData["Title"] = "Chi tiết xe";
+    ViewData["HeaderTitle"] = "<i class='fas fa-bus-alt me-2 text-primary'></i>Chi tiết xe";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+}
+
+<main>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Chi tiết xe</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-area="Admin">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Coach" asp-action="PendingApproval" asp-area="Admin">Phê duyệt xe</a></li>
+            <li class="breadcrumb-item active">Chi tiết xe</li>
+        </ol>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-bus me-1"></i>
+                Thông tin xe
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Mã xe</dt>
+                    <dd class="col-sm-9">@Model.CoachCode</dd>
+
+                    <dt class="col-sm-3">Biển số</dt>
+                    <dd class="col-sm-9">@Model.NumberPlate</dd>
+
+                    <dt class="col-sm-3">Loại xe</dt>
+                    <dd class="col-sm-9">@(Model.VehicleType?.NameType ?? "N/A")</dd>
+
+                    <dt class="col-sm-3">Hãng xe</dt>
+                    <dd class="col-sm-9">@(Model.Brand?.NameBrand ?? "N/A")</dd>
+
+                    <dt class="col-sm-3">Trạng thái</dt>
+                    <dd class="col-sm-9">
+                        @switch (Model.State)
+                        {
+                            case CoachState.HoatDong:
+                                <span class="badge bg-success">Hoạt động</span>
+                                break;
+                            case CoachState.KhongHoatDong:
+                                <span class="badge bg-secondary">Không hoạt động</span>
+                                break;
+                            case CoachState.ChoPheDuyet:
+                                <span class="badge bg-warning text-dark">Chờ phê duyệt</span>
+                                break;
+                            case CoachState.DaPheDuyet:
+                                <span class="badge bg-primary">Đã phê duyệt</span>
+                                break;
+                            case CoachState.TuChoi:
+                                <span class="badge bg-danger">Từ chối</span>
+                                break;
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Ảnh xe</dt>
+                    <dd class="col-sm-9">
+                        @if (ViewBag.Images != null && ViewBag.Images.Any())
+                        {
+                            foreach (var image in ViewBag.Images)
+                            {
+                                <img src="@image" alt="Ảnh xe" class="img-fluid me-2" style="max-width: 150px; border-radius: 5px;" />
+                            }
+                        }
+                        else
+                        {
+                            <span>Không có ảnh</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Tài liệu</dt>
+                    <dd class="col-sm-9">
+                        @if (ViewBag.Documents != null && ViewBag.Documents.Any())
+                        {
+                            foreach (var doc in ViewBag.Documents)
+                            {
+                                <a href="@doc" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="fas fa-file-alt"></i> Xem tài liệu
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <span>Không có tài liệu</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Danh sách ghế</dt>
+                    <dd class="col-sm-9">
+                        @if (ViewBag.Seats != null && ViewBag.Seats.Any())
+                        {
+                            <ul>
+                                @foreach (var seat in ViewBag.Seats)
+                                {
+                                    <li>@seat.SeatCode (Số ghế: @seat.SeatNumber) - @seat.State</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>Chưa có ghế nào được sinh.</p>
+                        }
+                    </dd>
+                </dl>
+
+                <a asp-action="PendingApproval" asp-controller="Coach" asp-area="Admin" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </div>
+    </div>
+</main>
