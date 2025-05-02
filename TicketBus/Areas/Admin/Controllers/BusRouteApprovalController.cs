@@ -46,9 +46,25 @@ namespace TicketBus.Areas.Admin.Controllers
             }
 
             // Sắp xếp và lấy danh sách
-            var pendingRoutes = await query.ToListAsync();
+            var pendingRoutes = await query.OrderBy(r => r.IdRoute).ToListAsync();
 
             return View(pendingRoutes);
+        }
+
+        // GET: /Admin/BusRouteApproval/Approved
+        public async Task<IActionResult> Approved()
+        {
+            // Lấy danh sách các tuyến xe đã được phê duyệt
+            var approvedRoutes = await _context.BusRoutes
+                .AsNoTracking()
+                .Where(r => r.State == BusRouteState.DaPheDuyet)
+                .Include(r => r.Brand)
+                .Include(r => r.StartCity)
+                .Include(r => r.EndCity)
+                .OrderBy(r => r.IdRoute)
+                .ToListAsync();
+
+            return View(approvedRoutes);
         }
 
         // GET: /Admin/BusRouteApproval/Details/5
@@ -60,8 +76,6 @@ namespace TicketBus.Areas.Admin.Controllers
                 .Include(r => r.EndCity)
                 .Include(r => r.RouteStops)
                     .ThenInclude(rs => rs.City)
-                .Include(r => r.RouteStops)
-                    .ThenInclude(rs => rs.District)
                 .FirstOrDefaultAsync(r => r.IdRoute == id);
 
             if (route == null)
@@ -90,19 +104,16 @@ namespace TicketBus.Areas.Admin.Controllers
             route.State = BusRouteState.DaPheDuyet;
             _context.Update(route);
 
-            // Tạo thông báo cho Brand
-            if (route.Brand?.UserId != null)
+            // Sử dụng DateTime.Now giống như CoachController
+            var notification = new Notification
             {
-                var notification = new Notification
-                {
-                    UserId = route.Brand.UserId,
-                    Message = $"Tuyến xe '{route.NameRoute}' đã được phê duyệt. " +
-                              (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
-                    CreatedDate = DateTime.UtcNow,
-                    IsRead = false
-                };
-                _context.Notifications.Add(notification);
-            }
+                UserId = route.Brand?.UserId,
+                Message = $"Tuyến xe '{route.NameRoute}' đã được phê duyệt bởi Admin. " +
+                          (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            };
+            _context.Notifications.Add(notification);
 
             await _context.SaveChangesAsync();
 
@@ -128,19 +139,15 @@ namespace TicketBus.Areas.Admin.Controllers
             route.State = BusRouteState.TuChoi;
             _context.Update(route);
 
-            // Tạo thông báo cho Brand
-            if (route.Brand?.UserId != null)
+            var notification = new Notification
             {
-                var notification = new Notification
-                {
-                    UserId = route.Brand.UserId,
-                    Message = $"Tuyến xe '{route.NameRoute}' đã bị từ chối. " +
-                              (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
-                    CreatedDate = DateTime.UtcNow,
-                    IsRead = false
-                };
-                _context.Notifications.Add(notification);
-            }
+                UserId = route.Brand?.UserId,
+                Message = $"Tuyến xe '{route.NameRoute}' đã bị từ chối bởi Admin. " +
+                          (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            };
+            _context.Notifications.Add(notification);
 
             await _context.SaveChangesAsync();
 

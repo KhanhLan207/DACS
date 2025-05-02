@@ -13,10 +13,7 @@ namespace TicketBus.Models
 
         public string? NameRoute { get; set; }
 
-        public string? Address { get; set; }
-
-        [ForeignKey("District")]
-        public int? IdDistrict { get; set; }
+        public string Address { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Distance must be greater than 0")]
         public int? Distance { get; set; }
@@ -59,14 +56,12 @@ namespace TicketBus.Models
             set => DepartureTimesJson = JsonSerializer.Serialize(value);
         }
 
-        public string? Frequency { get; set; }
         public DateTime? StartDate { get; set; }
 
         public Brand Brand { get; set; }
         public RegistForm? RegistForm { get; set; }
         public City? StartCity { get; set; }
         public City? EndCity { get; set; }
-        public District? District { get; set; }
         public List<RouteStop> RouteStops { get; set; } = new List<RouteStop>();
     }
     public enum BusRouteState

@@ -3,124 +3,110 @@
 @{
     ViewData["Title"] = "Chi tiết tuyến xe";
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
+
+    // Ánh xạ enum sang tên hiển thị
+    var stateNames = new Dictionary<BusRouteState, string>
+    {
+        { BusRouteState.ChoPheDuyet, "Chờ phê duyệt" },
+        { BusRouteState.DaPheDuyet, "Đã phê duyệt" },
+        { BusRouteState.TuChoi, "Từ chối" },
+        { BusRouteState.KhongHoatDong, "Không hoạt động" }
+    };
 }
 
-<div class="brand-main">
-    <div class="brand-content">
-        <h1 class="mt-4">Chi tiết tuyến xe</h1>
-        <ol class="breadcrumb mb-4">
-            <li class="breadcrumb-item"><a asp-controller="BusRoute" asp-action="Index" asp-area="Brand">Danh sách tuyến xe</a></li>
-            <li class="breadcrumb-item active">Chi tiết tuyến xe</li>
-        </ol>
+<h2>Chi tiết tuyến xe</h2>
 
-        <!-- Hiển thị thông báo từ TempData -->
-        @if (TempData["Message"] != null)
-        {
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                @TempData["Message"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <i class="fas fa-info-circle me-1"></i>
-                Thông tin tuyến xe
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-2">Tên tuyến</dt>
-                    <dd class="col-sm-10">@(Model.NameRoute ?? "N/A")</dd>
+<div class="card">
+    <div class="card-header">
+        <h4>Thông tin tuyến xe</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã tuyến</dt>
+            <dd class="col-sm-9">@Model.RouteCode</dd>
 
-                    <dt class="col-sm-2">Hãng xe</dt>
-                    <dd class="col-sm-10">@(Model.Brand?.NameBrand ?? "N/A")</dd>
+            <dt class="col-sm-3">Tên tuyến</dt>
+            <dd class="col-sm-9">@Model.NameRoute</dd>
 
-                    <dt class="col-sm-2">Địa chỉ</dt>
-                    <dd class="col-sm-10">@(Model.Address ?? "N/A")</dd>
+            <dt class="col-sm-3">Địa chỉ tuyến</dt>
+            <dd class="col-sm-9">@Model.Address</dd>
 
-                    <dt class="col-sm-2">Khoảng cách</dt>
-                    <dd class="col-sm-10">@(Model.Distance > 0 ? $"{Model.Distance} km" : "N/A")</dd>
+            <dt class="col-sm-3">Khoảng cách</dt>
+            <dd class="col-sm-9">@Model.Distance km</dd>
 
-                    <dt class="col-sm-2">Thành phố xuất phát</dt>
-                    <dd class="col-sm-10">@(Model.StartCity?.NameCity ?? "N/A")</dd>
+            <dt class="col-sm-3">Hãng xe</dt>
+            <dd class="col-sm-9">@Model.Brand?.NameBrand</dd>
 
-                    <dt class="col-sm-2">Thành phố kết thúc</dt>
-                    <dd class="col-sm-10">@(Model.EndCity?.NameCity ?? "N/A")</dd>
+            <dt class="col-sm-3">Thành phố xuất phát</dt>
+            <dd class="col-sm-9">@(Model.StartCity?.NameCity ?? "Chưa xác định")</dd>
 
-                    <dt class="col-sm-2">Thời gian hành trình</dt>
-                    <dd class="col-sm-10">
-                        @(Model.TravelTime.HasValue ? $"{Model.TravelTime.Value.Hours:D2}:{Model.TravelTime.Value.Minutes:D2}" : "Không có")
-                    </dd>
+            <dt class="col-sm-3">Thành phố kết thúc</dt>
+            <dd class="col-sm-9">@(Model.EndCity?.NameCity ?? "Chưa xác định")</dd>
 
-                    <dt class="col-sm-2">Giờ xuất bến</dt>
-                    <dd class="col-sm-10">
-                        @if (Model.DepartureTimes != null && Model.DepartureTimes.Any())
-                        {
-                            <ul>
-                                @foreach (var time in Model.DepartureTimes)
-                                {
-                                    <li>@($"{time.Hours:D2}:{time.Minutes:D2}")</li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <span>Không có</span>
-                        }
-                    </dd>
+            <dt class="col-sm-3">Thời gian hành trình</dt>
+            <dd class="col-sm-9">@(Model.TravelTime.HasValue ? Model.TravelTime.Value.ToString(@"hh\:mm") : "Chưa xác định")</dd>
 
-                    <dt class="col-sm-2">Tần suất chạy</dt>
-                    <dd class="col-sm-10">@(Model.Frequency ?? "N/A")</dd>
-
-                    <dt class="col-sm-2">Ngày bắt đầu hoạt động</dt>
-                    <dd class="col-sm-10">
-                        @(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("dd/MM/yyyy") : "Không có")
-                    </dd>
-
-                    <dt class="col-sm-2">Trạng thái</dt>
-                    <dd class="col-sm-10">@Model.State</dd>
-                </dl>
-
-                <h4>Điểm dừng</h4>
-                @if (Model.RouteStops != null && Model.RouteStops.Any())
+            <dt class="col-sm-3">Giờ xuất bến</dt>
+            <dd class="col-sm-9">
+                @if (Model.DepartureTimes != null && Model.DepartureTimes.Any())
                 {
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Thứ tự</th>
-                                <th>Tên điểm dừng</th>
-                                <th>Thành phố</th>
-                                <th>Quận/Huyện</th>
-                                <th>Địa chỉ</th>
-                                <th>Thời gian</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var stop in Model.RouteStops.OrderBy(rs => rs.StopOrder))
-                            {
-                                <tr>
-                                    <td>@stop.StopOrder</td>
-                                    <td>@(stop.StopName ?? "N/A")</td>
-                                    <td>@(stop.City?.NameCity ?? "N/A")</td>
-                                    <td>@(stop.District?.NameDistrict ?? "N/A")</td>
-                                    <td>@(stop.Address ?? "N/A")</td>
-                                    <td>
-                                        @(stop.Time.HasValue ? $"{stop.Time.Value.Hours:D2}:{stop.Time.Value.Minutes:D2}" : "Không có")
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                    @string.Join(", ", Model.DepartureTimes.Select(t => t.ToString(@"hh\:mm")))
                 }
                 else
                 {
-                    <p>Không có điểm dừng.</p>
+                    @: Chưa xác định
                 }
+            </dd>
 
-                <div>
-                    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-                </div>
-            </div>
-        </div>
+            <dt class="col-sm-3">Ngày bắt đầu</dt>
+            <dd class="col-sm-9">@(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("dd/MM/yyyy") : "Chưa xác định")</dd>
+
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">@stateNames[Model.State]</dd>
+        </dl>
     </div>
+</div>
+
+<h4 class="mt-4">Danh sách điểm dừng</h4>
+@if (Model.RouteStops == null || !Model.RouteStops.Any())
+{
+    <div class="alert alert-warning">Không có điểm dừng nào.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Thứ tự</th>
+                <th>Mã điểm dừng</th>
+                <th>Tên điểm dừng</th>
+                <th>Thành phố</th>
+                <th>Thời gian</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stop in Model.RouteStops.OrderBy(s => s.StopOrder))
+            {
+                <tr>
+                    <td>@stop.StopOrder</td>
+                    <td>@stop.StopCode</td>
+                    <td>@(stop.StopName ?? "Không có tên")</td>
+                    <td>@(stop.City?.NameCity ?? "Chưa xác định")</td>
+                    <td>@(stop.Time.HasValue ? stop.Time.Value.ToString(@"hh\:mm") : "Chưa xác định")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
 </div>

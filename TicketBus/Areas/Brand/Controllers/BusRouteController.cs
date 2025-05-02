@@ -125,7 +125,7 @@ namespace TicketBus.Areas.Brand.Controllers
                         Text = c.NameCity
                     })
                     .ToList();
-                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chưa xác định" });
             }
 
             var newStop = new RouteStopViewModel
@@ -160,26 +160,6 @@ namespace TicketBus.Areas.Brand.Controllers
             return View("Create", model);
         }
 
-        // API để kiểm tra quận/huyện có tồn tại trong thành phố không
-        [HttpGet]
-        public IActionResult CheckDistrict(int cityId, string districtName)
-        {
-            if (cityId <= 0 || string.IsNullOrEmpty(districtName))
-            {
-                return Json(new { isValid = false, message = "Vui lòng chọn thành phố và nhập quận/huyện." });
-            }
-
-            var districtExists = _context.Districts
-                .Any(d => d.IdCity == cityId && d.NameDistrict.ToLower() == districtName.Trim().ToLower());
-
-            if (!districtExists)
-            {
-                return Json(new { isValid = false, message = $"Quận/Huyện '{districtName}' không tồn tại trong thành phố đã chọn." });
-            }
-
-            return Json(new { isValid = true });
-        }
-
         // POST: Xử lý đăng ký tuyến
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -188,9 +168,9 @@ namespace TicketBus.Areas.Brand.Controllers
             if (ModelState.IsValid)
             {
                 var stopNames = model.RouteStops.Select(rs => rs.StopName).ToList();
-                if (stopNames.Distinct().Count() != stopNames.Count)
+                if (stopNames.Any(sn => !string.IsNullOrEmpty(sn)) && stopNames.Where(sn => !string.IsNullOrEmpty(sn)).Distinct().Count() != stopNames.Count(sn => !string.IsNullOrEmpty(sn)))
                 {
-                    ModelState.AddModelError("", "Các điểm dừng không được trùng tên.");
+                    ModelState.AddModelError("", "Các điểm dừng (nếu có tên) không được trùng tên.");
                 }
 
                 if (model.RouteStops.Count < 2)
@@ -225,12 +205,7 @@ namespace TicketBus.Areas.Brand.Controllers
                 {
                     if (stop.IdCity.HasValue && !await _context.Cities.AnyAsync(c => c.IdCity == stop.IdCity.Value))
                     {
-                        ModelState.AddModelError("", $"Thành phố không hợp lệ cho điểm dừng {stop.StopName}.");
-                        break;
-                    }
-                    if (string.IsNullOrEmpty(stop.NameDistrict) || stop.IdCity == null || !await _context.Districts.AnyAsync(d => d.IdCity == stop.IdCity && d.NameDistrict.ToLower() == stop.NameDistrict.ToLower()))
-                    {
-                        ModelState.AddModelError("", $"Quận/Huyện '{stop.NameDistrict}' không hợp lệ cho điểm dừng {stop.StopName}.");
+                        ModelState.AddModelError("", $"Thành phố không hợp lệ cho điểm dừng {stop.StopName ?? "không tên"}.");
                         break;
                     }
                 }
@@ -340,16 +315,11 @@ namespace TicketBus.Areas.Brand.Controllers
                         timeSpan = new TimeSpan(int.Parse(parts[0]), int.Parse(parts[1]), 0);
                     }
 
-                    var district = _context.Districts
-                        .FirstOrDefault(d => d.IdCity == rs.IdCity && d.NameDistrict.ToLower() == rs.NameDistrict.ToLower());
-
                     return new RouteStop
                     {
                         StopCode = $"STOP-{stopCount:D3}",
                         StopName = rs.StopName,
-                        Address = rs.Address,
                         IdCity = rs.IdCity,
-                        IdDistrict = district?.IdDistrict,
                         StopOrder = index,
                         Time = timeSpan
                     };
@@ -381,7 +351,6 @@ namespace TicketBus.Areas.Brand.Controllers
                     State = BusRouteState.ChoPheDuyet,
                     TravelTime = travelTime,
                     DepartureTimes = departureTimes,
-                    Frequency = model.Frequency,
                     StartDate = model.StartDate,
                     RouteStops = routeStops
                 };
@@ -389,7 +358,7 @@ namespace TicketBus.Areas.Brand.Controllers
                 _context.Add(busRoute);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "Đăng ký tuyến xe thành công!";
+                TempData["SuccessMessage"] = "Đăng ký tuyến xe thành công! Vui lòng chờ admin phê duyệt.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -446,14 +415,15 @@ namespace TicketBus.Areas.Brand.Controllers
             var busRoutes = await _context.BusRoutes
                 .Where(r => r.IdBrand == brand.IdBrand && r.State == BusRouteState.DaPheDuyet)
                 .Include(r => r.Brand)
-                .Include(r => r.RegistForm)
                 .Include(r => r.StartCity)
                 .Include(r => r.EndCity)
                 .Include(r => r.RouteStops)
                 .ToListAsync();
 
-            var districts = await _context.Districts.ToDictionaryAsync(d => d.IdDistrict, d => d.NameDistrict);
-            ViewBag.Districts = districts;
+            if (TempData["Message"] != null)
+            {
+                ViewBag.Message = TempData["Message"];
+            }
 
             return View(busRoutes);
         }
@@ -487,7 +457,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 .Include(r => r.EndCity)
                 .Include(r => r.Brand)
                 .Include(r => r.RouteStops)
-                .ThenInclude(rs => rs.District)
                 .FirstOrDefaultAsync(r => r.IdRoute == id && r.IdBrand == brand.IdBrand);
 
             if (busRoute == null)

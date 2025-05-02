@@ -7,15 +7,9 @@ namespace TicketBus.Models.ViewModels
     {
         public string? StopCode { get; set; }
 
-        [Required(ErrorMessage = "Tên điểm dừng là bắt buộc")]
         public string? StopName { get; set; }
 
-        public string? Address { get; set; }
-
         public int? IdCity { get; set; }
-
-        [Required(ErrorMessage = "Quận/Huyện là bắt buộc")]
-        public string? NameDistrict { get; set; }
 
         public int StopOrder { get; set; }
 

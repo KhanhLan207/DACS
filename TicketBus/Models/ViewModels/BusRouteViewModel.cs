@@ -34,8 +34,6 @@ namespace TicketBus.Models.ViewModels
 
         public List<string> DepartureTimes { get; set; } = new List<string>();
 
-        public string? Frequency { get; set; }
-
         [Required(ErrorMessage = "Ngày bắt đầu hoạt động là bắt buộc")]
         public DateTime? StartDate { get; set; }
 
