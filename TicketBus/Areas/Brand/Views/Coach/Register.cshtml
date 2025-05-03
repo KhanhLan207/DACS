@@ -2,10 +2,20 @@
 @model CoachViewModel
 
 @{
-    ViewData["Title"] = "FORM REGISTER";
-    ViewData["HeaderTitle"] = "<i class='fas fa-bus-alt me-2 text-primary'></i>FORM REGISTER";
+    ViewData["Title"] = "Đăng kí xe";
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
 }
+
+<link rel="stylesheet" href="~/css/IndexBusRoute.css" asp-append-version="true" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<!-- Header với icon quay về -->
+<div class="header-section">
+    <a asp-area="Brand" asp-controller="Home" asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Quay về trang quản lý
+    </a>
+</div>
 
 <div class="container mt-4">
     <h3>Đăng ký xe</h3>

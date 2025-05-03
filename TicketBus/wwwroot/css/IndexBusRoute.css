@@ -1,6 +1,36 @@
-﻿.filter-section {
-    margin-top: 40px;
+﻿.header-section {
+    display: flex;
+    align-items: center;
+    background-color: #007bff;
+    padding: 10px 20px;
+    color: #fff;
 }
+
+.back-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    margin-right: 10px;
+    transition: color 0.3s ease;
+}
+
+    .back-link:hover {
+        color: #ddd;
+    }
+
+.header-title {
+    font-size: 18px;
+    margin: 0;
+    color: #fff;
+}
+
+.filter-section {
+    margin-top: 40px; /* Khoảng cách từ header */
+}
+
+    .filter-section .row {
+        justify-content: center; /* Đảm bảo hàng chứa các cột được căn giữa */
+    }
 
 .table-responsive {
     margin-top: 20px;
@@ -69,5 +99,13 @@
     .btn-info, .btn-primary {
         font-size: 12px;
         padding: 8px 15px;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .back-link {
+        font-size: 16px;
     }
 }

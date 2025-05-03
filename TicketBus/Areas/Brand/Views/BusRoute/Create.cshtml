@@ -47,7 +47,7 @@
     </div>
 
     <div class="form-group mb-3">
-        <label asp-for="IdStartCity" class="control-label">Thành phố xuất phát</label>
+        <label asp-for="IdStartCity" class="control-label">Tỉnh/Thành phố xuất phát</label>
         <select asp-for="IdStartCity" asp-items="Model.Cities" class="form-control">
             <option value="">Chọn thành phố</option>
         </select>
@@ -55,7 +55,7 @@
     </div>
 
     <div class="form-group mb-3">
-        <label asp-for="IdEndCity" class="control-label">Thành phố kết thúc</label>
+        <label asp-for="IdEndCity" class="control-label">Tỉnh/Thành phố kết thúc</label>
         <select asp-for="IdEndCity" asp-items="Model.Cities" class="form-control">
             <option value="">Chọn thành phố</option>
         </select>
@@ -103,7 +103,7 @@
                     <span asp-validation-for="RouteStops[i].StopName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="RouteStops[i].IdCity" class="control-label">Thành phố</label>
+                    <label asp-for="RouteStops[i].IdCity" class="control-label">Tỉnh/Thành phố</label>
                     <select asp-for="RouteStops[i].IdCity" asp-items="Model.RouteStops[i].Cities" class="form-control stop-city-select" id="@($"RouteStops_{i}_IdCity")"></select>
                     <span asp-validation-for="RouteStops[i].IdCity" class="text-danger"></span>
                 </div>
@@ -130,7 +130,7 @@
                     <span asp-validation-for="Pickups[i].PickupName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="Pickups[i].IdCity" class="control-label">Thành phố</label>
+                    <label asp-for="Pickups[i].IdCity" class="control-label">Tỉnh/Thành phố</label>
                     <select asp-for="Pickups[i].IdCity" asp-items="Model.Pickups[i].Cities" class="form-control pickup-city-select" id="@($"Pickups_{i}_IdCity")"></select>
                     <span asp-validation-for="Pickups[i].IdCity" class="text-danger"></span>
                 </div>
@@ -153,7 +153,7 @@
                     <span asp-validation-for="DropOffs[i].DropOffName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <label asp-for="DropOffs[i].IdCity" class="control-label">Thành phố</label>
+                    <label asp-for="DropOffs[i].IdCity" class="control-label">Tỉnh/Thành phố</label>
                     <select asp-for="DropOffs[i].IdCity" asp-items="Model.DropOffs[i].Cities" class="form-control dropoff-city-select" id="@($"DropOffs_{i}_IdCity")"></select>
                     <span asp-validation-for="DropOffs[i].IdCity" class="text-danger"></span>
                 </div>
