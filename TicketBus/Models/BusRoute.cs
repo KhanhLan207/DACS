@@ -32,28 +32,6 @@ namespace TicketBus.Models
 
         public TimeSpan? TravelTime { get; set; }
 
-        [Column(TypeName = "nvarchar(max)")]
-        public string? DepartureTimesJson { get; set; }
-
-        [NotMapped]
-        public List<TimeSpan> DepartureTimes
-        {
-            get
-            {
-                try
-                {
-                    return string.IsNullOrEmpty(DepartureTimesJson)
-                        ? new List<TimeSpan>()
-                        : JsonSerializer.Deserialize<List<TimeSpan>>(DepartureTimesJson);
-                }
-                catch
-                {
-                    return new List<TimeSpan>();
-                }
-            }
-            set => DepartureTimesJson = JsonSerializer.Serialize(value);
-        }
-
         public DateTime? StartDate { get; set; }
 
         public Brand Brand { get; set; }

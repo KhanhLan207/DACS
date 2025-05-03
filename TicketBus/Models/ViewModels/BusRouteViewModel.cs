@@ -32,8 +32,6 @@ namespace TicketBus.Models.ViewModels
         [RegularExpression(@"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", ErrorMessage = "Thời gian hành trình phải có định dạng HH:mm (ví dụ: 07:00)")]
         public string? TravelTime { get; set; }
 
-        public List<string> DepartureTimes { get; set; } = new List<string>();
-
         [Required(ErrorMessage = "Ngày bắt đầu hoạt động là bắt buộc")]
         public DateTime? StartDate { get; set; }
 

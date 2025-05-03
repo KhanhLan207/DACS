@@ -86,7 +86,6 @@ else
                     <th>Thành phố kết thúc</th>
                     <th>Khoảng cách (km)</th>
                     <th>Thời gian hành trình</th>
-                    <th>Giờ xuất bến</th>
                     <th>Điểm đón</th>
                     <th>Điểm trả</th>
                     <th>Ngày bắt đầu</th>
@@ -104,16 +103,6 @@ else
                         <td>@(route.EndCity?.NameCity ?? "Chưa xác định")</td>
                         <td>@route.Distance</td>
                         <td>@(route.TravelTime.HasValue ? route.TravelTime.Value.ToString(@"hh\:mm") : "Chưa xác định")</td>
-                        <td>
-                            @if (route.DepartureTimes != null && route.DepartureTimes.Any())
-                            {
-                                @string.Join(", ", route.DepartureTimes.Select(t => t.ToString(@"hh\:mm")))
-                            }
-                            else
-                            {
-                                @: Chưa xác định
-                            }
-                        </td>
                         <td>@(route.Pickups != null ? route.Pickups.Count : 0)</td>
                         <td>@(route.DropOffs != null ? route.DropOffs.Count : 0)</td>
                         <td>@(route.StartDate.HasValue ? route.StartDate.Value.ToString("dd/MM/yyyy") : "Chưa xác định")</td>

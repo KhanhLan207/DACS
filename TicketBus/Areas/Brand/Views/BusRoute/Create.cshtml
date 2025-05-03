@@ -54,22 +54,6 @@
     </div>
 
     <div class="form-group mb-3">
-        <label asp-for="DepartureTimes" class="control-label">Giờ xuất bến (HH:mm)</label>
-        <div id="departure-times">
-            @for (int i = 0; i < Model.DepartureTimes.Count; i++)
-            {
-                <div class="departure-time-entry mb-2 d-flex align-items-center">
-                    <input type="text" name="DepartureTimes[@i]" class="form-control me-2" placeholder="08:00" value="@Model.DepartureTimes[i]" required pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" style="width: 100px;" />
-                    <a href="#" class="remove-departure-time text-danger">Xóa</a>
-                    <span class="text-danger field-validation-error ms-2" data-valmsg-for="DepartureTimes[@i]" data-valmsg-replace="true"></span>
-                </div>
-            }
-        </div>
-        <button type="button" id="add-departure-time" class="btn btn-secondary mt-2">Thêm giờ xuất bến</button>
-        <span asp-validation-for="DepartureTimes" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
         <label asp-for="StartDate" class="control-label">Ngày bắt đầu hoạt động</label>
         <input asp-for="StartDate" class="form-control" type="date" />
         <span asp-validation-for="StartDate" class="text-danger"></span>
@@ -159,29 +143,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            // Thêm giờ xuất bến
-            $('#add-departure-time').click(function (e) {
-                e.preventDefault();
-                const index = $('#departure-times .departure-time-entry').length;
-                const newEntry = `
-                    <div class="departure-time-entry mb-2 d-flex align-items-center">
-                        <input type="text" name="DepartureTimes[${index}]" class="form-control me-2" placeholder="08:00" required pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" style="width: 100px;" />
-                        <a href="#" class="remove-departure-time text-danger">Xóa</a>
-                        <span class="text-danger field-validation-error ms-2" data-valmsg-for="DepartureTimes[${index}]" data-valmsg-replace="true"></span>
-                    </div>`;
-                $('#departure-times').append(newEntry);
-            });
-
-            // Xử lý xóa giờ xuất bến
-            $(document).on('click', '.remove-departure-time', function (e) {
-                e.preventDefault();
-                $(this).closest('.departure-time-entry').remove();
-                $('#departure-times .departure-time-entry').each(function (index) {
-                    $(this).find('input').attr('name', `DepartureTimes[${index}]`);
-                    $(this).find('span').attr('data-valmsg-for', `DepartureTimes[${index}]`);
-                });
-            });
-
             // Thêm điểm dừng
             $('#add-route-stop').click(function (e) {
                 e.preventDefault();
@@ -201,7 +162,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                            <option value="@city.Value">@city.Text</option>
+                                                <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="RouteStops[${index}].IdCity" data-valmsg-replace="true"></span>
@@ -250,7 +211,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                            <option value="@city.Value">@city.Text</option>
+                                                <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="Pickups[${index}].IdCity" data-valmsg-replace="true"></span>
@@ -291,7 +252,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                            <option value="@city.Value">@city.Text</option>
+                                                <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="DropOffs[${index}].IdCity" data-valmsg-replace="true"></span>

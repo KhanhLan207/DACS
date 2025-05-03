@@ -49,18 +49,6 @@
                     <dt class="col-sm-3">Thời gian hành trình</dt>
                     <dd class="col-sm-9">@(Model.TravelTime.HasValue ? Model.TravelTime.Value.ToString(@"hh\:mm") : "Chưa xác định")</dd>
 
-                    <dt class="col-sm-3">Giờ xuất bến</dt>
-                    <dd class="col-sm-9">
-                        @if (Model.DepartureTimes != null && Model.DepartureTimes.Any())
-                        {
-                            @string.Join(", ", Model.DepartureTimes.Select(t => t.ToString(@"hh\:mm")))
-                        }
-                        else
-                        {
-                            @: Chưa xác định
-                        }
-                    </dd>
-
                     <dt class="col-sm-3">Ngày bắt đầu</dt>
                     <dd class="col-sm-9">@(Model.StartDate.HasValue ? Model.StartDate.Value.ToString("dd/MM/yyyy") : "Chưa xác định")</dd>
 

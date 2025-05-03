@@ -30,7 +30,6 @@ namespace TicketBus.Areas.Brand.Controllers
         {
             var model = new BusRouteViewModel
             {
-                DepartureTimes = new List<string>(),
                 RouteStops = new List<RouteStopViewModel>
                 {
                     new RouteStopViewModel()
@@ -90,78 +89,6 @@ namespace TicketBus.Areas.Brand.Controllers
             }
 
             return View(model);
-        }
-
-        // POST: Thêm giờ xuất bến
-        [HttpPost]
-        public IActionResult AddDepartureTime(BusRouteViewModel model)
-        {
-            if (model.DepartureTimes == null)
-            {
-                model.DepartureTimes = new List<string>();
-            }
-            model.DepartureTimes.Add("");
-
-            model.Brands = _context.Brands
-                .Select(b => new SelectListItem
-                {
-                    Value = b.IdBrand.ToString(),
-                    Text = b.NameBrand
-                })
-                .ToList();
-            model.Cities = _context.Cities
-                .Select(c => new SelectListItem
-                {
-                    Value = c.IdCity.ToString(),
-                    Text = c.NameCity
-                })
-                .ToList();
-
-            foreach (var stop in model.RouteStops)
-            {
-                stop.Cities = _context.Cities
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.IdCity.ToString(),
-                        Text = c.NameCity
-                    })
-                    .ToList();
-                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
-            }
-
-            if (model.Pickups == null)
-            {
-                model.Pickups = new List<PickupViewModel>();
-            }
-            foreach (var pickup in model.Pickups)
-            {
-                pickup.Cities = _context.Cities
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.IdCity.ToString(),
-                        Text = c.NameCity
-                    })
-                    .ToList();
-                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
-            }
-
-            if (model.DropOffs == null)
-            {
-                model.DropOffs = new List<DropOffViewModel>();
-            }
-            foreach (var dropoff in model.DropOffs)
-            {
-                dropoff.Cities = _context.Cities
-                    .Select(c => new SelectListItem
-                    {
-                        Value = c.IdCity.ToString(),
-                        Text = c.NameCity
-                    })
-                    .ToList();
-                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
-            }
-
-            return View("Create", model);
         }
 
         // POST: Thêm điểm dừng
@@ -414,10 +341,6 @@ namespace TicketBus.Areas.Brand.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BusRouteViewModel model)
         {
-            if (model.DepartureTimes == null)
-            {
-                model.DepartureTimes = new List<string>();
-            }
             if (model.RouteStops == null)
             {
                 model.RouteStops = new List<RouteStopViewModel>();
@@ -473,28 +396,6 @@ namespace TicketBus.Areas.Brand.Controllers
                     {
                         ModelState.AddModelError("", $"Thành phố không hợp lệ cho điểm dừng {stop.StopName ?? "không tên"}.");
                         break;
-                    }
-                }
-
-                if (model.DepartureTimes == null || !model.DepartureTimes.Any())
-                {
-                    ModelState.AddModelError("DepartureTimes", "Phải có ít nhất một giờ xuất bến.");
-                }
-                else
-                {
-                    foreach (var time in model.DepartureTimes)
-                    {
-                        if (string.IsNullOrEmpty(time))
-                        {
-                            ModelState.AddModelError("DepartureTimes", "Giờ xuất bến không được để trống.");
-                            break;
-                        }
-
-                        if (!Regex.IsMatch(time, @"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"))
-                        {
-                            ModelState.AddModelError("DepartureTimes", "Giờ xuất bến phải có định dạng HH:mm (ví dụ: 08:00).");
-                            break;
-                        }
                     }
                 }
 
@@ -704,12 +605,6 @@ namespace TicketBus.Areas.Brand.Controllers
                     travelTime = new TimeSpan(int.Parse(parts[0]), int.Parse(parts[1]), 0);
                 }
 
-                var departureTimes = model.DepartureTimes.Select(time =>
-                {
-                    var parts = time.Split(':');
-                    return new TimeSpan(int.Parse(parts[0]), int.Parse(parts[1]), 0);
-                }).ToList();
-
                 var busRoute = new BusRoute
                 {
                     RouteCode = routeCode,
@@ -721,7 +616,6 @@ namespace TicketBus.Areas.Brand.Controllers
                     IdEndCity = model.IdEndCity,
                     State = BusRouteState.ChoPheDuyet,
                     TravelTime = travelTime,
-                    DepartureTimes = departureTimes,
                     StartDate = model.StartDate,
                     RouteStops = routeStops,
                     Pickups = pickups,
