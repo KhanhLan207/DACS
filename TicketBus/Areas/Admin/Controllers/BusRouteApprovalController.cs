@@ -75,6 +75,11 @@ namespace TicketBus.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id, string reason)
         {
+            if (id <= 0)
+            {
+                return Json(new { success = false, message = "ID tuyến xe không hợp lệ." });
+            }
+
             var route = await _context.BusRoutes
                 .Include(r => r.Brand)
                 .FirstOrDefaultAsync(r => r.IdRoute == id);
@@ -82,6 +87,11 @@ namespace TicketBus.Areas.Admin.Controllers
             if (route == null)
             {
                 return Json(new { success = false, message = "Tuyến xe không tồn tại." });
+            }
+
+            if (route.State != BusRouteState.ChoPheDuyet)
+            {
+                return Json(new { success = false, message = "Tuyến xe không trong trạng thái chờ phê duyệt." });
             }
 
             route.State = BusRouteState.DaPheDuyet;
@@ -97,9 +107,15 @@ namespace TicketBus.Areas.Admin.Controllers
             };
             _context.Notifications.Add(notification);
 
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Tuyến xe đã được phê duyệt thành công." });
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Tuyến xe đã được phê duyệt thành công." });
+            }
+            catch (DbUpdateException ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi cập nhật cơ sở dữ liệu: " + ex.Message });
+            }
         }
 
         // POST: /Admin/BusRouteApproval/Reject/5
@@ -107,6 +123,11 @@ namespace TicketBus.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id, string reason)
         {
+            if (id <= 0)
+            {
+                return Json(new { success = false, message = "ID tuyến xe không hợp lệ." });
+            }
+
             var route = await _context.BusRoutes
                 .Include(r => r.Brand)
                 .FirstOrDefaultAsync(r => r.IdRoute == id);
@@ -114,6 +135,11 @@ namespace TicketBus.Areas.Admin.Controllers
             if (route == null)
             {
                 return Json(new { success = false, message = "Tuyến xe không tồn tại." });
+            }
+
+            if (route.State != BusRouteState.ChoPheDuyet)
+            {
+                return Json(new { success = false, message = "Tuyến xe không trong trạng thái chờ phê duyệt." });
             }
 
             route.State = BusRouteState.TuChoi;
@@ -129,9 +155,15 @@ namespace TicketBus.Areas.Admin.Controllers
             };
             _context.Notifications.Add(notification);
 
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Tuyến xe đã bị từ chối thành công." });
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Tuyến xe đã bị từ chối thành công." });
+            }
+            catch (DbUpdateException ex)
+            {
+                return Json(new { success = false, message = "Lỗi khi cập nhật cơ sở dữ liệu: " + ex.Message });
+            }
         }
     }
 }

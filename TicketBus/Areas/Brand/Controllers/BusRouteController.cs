@@ -33,7 +33,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 DepartureTimes = new List<string>(),
                 RouteStops = new List<RouteStopViewModel>
                 {
-                    new RouteStopViewModel(),
                     new RouteStopViewModel()
                 },
                 Pickups = new List<PickupViewModel>(),
@@ -440,9 +439,9 @@ namespace TicketBus.Areas.Brand.Controllers
                     ModelState.AddModelError("", "Các điểm dừng (nếu có tên) không được trùng tên.");
                 }
 
-                if (model.RouteStops.Count < 2)
+                if (model.RouteStops.Count < 1)
                 {
-                    ModelState.AddModelError("", "Tuyến xe phải có ít nhất 2 điểm dừng (điểm bắt đầu và điểm kết thúc).");
+                    ModelState.AddModelError("", "Tuyến xe phải có ít nhất 1 điểm dừng.");
                 }
 
                 for (int i = 1; i < model.RouteStops.Count; i++)
@@ -715,7 +714,6 @@ namespace TicketBus.Areas.Brand.Controllers
                 {
                     RouteCode = routeCode,
                     NameRoute = model.NameRoute,
-                    Address = model.Address,
                     Distance = model.Distance,
                     IdBrand = model.IdBrand,
                     IdRegist = idRegist,
@@ -731,6 +729,18 @@ namespace TicketBus.Areas.Brand.Controllers
                 };
 
                 _context.Add(busRoute);
+                await _context.SaveChangesAsync();
+
+                // Tạo thông báo cho người dùng
+                var userId = _userManager.GetUserId(User);
+                var notification = new Notification
+                {
+                    UserId = userId,
+                    Message = $"Đăng ký tuyến xe '{model.NameRoute}' thành công và đang chờ phê duyệt.",
+                    CreatedDate = DateTime.Now,
+                    IsRead = false
+                };
+                _context.Notifications.Add(notification);
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Đăng ký tuyến xe thành công! Vui lòng chờ admin phê duyệt.";

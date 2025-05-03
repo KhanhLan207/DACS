@@ -2,12 +2,11 @@
 
 @{
     ViewData["Title"] = "Đăng ký tuyến xe mới";
+    ViewData["HeaderTitle"] = "<h1>Đăng ký tuyến xe mới</h1>";
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
 }
 
 <link rel="stylesheet" href="~/css/CreateBusRoute.css" asp-append-version="true" />
-
-<h2>Đăng ký tuyến xe mới</h2>
 
 <form asp-action="Create" method="post" id="createForm">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -16,12 +15,6 @@
         <label asp-for="NameRoute" class="control-label">Tên tuyến</label>
         <input asp-for="NameRoute" class="form-control" />
         <span asp-validation-for="NameRoute" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Address" class="control-label">Địa chỉ tuyến</label>
-        <input asp-for="Address" class="form-control" />
-        <span asp-validation-for="Address" class="text-danger"></span>
     </div>
 
     <div class="form-group mb-3">
@@ -157,7 +150,7 @@
     <span asp-validation-for="DropOffs" class="text-danger"></span>
 
     <div class="form-group mt-3">
-        <input type="submit" value="Đăng ký" class="btn btn-primary" />
+        <input type="submit" value="Đăng ký" class="btn btn-primary" id="submitBtn" />
     </div>
 </form>
 
@@ -208,7 +201,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                        <option value="@city.Value">@city.Text</option>
+                                            <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="RouteStops[${index}].IdCity" data-valmsg-replace="true"></span>
@@ -257,7 +250,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                        <option value="@city.Value">@city.Text</option>
+                                            <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="Pickups[${index}].IdCity" data-valmsg-replace="true"></span>
@@ -298,7 +291,7 @@
                                 <option value="">Chọn thành phố</option>
         @foreach (var city in Model.Cities)
         {
-                                        <option value="@city.Value">@city.Text</option>
+                                            <option value="@city.Value">@city.Text</option>
         }
                             </select>
                             <span class="text-danger field-validation-error" data-valmsg-for="DropOffs[${index}].IdCity" data-valmsg-replace="true"></span>
@@ -324,9 +317,9 @@
             // Kiểm tra số lượng điểm dừng trước khi submit
             $('#createForm').on('submit', function (e) {
                 const routeStops = document.querySelectorAll('.route-stop');
-                if (routeStops.length < 2) {
+                if (routeStops.length < 1) {
                     e.preventDefault();
-                    alert('Tuyến xe phải có ít nhất 2 điểm dừng (điểm bắt đầu và điểm kết thúc).');
+                    alert('Tuyến xe phải có ít nhất 1 điểm dừng.');
                     return false;
                 }
             });

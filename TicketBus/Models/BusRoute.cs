@@ -13,8 +13,6 @@ namespace TicketBus.Models
 
         public string? NameRoute { get; set; }
 
-        public string Address { get; set; }
-
         [Range(1, int.MaxValue, ErrorMessage = "Distance must be greater than 0")]
         public int? Distance { get; set; }
 
