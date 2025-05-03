@@ -63,6 +63,8 @@ namespace TicketBus.Models
         public City? StartCity { get; set; }
         public City? EndCity { get; set; }
         public List<RouteStop> RouteStops { get; set; } = new List<RouteStop>();
+        public List<Pickup> Pickups { get; set; } = new List<Pickup>();
+        public List<DropOff> DropOffs { get; set; } = new List<DropOff>();
     }
     public enum BusRouteState
     {

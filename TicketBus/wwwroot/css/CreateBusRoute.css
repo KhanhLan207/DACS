@@ -1,7 +1,7 @@
 ﻿/* Định dạng chung cho form */
 form {
     width: 100%;
-    max-width: 1200px; /* Tăng chiều ngang form */
+    max-width: 1000px;
     margin: 40px auto;
     padding: 30px;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
@@ -86,7 +86,7 @@ h4 {
 }
 
 /* Định dạng phần giờ xuất bến */
-#departure-times .input-group {
+#departure-times .departure-time-entry {
     background-color: #ffffff;
     border: 1px solid #e9ecef;
     border-radius: 8px;
@@ -98,7 +98,7 @@ h4 {
     gap: 10px;
 }
 
-    #departure-times .input-group:hover {
+    #departure-times .departure-time-entry:hover {
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         transform: translateY(-2px);
     }
@@ -155,6 +155,80 @@ h4 {
     font-weight: 600;
 }
 
+/* Định dạng phần điểm đón */
+#pickups .pickup {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    position: relative;
+}
+
+    #pickups .pickup:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+#pickups .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+}
+
+    #pickups .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+
+#pickups h5 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Định dạng phần điểm trả */
+#dropoffs .dropoff {
+    background-color: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    position: relative;
+}
+
+    #dropoffs .dropoff:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+#dropoffs .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+}
+
+    #dropoffs .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+
+#dropoffs h5 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
 /* Định dạng nút Xóa trong giờ xuất bến và điểm dừng */
 .btn-danger {
     width: auto;
@@ -174,7 +248,7 @@ h4 {
         transform: translateY(-1px);
     }
 
-/* Định dạng nút Thêm giờ xuất bến và Thêm điểm dừng */
+/* Định dạng nút Thêm giờ xuất bến, Thêm điểm dừng, Thêm điểm đón, Thêm điểm trả */
 .btn-secondary {
     padding: 12px 25px;
     font-size: 14px;
@@ -230,8 +304,10 @@ button:disabled {
         padding: 20px;
     }
 
-    #departure-times .input-group,
-    #route-stops .route-stop {
+    #departure-times .departure-time-entry,
+    #route-stops .route-stop,
+    #pickups .pickup,
+    #dropoffs .dropoff {
         flex-direction: column;
         gap: 10px;
         padding: 10px;

@@ -36,6 +36,8 @@ namespace TicketBus.Areas.Brand.Controllers
                     new RouteStopViewModel(),
                     new RouteStopViewModel()
                 },
+                Pickups = new List<PickupViewModel>(),
+                DropOffs = new List<DropOffViewModel>(),
                 Brands = _context.Brands
                     .Select(b => new SelectListItem
                     {
@@ -62,6 +64,30 @@ namespace TicketBus.Areas.Brand.Controllers
                     })
                     .ToList();
                 stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             }
 
             return View(model);
@@ -104,6 +130,38 @@ namespace TicketBus.Areas.Brand.Controllers
                 stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             }
 
+            if (model.Pickups == null)
+            {
+                model.Pickups = new List<PickupViewModel>();
+            }
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            if (model.DropOffs == null)
+            {
+                model.DropOffs = new List<DropOffViewModel>();
+            }
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
             return View("Create", model);
         }
 
@@ -125,7 +183,7 @@ namespace TicketBus.Areas.Brand.Controllers
                         Text = c.NameCity
                     })
                     .ToList();
-                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chưa xác định" });
+                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             }
 
             var newStop = new RouteStopViewModel
@@ -157,6 +215,198 @@ namespace TicketBus.Areas.Brand.Controllers
                 })
                 .ToList();
 
+            if (model.Pickups == null)
+            {
+                model.Pickups = new List<PickupViewModel>();
+            }
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            if (model.DropOffs == null)
+            {
+                model.DropOffs = new List<DropOffViewModel>();
+            }
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            return View("Create", model);
+        }
+
+        // POST: Thêm điểm đón
+        [HttpPost]
+        public IActionResult AddPickup(BusRouteViewModel model)
+        {
+            if (model.Pickups == null)
+            {
+                model.Pickups = new List<PickupViewModel>();
+            }
+
+            var newPickup = new PickupViewModel
+            {
+                Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList()
+            };
+            newPickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            model.Pickups.Add(newPickup);
+
+            model.Brands = _context.Brands
+                .Select(b => new SelectListItem
+                {
+                    Value = b.IdBrand.ToString(),
+                    Text = b.NameBrand
+                })
+                .ToList();
+            model.Cities = _context.Cities
+                .Select(c => new SelectListItem
+                {
+                    Value = c.IdCity.ToString(),
+                    Text = c.NameCity
+                })
+                .ToList();
+
+            foreach (var stop in model.RouteStops)
+            {
+                stop.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            if (model.DropOffs == null)
+            {
+                model.DropOffs = new List<DropOffViewModel>();
+            }
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            return View("Create", model);
+        }
+
+        // POST: Thêm điểm trả
+        [HttpPost]
+        public IActionResult AddDropOff(BusRouteViewModel model)
+        {
+            if (model.DropOffs == null)
+            {
+                model.DropOffs = new List<DropOffViewModel>();
+            }
+
+            var newDropOff = new DropOffViewModel
+            {
+                Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList()
+            };
+            newDropOff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            model.DropOffs.Add(newDropOff);
+
+            model.Brands = _context.Brands
+                .Select(b => new SelectListItem
+                {
+                    Value = b.IdBrand.ToString(),
+                    Text = b.NameBrand
+                })
+                .ToList();
+            model.Cities = _context.Cities
+                .Select(c => new SelectListItem
+                {
+                    Value = c.IdCity.ToString(),
+                    Text = c.NameCity
+                })
+                .ToList();
+
+            foreach (var stop in model.RouteStops)
+            {
+                stop.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            if (model.Pickups == null)
+            {
+                model.Pickups = new List<PickupViewModel>();
+            }
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
             return View("Create", model);
         }
 
@@ -165,6 +415,23 @@ namespace TicketBus.Areas.Brand.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(BusRouteViewModel model)
         {
+            if (model.DepartureTimes == null)
+            {
+                model.DepartureTimes = new List<string>();
+            }
+            if (model.RouteStops == null)
+            {
+                model.RouteStops = new List<RouteStopViewModel>();
+            }
+            if (model.Pickups == null)
+            {
+                model.Pickups = new List<PickupViewModel>();
+            }
+            if (model.DropOffs == null)
+            {
+                model.DropOffs = new List<DropOffViewModel>();
+            }
+
             if (ModelState.IsValid)
             {
                 var stopNames = model.RouteStops.Select(rs => rs.StopName).ToList();
@@ -232,6 +499,50 @@ namespace TicketBus.Areas.Brand.Controllers
                     }
                 }
 
+                if (model.Pickups != null && model.Pickups.Any())
+                {
+                    var pickupNames = model.Pickups.Select(p => p.PickupName).ToList();
+                    if (pickupNames.Any(pn => string.IsNullOrEmpty(pn)))
+                    {
+                        ModelState.AddModelError("Pickups", "Tên điểm đón không được để trống.");
+                    }
+                    else if (pickupNames.Distinct().Count() != pickupNames.Count)
+                    {
+                        ModelState.AddModelError("Pickups", "Các điểm đón không được trùng tên.");
+                    }
+
+                    foreach (var pickup in model.Pickups)
+                    {
+                        if (!pickup.IdCity.HasValue || !await _context.Cities.AnyAsync(c => c.IdCity == pickup.IdCity.Value))
+                        {
+                            ModelState.AddModelError("Pickups", "Thành phố của điểm đón không hợp lệ.");
+                            break;
+                        }
+                    }
+                }
+
+                if (model.DropOffs != null && model.DropOffs.Any())
+                {
+                    var dropOffNames = model.DropOffs.Select(d => d.DropOffName).ToList();
+                    if (dropOffNames.Any(dn => string.IsNullOrEmpty(dn)))
+                    {
+                        ModelState.AddModelError("DropOffs", "Tên điểm trả không được để trống.");
+                    }
+                    else if (dropOffNames.Distinct().Count() != dropOffNames.Count)
+                    {
+                        ModelState.AddModelError("DropOffs", "Các điểm trả không được trùng tên.");
+                    }
+
+                    foreach (var dropoff in model.DropOffs)
+                    {
+                        if (!dropoff.IdCity.HasValue || !await _context.Cities.AnyAsync(c => c.IdCity == dropoff.IdCity.Value))
+                        {
+                            ModelState.AddModelError("DropOffs", "Thành phố của điểm trả không hợp lệ.");
+                            break;
+                        }
+                    }
+                }
+
                 if (!ModelState.IsValid)
                 {
                     model.Brands = _context.Brands
@@ -259,6 +570,30 @@ namespace TicketBus.Areas.Brand.Controllers
                             })
                             .ToList();
                         stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+                    }
+
+                    foreach (var pickup in model.Pickups)
+                    {
+                        pickup.Cities = _context.Cities
+                            .Select(c => new SelectListItem
+                            {
+                                Value = c.IdCity.ToString(),
+                                Text = c.NameCity
+                            })
+                            .ToList();
+                        pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+                    }
+
+                    foreach (var dropoff in model.DropOffs)
+                    {
+                        dropoff.Cities = _context.Cities
+                            .Select(c => new SelectListItem
+                            {
+                                Value = c.IdCity.ToString(),
+                                Text = c.NameCity
+                            })
+                            .ToList();
+                        dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
                     }
 
                     return View(model);
@@ -297,6 +632,30 @@ namespace TicketBus.Areas.Brand.Controllers
                         stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
                     }
 
+                    foreach (var pickup in model.Pickups)
+                    {
+                        pickup.Cities = _context.Cities
+                            .Select(c => new SelectListItem
+                            {
+                                Value = c.IdCity.ToString(),
+                                Text = c.NameCity
+                            })
+                            .ToList();
+                        pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+                    }
+
+                    foreach (var dropoff in model.DropOffs)
+                    {
+                        dropoff.Cities = _context.Cities
+                            .Select(c => new SelectListItem
+                            {
+                                Value = c.IdCity.ToString(),
+                                Text = c.NameCity
+                            })
+                            .ToList();
+                        dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+                    }
+
                     return View(model);
                 }
                 int? idRegist = brand.RegistFormId;
@@ -323,6 +682,20 @@ namespace TicketBus.Areas.Brand.Controllers
                         StopOrder = index,
                         Time = timeSpan
                     };
+                }).ToList();
+
+                var pickups = model.Pickups.Select(p => new Pickup
+                {
+                    PickupName = p.PickupName,
+                    IdCity = p.IdCity,
+                    IdBrand = model.IdBrand
+                }).ToList();
+
+                var dropoffs = model.DropOffs.Select(d => new DropOff
+                {
+                    DropOffName = d.DropOffName,
+                    IdCity = d.IdCity,
+                    IdBrand = model.IdBrand
                 }).ToList();
 
                 TimeSpan? travelTime = null;
@@ -352,7 +725,9 @@ namespace TicketBus.Areas.Brand.Controllers
                     TravelTime = travelTime,
                     DepartureTimes = departureTimes,
                     StartDate = model.StartDate,
-                    RouteStops = routeStops
+                    RouteStops = routeStops,
+                    Pickups = pickups,
+                    DropOffs = dropoffs
                 };
 
                 _context.Add(busRoute);
@@ -389,6 +764,30 @@ namespace TicketBus.Areas.Brand.Controllers
                 stop.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
             }
 
+            foreach (var pickup in model.Pickups)
+            {
+                pickup.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                pickup.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
+            foreach (var dropoff in model.DropOffs)
+            {
+                dropoff.Cities = _context.Cities
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.IdCity.ToString(),
+                        Text = c.NameCity
+                    })
+                    .ToList();
+                dropoff.Cities.Insert(0, new SelectListItem { Value = "", Text = "Chọn thành phố" });
+            }
+
             return View(model);
         }
 
@@ -418,6 +817,8 @@ namespace TicketBus.Areas.Brand.Controllers
                 .Include(r => r.StartCity)
                 .Include(r => r.EndCity)
                 .Include(r => r.RouteStops)
+                .Include(r => r.Pickups)
+                .Include(r => r.DropOffs)
                 .ToListAsync();
 
             if (TempData["Message"] != null)
@@ -457,6 +858,8 @@ namespace TicketBus.Areas.Brand.Controllers
                 .Include(r => r.EndCity)
                 .Include(r => r.Brand)
                 .Include(r => r.RouteStops)
+                .Include(r => r.Pickups)
+                .Include(r => r.DropOffs)
                 .FirstOrDefaultAsync(r => r.IdRoute == id && r.IdBrand == brand.IdBrand);
 
             if (busRoute == null)

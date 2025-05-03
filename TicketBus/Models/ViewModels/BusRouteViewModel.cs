@@ -39,6 +39,10 @@ namespace TicketBus.Models.ViewModels
 
         public List<RouteStopViewModel> RouteStops { get; set; } = new List<RouteStopViewModel>();
 
+        public List<PickupViewModel> Pickups { get; set; } = new List<PickupViewModel>();
+
+        public List<DropOffViewModel> DropOffs { get; set; } = new List<DropOffViewModel>();
+
         public List<SelectListItem> Brands { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> Cities { get; set; } = new List<SelectListItem>();
     }

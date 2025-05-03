@@ -1098,7 +1098,7 @@ namespace TicketBus.Data
             modelBuilder.Entity<Ticket>().HasKey(t => t.IdTicket);
             modelBuilder.Entity<TypeNews>().HasKey(tn => tn.IdTypeNews);
             modelBuilder.Entity<VehicleType>().HasKey(vt => vt.IdType);
-            modelBuilder.Entity<ScheduleDetails>().HasKey(sd => sd.IdSchedule); // Sửa: Sử dụng khóa chính đơn IdSchedule
+            modelBuilder.Entity<ScheduleDetails>().HasKey(sd => sd.IdSchedule);
 
             // Cấu hình khóa chính tổ hợp
             modelBuilder.Entity<ServiceDetails>()
@@ -1119,18 +1119,33 @@ namespace TicketBus.Data
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Brand và RegistForm
+            // Brand và RegistForm (1:1)
             modelBuilder.Entity<Brand>()
                 .HasOne(b => b.RegistForm)
-                .WithMany()
-                .HasForeignKey(b => b.RegistFormId)
+                .WithOne(r => r.Brand)
+                .HasForeignKey<Brand>(b => b.RegistFormId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // Brand và Pickup (1:N)
+            modelBuilder.Entity<Brand>()
+                .HasMany(b => b.Pickups)
+                .WithOne(p => p.Brand)
+                .HasForeignKey(p => p.IdBrand)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Brand và DropOff (1:N)
+            modelBuilder.Entity<Brand>()
+                .HasMany(b => b.DropOffs)
+                .WithOne(d => d.Brand)
+                .HasForeignKey(d => d.IdBrand)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // BusRoute và RouteStop
             modelBuilder.Entity<RouteStop>()
                 .HasOne(rs => rs.BusRoute)
                 .WithMany(r => r.RouteStops)
-                .HasForeignKey(rs => rs.IdRoute);
+                .HasForeignKey(rs => rs.IdRoute)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // BusRoute và Brand
             modelBuilder.Entity<BusRoute>()
@@ -1151,6 +1166,20 @@ namespace TicketBus.Data
                 .WithMany(c => c.EndRoutes)
                 .HasForeignKey(r => r.IdEndCity)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            // BusRoute và Pickup (1:N)
+            modelBuilder.Entity<BusRoute>()
+                .HasMany(r => r.Pickups)
+                .WithOne(p => p.BusRoute)
+                .HasForeignKey(p => p.IdRoute)
+                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
+
+            // BusRoute và DropOff (1:N)
+            modelBuilder.Entity<BusRoute>()
+                .HasMany(r => r.DropOffs)
+                .WithOne(d => d.BusRoute)
+                .HasForeignKey(d => d.IdRoute)
+                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
 
             // VehicleType và Coach (1-N)
             modelBuilder.Entity<VehicleType>()
@@ -1181,9 +1210,9 @@ namespace TicketBus.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<DropOff>()
-                .HasOne(d => d.RegistForm)
-                .WithMany()
-                .HasForeignKey(d => d.IdRegist)
+                .HasOne(d => d.BusRoute)
+                .WithMany(r => r.DropOffs)
+                .HasForeignKey(d => d.IdRoute)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Employee
@@ -1221,9 +1250,9 @@ namespace TicketBus.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Pickup>()
-                .HasOne(p => p.RegistForm)
-                .WithMany()
-                .HasForeignKey(p => p.IdRegist)
+                .HasOne(p => p.BusRoute)
+                .WithMany(r => r.Pickups)
+                .HasForeignKey(p => p.IdRoute)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Price
@@ -1254,21 +1283,14 @@ namespace TicketBus.Data
             // RegistForm
             modelBuilder.Entity<RegistForm>()
                 .HasOne(r => r.Brand)
-                .WithMany()
-                .HasForeignKey(r => r.IdBrand)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            // Route
-            modelBuilder.Entity<BusRoute>()
-                .HasOne(r => r.RegistForm)
-                .WithMany()
-                .HasForeignKey(r => r.IdRegist)
+                .WithOne(b => b.RegistForm)
+                .HasForeignKey<RegistForm>(r => r.IdBrand)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // RouteStop
             modelBuilder.Entity<RouteStop>()
                 .HasOne(rs => rs.BusRoute)
-                .WithMany()
+                .WithMany(r => r.RouteStops)
                 .HasForeignKey(rs => rs.IdRoute)
                 .OnDelete(DeleteBehavior.NoAction);
 

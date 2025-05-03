@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250502142337_Updatetb")]
+    partial class Updatetb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -5593,15 +5596,13 @@ namespace TicketBus.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdDropOff"));
 
                     b.Property<string>("DropOffName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IdBrand")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdCity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdRoute")
+                    b.Property<int>("IdCity")
                         .HasColumnType("int");
 
                     b.HasKey("IdDropOff");
@@ -5609,8 +5610,6 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdBrand");
 
                     b.HasIndex("IdCity");
-
-                    b.HasIndex("IdRoute");
 
                     b.ToTable("DropOffs");
                 });
@@ -5791,13 +5790,11 @@ namespace TicketBus.Migrations
                     b.Property<int>("IdBrand")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdCity")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdRoute")
+                    b.Property<int>("IdCity")
                         .HasColumnType("int");
 
                     b.Property<string>("PickupName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("IdPickup");
@@ -5805,8 +5802,6 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdBrand");
 
                     b.HasIndex("IdCity");
-
-                    b.HasIndex("IdRoute");
 
                     b.ToTable("Pickups");
                 });
@@ -6522,16 +6517,10 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.City", "City")
                         .WithMany()
                         .HasForeignKey("IdCity")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("TicketBus.Models.BusRoute", "BusRoute")
-                        .WithMany("DropOffs")
-                        .HasForeignKey("IdRoute")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Brand");
-
-                    b.Navigation("BusRoute");
 
                     b.Navigation("City");
                 });
@@ -6593,16 +6582,10 @@ namespace TicketBus.Migrations
                     b.HasOne("TicketBus.Models.City", "City")
                         .WithMany()
                         .HasForeignKey("IdCity")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("TicketBus.Models.BusRoute", "BusRoute")
-                        .WithMany("Pickups")
-                        .HasForeignKey("IdRoute")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Brand");
-
-                    b.Navigation("BusRoute");
 
                     b.Navigation("City");
                 });
@@ -6762,10 +6745,6 @@ namespace TicketBus.Migrations
 
             modelBuilder.Entity("TicketBus.Models.BusRoute", b =>
                 {
-                    b.Navigation("DropOffs");
-
-                    b.Navigation("Pickups");
-
                     b.Navigation("RouteStops");
                 });
 

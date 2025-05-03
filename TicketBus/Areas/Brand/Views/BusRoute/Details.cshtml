@@ -43,7 +43,7 @@
             <dd class="col-sm-9">@Model.Distance km</dd>
 
             <dt class="col-sm-3">Hãng xe</dt>
-            <dd class="col-sm-9">@Model.Brand?.NameBrand</dd>
+            <dd class="col-sm-9">@(Model.Brand?.NameBrand ?? "Chưa xác định")</dd>
 
             <dt class="col-sm-3">Thành phố xuất phát</dt>
             <dd class="col-sm-9">@(Model.StartCity?.NameCity ?? "Chưa xác định")</dd>
@@ -82,31 +82,89 @@
 }
 else
 {
-    <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>Thứ tự</th>
-                <th>Mã điểm dừng</th>
-                <th>Tên điểm dừng</th>
-                <th>Thành phố</th>
-                <th>Thời gian</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var stop in Model.RouteStops.OrderBy(s => s.StopOrder))
-            {
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
                 <tr>
-                    <td>@stop.StopOrder</td>
-                    <td>@stop.StopCode</td>
-                    <td>@(stop.StopName ?? "Không có tên")</td>
-                    <td>@(stop.City?.NameCity ?? "Chưa xác định")</td>
-                    <td>@(stop.Time.HasValue ? stop.Time.Value.ToString(@"hh\:mm") : "Chưa xác định")</td>
+                    <th>Thứ tự</th>
+                    <th>Mã điểm dừng</th>
+                    <th>Tên điểm dừng</th>
+                    <th>Thành phố</th>
+                    <th>Thời gian</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var stop in Model.RouteStops.OrderBy(s => s.StopOrder))
+                {
+                    <tr>
+                        <td>@stop.StopOrder</td>
+                        <td>@stop.StopCode</td>
+                        <td>@(stop.StopName ?? "Không có tên")</td>
+                        <td>@(stop.City?.NameCity ?? "Chưa xác định")</td>
+                        <td>@(stop.Time.HasValue ? stop.Time.Value.ToString(@"hh\:mm") : "Chưa xác định")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
-<div class="mt-3">
+<h4 class="mt-4">Danh sách điểm đón</h4>
+@if (Model.Pickups == null || !Model.Pickups.Any())
+{
+    <div class="alert alert-warning">Không có điểm đón nào.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Tên điểm đón</th>
+                    <th>Thành phố</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pickup in Model.Pickups)
+                {
+                    <tr>
+                        <td>@pickup.PickupName</td>
+                        <td>@(pickup.City?.NameCity ?? "Chưa xác định")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<h4 class="mt-4">Danh sách điểm trả</h4>
+@if (Model.DropOffs == null || !Model.DropOffs.Any())
+{
+    <div class="alert alert-warning">Không có điểm trả nào.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Tên điểm trả</th>
+                    <th>Thành phố</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dropoff in Model.DropOffs)
+                {
+                    <tr>
+                        <td>@dropoff.DropOffName</td>
+                        <td>@(dropoff.City?.NameCity ?? "Chưa xác định")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="mt-4">
     <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
 </div>

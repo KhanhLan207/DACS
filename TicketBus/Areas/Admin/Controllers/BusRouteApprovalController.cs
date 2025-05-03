@@ -20,17 +20,14 @@ namespace TicketBus.Areas.Admin.Controllers
         // GET: /Admin/BusRouteApproval/PendingApproval
         public async Task<IActionResult> PendingApproval(string filter = "pending")
         {
-            // Thiết lập giá trị filter mặc định là "pending" (Chờ phê duyệt)
             ViewBag.Filter = filter;
 
-            // Truy vấn cơ bản, khai báo rõ ràng là IQueryable<BusRoute>
             IQueryable<BusRoute> query = _context.BusRoutes
                 .AsNoTracking()
                 .Include(r => r.Brand)
                 .Include(r => r.StartCity)
                 .Include(r => r.EndCity);
 
-            // Lọc theo trạng thái
             switch (filter)
             {
                 case "approved":
@@ -45,37 +42,24 @@ namespace TicketBus.Areas.Admin.Controllers
                     break;
             }
 
-            // Sắp xếp và lấy danh sách
-            var pendingRoutes = await query.OrderBy(r => r.IdRoute).ToListAsync();
-
-            return View(pendingRoutes);
-        }
-
-        // GET: /Admin/BusRouteApproval/Approved
-        public async Task<IActionResult> Approved()
-        {
-            // Lấy danh sách các tuyến xe đã được phê duyệt
-            var approvedRoutes = await _context.BusRoutes
-                .AsNoTracking()
-                .Where(r => r.State == BusRouteState.DaPheDuyet)
-                .Include(r => r.Brand)
-                .Include(r => r.StartCity)
-                .Include(r => r.EndCity)
-                .OrderBy(r => r.IdRoute)
-                .ToListAsync();
-
-            return View(approvedRoutes);
+            var routes = await query.OrderBy(r => r.IdRoute).ToListAsync();
+            return View(routes);
         }
 
         // GET: /Admin/BusRouteApproval/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var route = await _context.BusRoutes
+                .AsNoTracking()
                 .Include(r => r.Brand)
                 .Include(r => r.StartCity)
                 .Include(r => r.EndCity)
                 .Include(r => r.RouteStops)
                     .ThenInclude(rs => rs.City)
+                .Include(r => r.Pickups)
+                    .ThenInclude(p => p.City)
+                .Include(r => r.DropOffs)
+                    .ThenInclude(d => d.City)
                 .FirstOrDefaultAsync(r => r.IdRoute == id);
 
             if (route == null)
@@ -97,19 +81,17 @@ namespace TicketBus.Areas.Admin.Controllers
 
             if (route == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Tuyến xe không tồn tại." });
             }
 
-            // Cập nhật trạng thái tuyến xe
             route.State = BusRouteState.DaPheDuyet;
             _context.Update(route);
 
-            // Sử dụng DateTime.Now giống như CoachController
             var notification = new Notification
             {
                 UserId = route.Brand?.UserId,
-                Message = $"Tuyến xe '{route.NameRoute}' đã được phê duyệt bởi Admin. " +
-                          (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
+                Message = $"Tuyến xe '{route.NameRoute}' đã được phê duyệt bởi Admin." +
+                          (string.IsNullOrEmpty(reason) ? "" : $" Lý do: {reason}"),
                 CreatedDate = DateTime.Now,
                 IsRead = false
             };
@@ -117,8 +99,7 @@ namespace TicketBus.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Tuyến xe đã được phê duyệt thành công.";
-            return RedirectToAction(nameof(PendingApproval));
+            return Json(new { success = true, message = "Tuyến xe đã được phê duyệt thành công." });
         }
 
         // POST: /Admin/BusRouteApproval/Reject/5
@@ -132,18 +113,17 @@ namespace TicketBus.Areas.Admin.Controllers
 
             if (route == null)
             {
-                return NotFound();
+                return Json(new { success = false, message = "Tuyến xe không tồn tại." });
             }
 
-            // Cập nhật trạng thái tuyến xe
             route.State = BusRouteState.TuChoi;
             _context.Update(route);
 
             var notification = new Notification
             {
                 UserId = route.Brand?.UserId,
-                Message = $"Tuyến xe '{route.NameRoute}' đã bị từ chối bởi Admin. " +
-                          (string.IsNullOrEmpty(reason) ? "" : $"Lý do: {reason}"),
+                Message = $"Tuyến xe '{route.NameRoute}' đã bị từ chối bởi Admin." +
+                          (string.IsNullOrEmpty(reason) ? "" : $" Lý do: {reason}"),
                 CreatedDate = DateTime.Now,
                 IsRead = false
             };
@@ -151,8 +131,7 @@ namespace TicketBus.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Tuyến xe đã bị từ chối thành công.";
-            return RedirectToAction(nameof(PendingApproval));
+            return Json(new { success = true, message = "Tuyến xe đã bị từ chối thành công." });
         }
     }
 }

@@ -7,15 +7,20 @@ namespace TicketBus.Models
     {
         [Key]
         public int IdPickup { get; set; }
-        public string? PickupCode { get; set; }
+
         public string? PickupName { get; set; }
+
         [ForeignKey("City")]
         public int? IdCity { get; set; }
-        [ForeignKey("RegistForm")]
-        public int? IdRegist { get; set; }
-        public string? Address { get; set; }
+
+        [ForeignKey("Brand")]
+        public int IdBrand { get; set; }
+
+        [ForeignKey("BusRoute")]
+        public int? IdRoute { get; set; }
 
         public City? City { get; set; }
-        public RegistForm? RegistForm { get; set; }
+        public Brand Brand { get; set; }
+        public BusRoute? BusRoute { get; set; }
     }
 }
