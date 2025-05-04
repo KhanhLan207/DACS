@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TicketBus.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UpdateScheduleDetails : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -253,6 +253,31 @@ namespace TicketBus.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Brands",
+                columns: table => new
+                {
+                    IdBrand = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BrandCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NameBrand = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    State = table.Column<int>(type: "int", nullable: false),
+                    RegistFormId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Brands", x => x.IdBrand);
+                    table.ForeignKey(
+                        name: "FK_Brands_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Notifications",
                 columns: table => new
                 {
@@ -367,7 +392,8 @@ namespace TicketBus.Migrations
                 columns: table => new
                 {
                     IdType = table.Column<int>(type: "int", nullable: false),
-                    IdService = table.Column<int>(type: "int", nullable: false)
+                    IdService = table.Column<int>(type: "int", nullable: false),
+                    VehicleTypeIdType = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -382,31 +408,11 @@ namespace TicketBus.Migrations
                         column: x => x.IdType,
                         principalTable: "VehicleTypes",
                         principalColumn: "IdType");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Brands",
-                columns: table => new
-                {
-                    IdBrand = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    BrandCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NameBrand = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    State = table.Column<int>(type: "int", nullable: false),
-                    RegistFormId = table.Column<int>(type: "int", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Brands", x => x.IdBrand);
                     table.ForeignKey(
-                        name: "FK_Brands_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id");
+                        name: "FK_ServiceDetails_VehicleTypes_VehicleTypeIdType",
+                        column: x => x.VehicleTypeIdType,
+                        principalTable: "VehicleTypes",
+                        principalColumn: "IdType");
                 });
 
             migrationBuilder.CreateTable(
@@ -529,8 +535,6 @@ namespace TicketBus.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RouteCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NameRoute = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdDistrict = table.Column<int>(type: "int", nullable: true),
                     Distance = table.Column<int>(type: "int", nullable: true),
                     IdBrand = table.Column<int>(type: "int", nullable: false),
                     IdRegist = table.Column<int>(type: "int", nullable: true),
@@ -538,8 +542,7 @@ namespace TicketBus.Migrations
                     IdEndCity = table.Column<int>(type: "int", nullable: true),
                     State = table.Column<int>(type: "int", nullable: false),
                     TravelTime = table.Column<TimeSpan>(type: "time", nullable: true),
-                    DepartureTimesJson = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -561,11 +564,6 @@ namespace TicketBus.Migrations
                         principalTable: "Cities",
                         principalColumn: "IdCity");
                     table.ForeignKey(
-                        name: "FK_BusRoutes_Districts_IdDistrict",
-                        column: x => x.IdDistrict,
-                        principalTable: "Districts",
-                        principalColumn: "IdDistrict");
-                    table.ForeignKey(
                         name: "FK_BusRoutes_RegistForms_IdRegist",
                         column: x => x.IdRegist,
                         principalTable: "RegistForms",
@@ -578,25 +576,30 @@ namespace TicketBus.Migrations
                 {
                     IdDropOff = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    DropOffCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DropOffName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCity = table.Column<int>(type: "int", nullable: true),
-                    IdRegist = table.Column<int>(type: "int", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    IdBrand = table.Column<int>(type: "int", nullable: false),
+                    IdRoute = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DropOffs", x => x.IdDropOff);
                     table.ForeignKey(
+                        name: "FK_DropOffs_Brands_IdBrand",
+                        column: x => x.IdBrand,
+                        principalTable: "Brands",
+                        principalColumn: "IdBrand",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DropOffs_BusRoutes_IdRoute",
+                        column: x => x.IdRoute,
+                        principalTable: "BusRoutes",
+                        principalColumn: "IdRoute");
+                    table.ForeignKey(
                         name: "FK_DropOffs_Cities_IdCity",
                         column: x => x.IdCity,
                         principalTable: "Cities",
                         principalColumn: "IdCity");
-                    table.ForeignKey(
-                        name: "FK_DropOffs_RegistForms_IdRegist",
-                        column: x => x.IdRegist,
-                        principalTable: "RegistForms",
-                        principalColumn: "IdRegist");
                 });
 
             migrationBuilder.CreateTable(
@@ -605,25 +608,30 @@ namespace TicketBus.Migrations
                 {
                     IdPickup = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PickupCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PickupName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCity = table.Column<int>(type: "int", nullable: true),
-                    IdRegist = table.Column<int>(type: "int", nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    IdBrand = table.Column<int>(type: "int", nullable: false),
+                    IdRoute = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Pickups", x => x.IdPickup);
                     table.ForeignKey(
+                        name: "FK_Pickups_Brands_IdBrand",
+                        column: x => x.IdBrand,
+                        principalTable: "Brands",
+                        principalColumn: "IdBrand",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Pickups_BusRoutes_IdRoute",
+                        column: x => x.IdRoute,
+                        principalTable: "BusRoutes",
+                        principalColumn: "IdRoute");
+                    table.ForeignKey(
                         name: "FK_Pickups_Cities_IdCity",
                         column: x => x.IdCity,
                         principalTable: "Cities",
                         principalColumn: "IdCity");
-                    table.ForeignKey(
-                        name: "FK_Pickups_RegistForms_IdRegist",
-                        column: x => x.IdRegist,
-                        principalTable: "RegistForms",
-                        principalColumn: "IdRegist");
                 });
 
             migrationBuilder.CreateTable(
@@ -636,19 +644,12 @@ namespace TicketBus.Migrations
                     IdRoute = table.Column<int>(type: "int", nullable: true),
                     StopName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IdCity = table.Column<int>(type: "int", nullable: true),
-                    IdDistrict = table.Column<int>(type: "int", nullable: true),
                     StopOrder = table.Column<int>(type: "int", nullable: true),
-                    Time = table.Column<TimeSpan>(type: "time", nullable: true),
-                    BusRouteIdRoute = table.Column<int>(type: "int", nullable: true)
+                    Time = table.Column<TimeSpan>(type: "time", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RouteStops", x => x.IdStop);
-                    table.ForeignKey(
-                        name: "FK_RouteStops_BusRoutes_BusRouteIdRoute",
-                        column: x => x.BusRouteIdRoute,
-                        principalTable: "BusRoutes",
-                        principalColumn: "IdRoute");
                     table.ForeignKey(
                         name: "FK_RouteStops_BusRoutes_IdRoute",
                         column: x => x.IdRoute,
@@ -659,11 +660,6 @@ namespace TicketBus.Migrations
                         column: x => x.IdCity,
                         principalTable: "Cities",
                         principalColumn: "IdCity");
-                    table.ForeignKey(
-                        name: "FK_RouteStops_Districts_IdDistrict",
-                        column: x => x.IdDistrict,
-                        principalTable: "Districts",
-                        principalColumn: "IdDistrict");
                 });
 
             migrationBuilder.CreateTable(
@@ -674,10 +670,8 @@ namespace TicketBus.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdCoach = table.Column<int>(type: "int", nullable: false),
                     IdRoute = table.Column<int>(type: "int", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DepartTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    ArriveTime = table.Column<TimeSpan>(type: "time", nullable: false),
-                    State = table.Column<int>(type: "int", nullable: false)
+                    ArriveTime = table.Column<TimeSpan>(type: "time", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -700,6 +694,7 @@ namespace TicketBus.Migrations
                 {
                     IdPrice = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    IdSchedule = table.Column<int>(type: "int", nullable: false),
                     PriceCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PriceValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     IdRoute = table.Column<int>(type: "int", nullable: true),
@@ -730,6 +725,11 @@ namespace TicketBus.Migrations
                         column: x => x.IdStopStart,
                         principalTable: "RouteStops",
                         principalColumn: "IdStop");
+                    table.ForeignKey(
+                        name: "FK_Prices_ScheduleDetails_IdSchedule",
+                        column: x => x.IdSchedule,
+                        principalTable: "ScheduleDetails",
+                        principalColumn: "IdSchedule");
                 });
 
             migrationBuilder.CreateTable(
@@ -1608,11 +1608,6 @@ namespace TicketBus.Migrations
                 column: "IdPassenger");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Brands_RegistFormId",
-                table: "Brands",
-                column: "RegistFormId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Brands_UserId",
                 table: "Brands",
                 column: "UserId");
@@ -1621,11 +1616,6 @@ namespace TicketBus.Migrations
                 name: "IX_BusRoutes_IdBrand",
                 table: "BusRoutes",
                 column: "IdBrand");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BusRoutes_IdDistrict",
-                table: "BusRoutes",
-                column: "IdDistrict");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BusRoutes_IdEndCity",
@@ -1658,14 +1648,19 @@ namespace TicketBus.Migrations
                 column: "IdCity");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DropOffs_IdBrand",
+                table: "DropOffs",
+                column: "IdBrand");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DropOffs_IdCity",
                 table: "DropOffs",
                 column: "IdCity");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DropOffs_IdRegist",
+                name: "IX_DropOffs_IdRoute",
                 table: "DropOffs",
-                column: "IdRegist");
+                column: "IdRoute");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_IdBrand",
@@ -1693,14 +1688,19 @@ namespace TicketBus.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Pickups_IdBrand",
+                table: "Pickups",
+                column: "IdBrand");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pickups_IdCity",
                 table: "Pickups",
                 column: "IdCity");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pickups_IdRegist",
+                name: "IX_Pickups_IdRoute",
                 table: "Pickups",
-                column: "IdRegist");
+                column: "IdRoute");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Prices_IdCoach",
@@ -1711,6 +1711,11 @@ namespace TicketBus.Migrations
                 name: "IX_Prices_IdRoute",
                 table: "Prices",
                 column: "IdRoute");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Prices_IdSchedule",
+                table: "Prices",
+                column: "IdSchedule");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Prices_IdStopEnd",
@@ -1725,22 +1730,14 @@ namespace TicketBus.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_RegistForms_IdBrand",
                 table: "RegistForms",
-                column: "IdBrand");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RouteStops_BusRouteIdRoute",
-                table: "RouteStops",
-                column: "BusRouteIdRoute");
+                column: "IdBrand",
+                unique: true,
+                filter: "[IdBrand] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RouteStops_IdCity",
                 table: "RouteStops",
                 column: "IdCity");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RouteStops_IdDistrict",
-                table: "RouteStops",
-                column: "IdDistrict");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RouteStops_IdRoute",
@@ -1773,6 +1770,11 @@ namespace TicketBus.Migrations
                 column: "IdService");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ServiceDetails_VehicleTypeIdType",
+                table: "ServiceDetails",
+                column: "VehicleTypeIdType");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tickets_IdEmployee",
                 table: "Tickets",
                 column: "IdEmployee");
@@ -1791,26 +1793,11 @@ namespace TicketBus.Migrations
                 name: "IX_Tickets_IdSeat",
                 table: "Tickets",
                 column: "IdSeat");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Brands_RegistForms_RegistFormId",
-                table: "Brands",
-                column: "RegistFormId",
-                principalTable: "RegistForms",
-                principalColumn: "IdRegist");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Brands_AspNetUsers_UserId",
-                table: "Brands");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Brands_RegistForms_RegistFormId",
-                table: "Brands");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -1830,6 +1817,9 @@ namespace TicketBus.Migrations
                 name: "Bills");
 
             migrationBuilder.DropTable(
+                name: "Districts");
+
+            migrationBuilder.DropTable(
                 name: "DropOffs");
 
             migrationBuilder.DropTable(
@@ -1843,9 +1833,6 @@ namespace TicketBus.Migrations
 
             migrationBuilder.DropTable(
                 name: "Pickups");
-
-            migrationBuilder.DropTable(
-                name: "ScheduleDetails");
 
             migrationBuilder.DropTable(
                 name: "ServiceDetails");
@@ -1881,28 +1868,28 @@ namespace TicketBus.Migrations
                 name: "RouteStops");
 
             migrationBuilder.DropTable(
-                name: "Coaches");
+                name: "ScheduleDetails");
 
             migrationBuilder.DropTable(
                 name: "BusRoutes");
 
             migrationBuilder.DropTable(
-                name: "VehicleTypes");
-
-            migrationBuilder.DropTable(
-                name: "Districts");
+                name: "Coaches");
 
             migrationBuilder.DropTable(
                 name: "Cities");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "RegistForms");
 
             migrationBuilder.DropTable(
+                name: "VehicleTypes");
+
+            migrationBuilder.DropTable(
                 name: "Brands");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

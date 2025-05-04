@@ -5846,6 +5846,9 @@ namespace TicketBus.Migrations
                     b.Property<int?>("IdRoute")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdSchedule")
+                        .HasColumnType("int");
+
                     b.Property<int?>("IdStopEnd")
                         .HasColumnType("int");
 
@@ -5863,6 +5866,8 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdCoach");
 
                     b.HasIndex("IdRoute");
+
+                    b.HasIndex("IdSchedule");
 
                     b.HasIndex("IdStopEnd");
 
@@ -5952,9 +5957,6 @@ namespace TicketBus.Migrations
                     b.Property<TimeSpan>("ArriveTime")
                         .HasColumnType("time");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
                     b.Property<TimeSpan>("DepartTime")
                         .HasColumnType("time");
 
@@ -5962,9 +5964,6 @@ namespace TicketBus.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("IdRoute")
-                        .HasColumnType("int");
-
-                    b.Property<int>("State")
                         .HasColumnType("int");
 
                     b.HasKey("IdSchedule");
@@ -6037,9 +6036,14 @@ namespace TicketBus.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
+                    b.Property<int?>("VehicleTypeIdType")
+                        .HasColumnType("int");
+
                     b.HasKey("IdType", "IdService");
 
                     b.HasIndex("IdService");
+
+                    b.HasIndex("VehicleTypeIdType");
 
                     b.ToTable("ServiceDetails");
                 });
@@ -6612,6 +6616,12 @@ namespace TicketBus.Migrations
                         .HasForeignKey("IdRoute")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("TicketBus.Models.ScheduleDetails", "ScheduleDetails")
+                        .WithMany("Prices")
+                        .HasForeignKey("IdSchedule")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("TicketBus.Models.RouteStop", "RouteStopEnd")
                         .WithMany()
                         .HasForeignKey("IdStopEnd")
@@ -6629,6 +6639,8 @@ namespace TicketBus.Migrations
                     b.Navigation("RouteStopEnd");
 
                     b.Navigation("RouteStopStart");
+
+                    b.Navigation("ScheduleDetails");
                 });
 
             modelBuilder.Entity("TicketBus.Models.RegistForm", b =>
@@ -6705,6 +6717,10 @@ namespace TicketBus.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("TicketBus.Models.VehicleType", null)
+                        .WithMany("ServiceDetailsList")
+                        .HasForeignKey("VehicleTypeIdType");
+
                     b.Navigation("Service");
 
                     b.Navigation("VehicleType");
@@ -6776,9 +6792,16 @@ namespace TicketBus.Migrations
                     b.Navigation("Seats");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.ScheduleDetails", b =>
+                {
+                    b.Navigation("Prices");
+                });
+
             modelBuilder.Entity("TicketBus.Models.VehicleType", b =>
                 {
                     b.Navigation("Coaches");
+
+                    b.Navigation("ServiceDetailsList");
                 });
 #pragma warning restore 612, 618
         }

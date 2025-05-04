@@ -7,6 +7,8 @@ namespace TicketBus.Models
     {
         [Key]
         public int IdPrice { get; set; }
+
+        public int IdSchedule { get; set; }
         public string? PriceCode { get; set; }
         public decimal PriceValue { get; set; }
         [ForeignKey("BusRoute")]
@@ -22,5 +24,8 @@ namespace TicketBus.Models
         public RouteStop? RouteStopStart { get; set; }
         public RouteStop? RouteStopEnd { get; set; }
         public Coach? Coach { get; set; }
+
+        [ForeignKey("IdSchedule")]
+        public ScheduleDetails? ScheduleDetails { get; set; }
     }
 }

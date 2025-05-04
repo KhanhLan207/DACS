@@ -1172,14 +1172,14 @@ namespace TicketBus.Data
                 .HasMany(r => r.Pickups)
                 .WithOne(p => p.BusRoute)
                 .HasForeignKey(p => p.IdRoute)
-                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
+                .OnDelete(DeleteBehavior.NoAction);
 
             // BusRoute và DropOff (1:N)
             modelBuilder.Entity<BusRoute>()
                 .HasMany(r => r.DropOffs)
                 .WithOne(d => d.BusRoute)
                 .HasForeignKey(d => d.IdRoute)
-                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
+                .OnDelete(DeleteBehavior.NoAction);
 
             // VehicleType và Coach (1-N)
             modelBuilder.Entity<VehicleType>()
@@ -1278,6 +1278,12 @@ namespace TicketBus.Data
                 .HasOne(p => p.Coach)
                 .WithMany()
                 .HasForeignKey(p => p.IdCoach)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Price>()
+                .HasOne(p => p.ScheduleDetails)
+                .WithMany(sd => sd.Prices)
+                .HasForeignKey(p => p.IdSchedule)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // RegistForm

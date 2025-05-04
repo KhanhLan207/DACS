@@ -8,6 +8,8 @@ namespace TicketBus.Models
         [Key, Column(Order = 0)]
         [ForeignKey("VehicleType")]
         public int IdType { get; set; }
+
+
         [Key, Column(Order = 1)]
         [ForeignKey("Service")]
         public int IdService { get; set; }

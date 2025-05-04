@@ -5,7 +5,7 @@
 namespace TicketBus.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveDistrictAndFrequency : Migration
+    public partial class FixAScheduleDetails : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
