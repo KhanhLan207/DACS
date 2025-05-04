@@ -578,7 +578,7 @@ namespace TicketBus.Areas.Brand.Controllers
                     {
                         StopCode = $"STOP-{stopCount:D3}",
                         StopName = rs.StopName,
-                        IdCity = rs.IdCity,
+                        IdCity = rs.IdCity.Value, // Ép kiểu từ int? sang int
                         StopOrder = index,
                         Time = timeSpan
                     };
@@ -587,14 +587,14 @@ namespace TicketBus.Areas.Brand.Controllers
                 var pickups = model.Pickups.Select(p => new Pickup
                 {
                     PickupName = p.PickupName,
-                    IdCity = p.IdCity,
+                    IdCity = p.IdCity.Value, // Ép kiểu từ int? sang int
                     IdBrand = model.IdBrand
                 }).ToList();
 
                 var dropoffs = model.DropOffs.Select(d => new DropOff
                 {
                     DropOffName = d.DropOffName,
-                    IdCity = d.IdCity,
+                    IdCity = d.IdCity.Value, // Ép kiểu từ int? sang int
                     IdBrand = model.IdBrand
                 }).ToList();
 

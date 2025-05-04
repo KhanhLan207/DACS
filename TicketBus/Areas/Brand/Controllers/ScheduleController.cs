@@ -281,5 +281,161 @@ namespace TicketBus.Areas.Brand.Controllers
 
             return Json(new { success = true, coaches });
         }
+
+        // GET: /Brand/Schedule/AddPrice/5
+        public async Task<IActionResult> AddPrice(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound("Không tìm thấy lịch trình.");
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var brand = await _context.Brands
+                .FirstOrDefaultAsync(b => b.UserId == userId);
+
+            if (brand == null)
+            {
+                return NotFound("Không tìm thấy hãng xe.");
+            }
+
+            var schedule = await _context.ScheduleDetails
+                .Include(s => s.BusRoute)
+                .Include(s => s.Coach)
+                .FirstOrDefaultAsync(s => s.IdSchedule == id && s.BusRoute.IdBrand == brand.IdBrand);
+
+            if (schedule == null)
+            {
+                return NotFound("Không tìm thấy lịch trình hoặc lịch trình không thuộc hãng xe của bạn.");
+            }
+
+            // Lấy danh sách RouteStop của BusRoute, mặc định là danh sách rỗng nếu không tìm thấy
+            var routeStops = await _context.RouteStops
+                .Where(rs => rs.IdRoute == schedule.IdRoute)
+                .OrderBy(rs => rs.StopOrder)
+                .ToListAsync() ?? new List<RouteStop>();
+
+            if (routeStops.Count == 0)
+            {
+                return BadRequest("Tuyến xe không có điểm dừng nào được định nghĩa.");
+            }
+
+            // Lấy danh sách giá hiện có, mặc định là danh sách rỗng nếu không tìm thấy
+            var existingPrices = await _context.Prices
+                .Include(p => p.RouteStopStart)
+                .Include(p => p.RouteStopEnd)
+                .Where(p => p.IdSchedule == id)
+                .ToListAsync() ?? new List<Price>();
+
+            var viewModel = new AddPriceViewModel
+            {
+                ScheduleId = schedule.IdSchedule,
+                ScheduleInfo = $"Lịch trình: {schedule.BusRoute.NameRoute} (Xe: {schedule.Coach.NumberPlate}, Khởi hành: {schedule.DepartTime})",
+                RouteStops = routeStops,
+                ExistingPrices = existingPrices
+            };
+
+            // Loại bỏ validation trên RouteStops và ExistingPrices
+            ModelState.Remove("RouteStops");
+            ModelState.Remove("ExistingPrices");
+
+            return View(viewModel);
+        }
+
+        // POST: /Brand/Schedule/AddPrice
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPrice(AddPriceViewModel model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var brand = await _context.Brands
+                .FirstOrDefaultAsync(b => b.UserId == userId);
+
+            if (brand == null)
+            {
+                return NotFound("Không tìm thấy hãng xe.");
+            }
+
+            // Lấy lại thông tin để hiển thị form nếu có lỗi
+            var schedule = await _context.ScheduleDetails
+                .Include(s => s.BusRoute)
+                .Include(s => s.Coach)
+                .FirstOrDefaultAsync(s => s.IdSchedule == model.ScheduleId && s.BusRoute.IdBrand == brand.IdBrand);
+
+            if (schedule == null)
+            {
+                return NotFound("Không tìm thấy lịch trình hoặc lịch trình không thuộc hãng xe của bạn.");
+            }
+
+            var routeStops = await _context.RouteStops
+                .Where(rs => rs.IdRoute == schedule.IdRoute)
+                .OrderBy(rs => rs.StopOrder)
+                .ToListAsync() ?? new List<RouteStop>();
+
+            var existingPrices = await _context.Prices
+                .Include(p => p.RouteStopStart)
+                .Include(p => p.RouteStopEnd)
+                .Where(p => p.IdSchedule == model.ScheduleId)
+                .ToListAsync() ?? new List<Price>();
+
+            model.ScheduleInfo = $"Lịch trình: {schedule.BusRoute.NameRoute} (Xe: {schedule.Coach.NumberPlate}, Khởi hành: {schedule.DepartTime})";
+            model.RouteStops = routeStops;
+            model.ExistingPrices = existingPrices;
+
+            // Loại bỏ validation trên RouteStops và ExistingPrices
+            ModelState.Remove("RouteStops");
+            ModelState.Remove("ExistingPrices");
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Kiểm tra điểm bắt đầu và điểm kết thúc
+            var startStop = routeStops.FirstOrDefault(rs => rs.IdStop == model.StartStopId);
+            var endStop = routeStops.FirstOrDefault(rs => rs.IdStop == model.EndStopId);
+
+            if (startStop == null || endStop == null)
+            {
+                ModelState.AddModelError("", "Điểm dừng không hợp lệ.");
+                return View(model);
+            }
+
+            if (startStop.StopOrder >= endStop.StopOrder)
+            {
+                ModelState.AddModelError("", "Điểm bắt đầu phải trước điểm kết thúc trong tuyến xe.");
+                return View(model);
+            }
+
+            // Kiểm tra xem giá đã tồn tại chưa
+            var existingPrice = await _context.Prices
+                .FirstOrDefaultAsync(p => p.IdSchedule == model.ScheduleId &&
+                                         p.IdStopStart == model.StartStopId &&
+                                         p.IdStopEnd == model.EndStopId);
+
+            if (existingPrice != null)
+            {
+                ModelState.AddModelError("", "Giá vé cho đoạn đường này đã tồn tại.");
+                return View(model);
+            }
+
+            // Tạo giá vé mới
+            var price = new Price
+            {
+                IdSchedule = model.ScheduleId,
+                PriceCode = $"{startStop.StopName}-{endStop.StopName}",
+                PriceValue = model.PriceValue,
+                IdRoute = schedule.IdRoute,
+                IdStopStart = model.StartStopId,
+                IdStopEnd = model.EndStopId,
+                IdCoach = schedule.IdCoach
+            };
+
+            _context.Prices.Add(price);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Thêm giá vé thành công!";
+            return RedirectToAction("AddPrice", new { id = model.ScheduleId }); // Quay lại form để thêm giá khác
+        }
     }
 }

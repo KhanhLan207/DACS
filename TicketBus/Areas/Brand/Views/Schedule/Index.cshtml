@@ -5,25 +5,8 @@
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
 }
 
-<style>
-    .header-section {
-        background-color: #007bff;
-        padding: 10px 20px;
-        border-bottom: 1px solid #0056b3;
-    }
+<link rel="stylesheet" href="~/css/IndexSchedule.css" asp-append-version="true" />
 
-    .back-link {
-        color: #fff;
-        text-decoration: none;
-        font-size: 18px;
-        margin-right: 10px;
-        transition: color 0.3s ease;
-    }
-
-        .back-link:hover {
-            color: #ddd;
-        }
-</style>
 
 <!-- Header với icon quay về -->
 <div class="header-section">
@@ -33,6 +16,7 @@
     </a>
 </div>
 
+<div class="container">
     @if (TempData["Message"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -100,6 +84,7 @@
                         <th>Tuyến xe</th>
                         <th>Giờ khởi hành</th>
                         <th>Giờ đến</th>
+                        <th>Thêm giá</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,6 +95,9 @@
                             <td>@(schedule.BusRoute?.NameRoute ?? "Chưa xác định")</td>
                             <td>@schedule.DepartTime.ToString(@"hh\:mm")</td>
                             <td>@schedule.ArriveTime.ToString(@"hh\:mm")</td>
+                            <td>
+                                <a asp-action="AddPrice" asp-route-id="@schedule.IdSchedule" class="btn btn-primary btn-sm">Thêm giá</a>
+                            </td>
                         </tr>
                     }
                 </tbody>
