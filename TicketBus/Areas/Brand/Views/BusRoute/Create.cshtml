@@ -8,6 +8,14 @@
 
 <link rel="stylesheet" href="~/css/CreateBusRoute.css" asp-append-version="true" />
 
+<!-- Header với icon quay về -->
+<div class="header-section">
+    <a asp-area="Brand" asp-controller="Home" asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Quay về trang quản lý
+    </a>
+</div>
+
 <form asp-action="Create" method="post" id="createForm">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

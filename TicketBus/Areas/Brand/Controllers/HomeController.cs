@@ -140,5 +140,44 @@ namespace TicketBus.Areas.Brand.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu thông báo. Vui lòng thử lại." });
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAllNotificationsAsRead()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("MarkAllNotificationsAsRead: UserId is null or empty.");
+                return Json(new { success = false, message = "Không thể xác định người dùng." });
+            }
+
+            try
+            {
+                var unreadNotifications = await _context.Notifications
+                    .Where(n => n.UserId == userId && !n.IsRead)
+                    .ToListAsync();
+
+                if (!unreadNotifications.Any())
+                {
+                    return Json(new { success = true, message = "Không có thông báo chưa đọc." });
+                }
+
+                foreach (var notification in unreadNotifications)
+                {
+                    notification.IsRead = true;
+                }
+
+                _context.UpdateRange(unreadNotifications);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("MarkAllNotificationsAsRead: All notifications marked as read for UserId {UserId}.", userId);
+                return Json(new { success = true, message = "Đã đánh dấu tất cả thông báo là đã đọc." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MarkAllNotificationsAsRead: Failed to mark all notifications as read for UserId {UserId}.", userId);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đánh dấu thông báo. Vui lòng thử lại." });
+            }
+        }
     }
 }

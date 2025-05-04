@@ -5,11 +5,33 @@
     Layout = "~/Areas/Brand/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container-fluid px-4">
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-area="Brand">Trang chủ</a></li>
-        <li class="breadcrumb-item active">Danh sách lịch trình</li>
-    </ol>
+<style>
+    .header-section {
+        background-color: #007bff;
+        padding: 10px 20px;
+        border-bottom: 1px solid #0056b3;
+    }
+
+    .back-link {
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        margin-right: 10px;
+        transition: color 0.3s ease;
+    }
+
+        .back-link:hover {
+            color: #ddd;
+        }
+</style>
+
+<!-- Header với icon quay về -->
+<div class="header-section">
+    <a asp-area="Brand" asp-controller="Home" asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Quay về trang quản lý
+    </a>
+</div>
 
     @if (TempData["Message"] != null)
     {

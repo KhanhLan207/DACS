@@ -80,25 +80,61 @@ namespace TicketBus.Areas.Admin.Controllers
         // POST: /Admin/Schedule/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, string reason)
         {
-            var schedule = await _context.ScheduleDetails.FindAsync(id);
+            // Tìm lịch trình theo IdSchedule
+            var schedule = await _context.ScheduleDetails
+                .FirstOrDefaultAsync(s => s.IdSchedule == id);
+
             if (schedule == null)
             {
-                return NotFound("Không tìm thấy lịch trình.");
+                TempData["ErrorMessage"] = "Lịch trình không tồn tại.";
+                return RedirectToAction(nameof(Index));
             }
 
             try
             {
+                // Tìm thông tin Brand để gửi thông báo
+                var scheduleWithDetails = await _context.ScheduleDetails
+                    .AsNoTracking()
+                    .Include(s => s.BusRoute)
+                    .ThenInclude(r => r.Brand)
+                    .FirstOrDefaultAsync(s => s.IdSchedule == id);
+
+                string brandUserId = null;
+                string notificationMessage = "Lịch trình của bạn đã bị xóa bởi Admin.";
+
+                if (scheduleWithDetails != null && scheduleWithDetails.BusRoute != null && scheduleWithDetails.BusRoute.Brand != null)
+                {
+                    brandUserId = scheduleWithDetails.BusRoute.Brand.UserId;
+                    notificationMessage = $"Lịch trình tuyến '{scheduleWithDetails.BusRoute.NameRoute}' (xe: {scheduleWithDetails.Coach?.NumberPlate ?? "N/A"}, giờ khởi hành: {scheduleWithDetails.DepartTime.ToString(@"hh\:mm")}) đã bị xóa bởi Admin. Lý do: {reason ?? "Không có lý do được cung cấp."}";
+                }
+
+                // Xóa lịch trình
                 _context.ScheduleDetails.Remove(schedule);
                 await _context.SaveChangesAsync();
+
+                // Gửi thông báo nếu tìm thấy Brand
+                if (!string.IsNullOrEmpty(brandUserId))
+                {
+                    var notification = new Notification
+                    {
+                        UserId = brandUserId,
+                        Message = notificationMessage,
+                        CreatedDate = DateTime.Now,
+                        IsRead = false
+                    };
+                    _context.Notifications.Add(notification);
+                    await _context.SaveChangesAsync();
+                }
+
                 TempData["Message"] = "Xóa lịch trình thành công!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Lỗi khi xóa lịch trình: {ex.Message}";
-                return RedirectToAction(nameof(Delete), new { id });
+                return RedirectToAction(nameof(Index));
             }
         }
     }
