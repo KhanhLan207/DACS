@@ -91,17 +91,21 @@
                                     <div class="sb-nav-link-icon"><i class="fas fa-check-circle"></i></div>
                                     Phê duyệt tuyến xe
                                 </a>
+                                <a class="nav-link" asp-controller="Schedule" asp-action="Index" asp-area="Admin">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
+                                    Xem lịch trình
+                                </a>
                             </nav>
                         </div>
 
-                        <a class="nav-link" asp-controller="Schedule" asp-action="Index" asp-area="Admin">
-                            <div class="sb-nav-link-icon"><i class="fas fa-calendar-alt"></i></div>
-                            Quản lý lịch trình
-                        </a>
-
                         <a class="nav-link" asp-controller="SchedulePrice" asp-action="Index" asp-area="Admin">
                             <div class="sb-nav-link-icon"><i class="fas fa-money-bill-wave"></i></div>
-                            Quản lý lịch trình và giá vé
+                            Quản lý giá vé
+                        </a>
+
+                        <a class="nav-link" asp-controller="UserManagement" asp-action="Index" asp-area="Admin">
+                            <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                            Quản lý người dùng
                         </a>
                     </div>
                 </div>
