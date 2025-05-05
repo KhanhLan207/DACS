@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketBus.Data;
 
@@ -11,9 +12,11 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250504155043_UpdatedbAgain")]
+    partial class UpdatedbAgain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -6007,6 +6010,47 @@ namespace TicketBus.Migrations
                     b.ToTable("Seats");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.Service", b =>
+                {
+                    b.Property<int>("IdService")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdService"));
+
+                    b.Property<string>("NameService")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ServiceCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("IdService");
+
+                    b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.ServiceDetails", b =>
+                {
+                    b.Property<int>("IdType")
+                        .HasColumnType("int")
+                        .HasColumnOrder(0);
+
+                    b.Property<int>("IdService")
+                        .HasColumnType("int")
+                        .HasColumnOrder(1);
+
+                    b.Property<int?>("VehicleTypeIdType")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdType", "IdService");
+
+                    b.HasIndex("IdService");
+
+                    b.HasIndex("VehicleTypeIdType");
+
+                    b.ToTable("ServiceDetails");
+                });
+
             modelBuilder.Entity("TicketBus.Models.Ticket", b =>
                 {
                     b.Property<int>("IdTicket")
@@ -6667,6 +6711,29 @@ namespace TicketBus.Migrations
                     b.Navigation("Coach");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.ServiceDetails", b =>
+                {
+                    b.HasOne("TicketBus.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("IdService")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("TicketBus.Models.VehicleType", "VehicleType")
+                        .WithMany()
+                        .HasForeignKey("IdType")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("TicketBus.Models.VehicleType", null)
+                        .WithMany("ServiceDetailsList")
+                        .HasForeignKey("VehicleTypeIdType");
+
+                    b.Navigation("Service");
+
+                    b.Navigation("VehicleType");
+                });
+
             modelBuilder.Entity("TicketBus.Models.Ticket", b =>
                 {
                     b.HasOne("TicketBus.Models.Employee", "Employee")
@@ -6741,6 +6808,8 @@ namespace TicketBus.Migrations
             modelBuilder.Entity("TicketBus.Models.VehicleType", b =>
                 {
                     b.Navigation("Coaches");
+
+                    b.Navigation("ServiceDetailsList");
                 });
 #pragma warning restore 612, 618
         }

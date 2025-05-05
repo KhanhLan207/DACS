@@ -29,8 +29,6 @@ namespace TicketBus.Data
         public DbSet<RouteStop> RouteStops { get; set; }
         public DbSet<ScheduleDetails> ScheduleDetails { get; set; }
         public DbSet<Seat> Seats { get; set; }
-        public DbSet<Service> Services { get; set; }
-        public DbSet<ServiceDetails> ServiceDetails { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<TypeNews> TypeNews { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
@@ -1094,15 +1092,10 @@ namespace TicketBus.Data
             modelBuilder.Entity<BusRoute>().HasKey(r => r.IdRoute);
             modelBuilder.Entity<RouteStop>().HasKey(rs => rs.IdStop);
             modelBuilder.Entity<Seat>().HasKey(s => s.IdSeat);
-            modelBuilder.Entity<Service>().HasKey(s => s.IdService);
             modelBuilder.Entity<Ticket>().HasKey(t => t.IdTicket);
             modelBuilder.Entity<TypeNews>().HasKey(tn => tn.IdTypeNews);
             modelBuilder.Entity<VehicleType>().HasKey(vt => vt.IdType);
             modelBuilder.Entity<ScheduleDetails>().HasKey(sd => sd.IdSchedule);
-
-            // Cấu hình khóa chính tổ hợp
-            modelBuilder.Entity<ServiceDetails>()
-                .HasKey(svd => new { svd.IdType, svd.IdService });
 
             // Cấu hình mối quan hệ
             // Brand và Coach (1-N)
@@ -1318,19 +1311,6 @@ namespace TicketBus.Data
                 .HasOne(s => s.Coach)
                 .WithMany()
                 .HasForeignKey(s => s.IdCoach)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            // ServiceDetails
-            modelBuilder.Entity<ServiceDetails>()
-                .HasOne(svd => svd.VehicleType)
-                .WithMany()
-                .HasForeignKey(svd => svd.IdType)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<ServiceDetails>()
-                .HasOne(svd => svd.Service)
-                .WithMany()
-                .HasForeignKey(svd => svd.IdService)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Ticket

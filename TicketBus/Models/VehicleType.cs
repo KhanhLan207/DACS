@@ -19,7 +19,6 @@ namespace TicketBus.Models
         // Thiết lập quan hệ 1 - n với Coach
         public List<Coach> Coaches { get; set; } = new List<Coach>();
 
-        public List<ServiceDetails>? ServiceDetailsList { get; set; }
     }
 
     public enum VehicleTypeState
