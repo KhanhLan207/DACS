@@ -21,7 +21,7 @@
         <div class="card-body">
             <form asp-action="EditRoles" method="post">
                 <input type="hidden" asp-for="UserId" />
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div asp-validation-summary="All" class="text-danger"></div>
 
                 <div class="mb-3">
                     <label class="form-label">Email</label>
@@ -35,7 +35,9 @@
 
                 <div class="mb-3">
                     <label asp-for="SelectedRole" class="form-label">Vai trò</label>
-                    @Html.DropDownListFor(m => m.SelectedRole, new SelectList(Model.Roles, Model.SelectedRole), "-- Chọn vai trò --", new { @class = "form-select" })
+                    <select asp-for="SelectedRole" class="form-select" asp-items="@(new SelectList(Model.Roles))">
+                        <option value="">-- Chọn vai trò --</option>
+                    </select>
                     <span asp-validation-for="SelectedRole" class="text-danger"></span>
                 </div>
 

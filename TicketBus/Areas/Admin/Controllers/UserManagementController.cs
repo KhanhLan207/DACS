@@ -72,44 +72,20 @@ namespace TicketBus.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditRoles(EditUserRolesViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                model.Roles = (await _roleManager.Roles.ToListAsync()).Select(r => r.Name).ToList();
-                return View(model);
-            }
-
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 return NotFound();
             }
 
-            // Xóa tất cả vai trò hiện tại của người dùng
+            // Xóa tất cả vai trò hiện tại
             var currentRoles = await _userManager.GetRolesAsync(user);
-            var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-            if (!removeResult.Succeeded)
-            {
-                foreach (var error in removeResult.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-                model.Roles = (await _roleManager.Roles.ToListAsync()).Select(r => r.Name).ToList();
-                return View(model);
-            }
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
 
             // Thêm vai trò mới nếu có
-            if (!string.IsNullOrEmpty(model.SelectedRole))
+            if (!string.IsNullOrEmpty(model.SelectedRole) && await _roleManager.RoleExistsAsync(model.SelectedRole))
             {
-                var addResult = await _userManager.AddToRoleAsync(user, model.SelectedRole);
-                if (!addResult.Succeeded)
-                {
-                    foreach (var error in addResult.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    model.Roles = (await _roleManager.Roles.ToListAsync()).Select(r => r.Name).ToList();
-                    return View(model);
-                }
+                await _userManager.AddToRoleAsync(user, model.SelectedRole);
             }
 
             TempData["Message"] = $"Đã cập nhật vai trò cho người dùng {user.Email} thành công.";
