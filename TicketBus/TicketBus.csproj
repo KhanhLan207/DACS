@@ -33,7 +33,6 @@
     <Folder Include="Areas\NhanVien\Views\" />
     <Folder Include="Areas\Passenger\Data\" />
     <Folder Include="Areas\Passenger\Models\" />
-    <Folder Include="Areas\Passenger\Views\" />
     <Folder Include="wwwroot\documents\coaches\" />
     <Folder Include="wwwroot\images\coaches\" />
   </ItemGroup>

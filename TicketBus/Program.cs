@@ -27,6 +27,16 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Cấu hình cookie xác thực
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = ".AspNetCore.Identity.Application";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(14); // Cookie tồn tại 14 ngày khi RememberMe = true
+    options.SlidingExpiration = true; // Gia hạn cookie nếu người dùng hoạt động
+});
+
 // Đăng ký Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

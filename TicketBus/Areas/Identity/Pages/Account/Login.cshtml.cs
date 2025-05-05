@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using TicketBus.Models;
 
-
 namespace TicketBus.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
@@ -85,6 +84,8 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     return Page();
                 }
 
+                _logger.LogInformation("Login attempt with Email: {Email}, RememberMe: {RememberMe}", Input.Email, Input.RememberMe);
+
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
@@ -108,7 +109,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     }
                     else if (roles.Contains("Passenger"))
                     {
-                        return RedirectToAction("Index", "Home", new { area = "" }); // Điều hướng hành khách đến trang chính
+                        return RedirectToAction("Index", "Home", new { area = "" });
                     }
                     else
                     {
