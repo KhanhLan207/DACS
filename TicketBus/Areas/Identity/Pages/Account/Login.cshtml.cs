@@ -109,7 +109,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     }
                     else if (roles.Contains("Passenger"))
                     {
-                        return RedirectToAction("Index", "Home", new { area = "" });
+                        return RedirectToAction("Index", "Trip", new { area = "Passenger" }); // Điều hướng hành khách đến trang chính
                     }
                     else
                     {

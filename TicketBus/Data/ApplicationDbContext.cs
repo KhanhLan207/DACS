@@ -1097,6 +1097,8 @@ namespace TicketBus.Data
             modelBuilder.Entity<VehicleType>().HasKey(vt => vt.IdType);
             modelBuilder.Entity<ScheduleDetails>().HasKey(sd => sd.IdSchedule);
 
+            // Cấu hình khóa chính tổ hợp
+
             // Cấu hình mối quan hệ
             // Brand và Coach (1-N)
             modelBuilder.Entity<Brand>()
@@ -1165,14 +1167,14 @@ namespace TicketBus.Data
                 .HasMany(r => r.Pickups)
                 .WithOne(p => p.BusRoute)
                 .HasForeignKey(p => p.IdRoute)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
 
             // BusRoute và DropOff (1:N)
             modelBuilder.Entity<BusRoute>()
                 .HasMany(r => r.DropOffs)
                 .WithOne(d => d.BusRoute)
                 .HasForeignKey(d => d.IdRoute)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
 
             // VehicleType và Coach (1-N)
             modelBuilder.Entity<VehicleType>()
@@ -1256,6 +1258,12 @@ namespace TicketBus.Data
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Price>()
+                .HasOne(p => p.ScheduleDetails)
+                .WithMany(sd => sd.Prices)
+                .HasForeignKey(p => p.IdSchedule)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Price>()
                 .HasOne(p => p.RouteStopStart)
                 .WithMany()
                 .HasForeignKey(p => p.IdStopStart)
@@ -1271,12 +1279,6 @@ namespace TicketBus.Data
                 .HasOne(p => p.Coach)
                 .WithMany()
                 .HasForeignKey(p => p.IdCoach)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<Price>()
-                .HasOne(p => p.ScheduleDetails)
-                .WithMany(sd => sd.Prices)
-                .HasForeignKey(p => p.IdSchedule)
                 .OnDelete(DeleteBehavior.NoAction);
 
             // RegistForm
@@ -1312,6 +1314,8 @@ namespace TicketBus.Data
                 .WithMany()
                 .HasForeignKey(s => s.IdCoach)
                 .OnDelete(DeleteBehavior.NoAction);
+
+           
 
             // Ticket
             modelBuilder.Entity<Ticket>()

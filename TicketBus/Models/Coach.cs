@@ -19,12 +19,13 @@ namespace TicketBus.Models
 
         [ForeignKey("VehicleType")]
         public int IdType { get; set; }
+        public VehicleType? VehicleType { get; set; }
 
         public string Images { get; set; }
 
         public string Documents { get; set; }
 
-        public VehicleType? VehicleType { get; set; }
+
 
         [ForeignKey("Brand")]
         public int IdBrand { get; set; }
@@ -40,7 +41,7 @@ namespace TicketBus.Models
         HoatDong = 0,
 
         [Display(Name = "Không hoạt động")]
-        KhongHoatDong =1,
+        KhongHoatDong = 1,
 
         [Display(Name = "Chờ phê duyệt")]
         ChoPheDuyet = 2,
