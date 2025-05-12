@@ -1135,6 +1135,13 @@ namespace TicketBus.Data
                 .HasForeignKey(d => d.IdBrand)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Passenger và ApplicationUser
+            modelBuilder.Entity<Passenger>()
+                .HasOne(b => b.ApplicationUser)
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // BusRoute và RouteStop
             modelBuilder.Entity<RouteStop>()
                 .HasOne(rs => rs.BusRoute)
@@ -1341,6 +1348,9 @@ namespace TicketBus.Data
                 .WithMany()
                 .HasForeignKey(t => t.IdEmployee)
                 .OnDelete(DeleteBehavior.NoAction);
+
+
+          
         }
     }
 }

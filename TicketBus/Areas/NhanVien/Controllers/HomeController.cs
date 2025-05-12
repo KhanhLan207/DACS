@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TicketBus.Areas.NhanVien.Controllers
 {
+    [Area("NhanVien")]
+    [Authorize(Roles = "NhanVien")]
     public class HomeController : Controller
     {
-        [Area("NhanVien")]
-        [Authorize(Roles = "NhanVien")]
         public IActionResult Index()
         {
             return View();

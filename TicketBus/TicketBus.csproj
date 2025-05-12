@@ -21,6 +21,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="RestSharp" Version="112.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +31,6 @@
     <Folder Include="Areas\Brand\Models\" />
     <Folder Include="Areas\NhanVien\Data\" />
     <Folder Include="Areas\NhanVien\Models\" />
-    <Folder Include="Areas\NhanVien\Views\" />
     <Folder Include="Areas\Passenger\Data\" />
     <Folder Include="Areas\Passenger\Models\" />
     <Folder Include="wwwroot\documents\coaches\" />
