@@ -117,6 +117,35 @@ namespace TicketBus.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created successfully: Email={Email}", Input.Email);
 
+                    // Nếu vai trò là Passenger, thêm thông tin vào bảng Passenger
+                    if (!string.IsNullOrEmpty(Input.Role) && Input.Role == "Passenger")
+                    {
+                        var passenger = new Models.Passenger
+                        {
+                            UserId = user.Id, // Liên kết với ApplicationUser
+                            PassengerCode = GeneratePassengerCode(), // Generate a unique PassengerCode
+                            NamePassenger = Input.FullName,
+                            PhoneNumber = Input.PhoneNumber,
+                            Address = null, // Có thể thêm trường nhập địa chỉ nếu cần
+                            IdCard = null  // Có thể thêm trường nhập CMND/CCCD nếu cần
+                        };
+
+                        try
+                        {
+                            _context.Passengers.Add(passenger);
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation("Passenger record created for user {Email} with PassengerCode {PassengerCode}", Input.Email, passenger.PassengerCode);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("Failed to create Passenger record for user {Email}. Error: {Error}", Input.Email, ex.Message);
+                            // Rollback user creation if Passenger creation fails
+                            await _userManager.DeleteAsync(user);
+                            ModelState.AddModelError(string.Empty, "Không thể tạo thông tin hành khách. Vui lòng thử lại.");
+                            return Page();
+                        }
+                    }
+
                     // Kiểm tra và tạo vai trò nếu chưa tồn tại
                     if (!string.IsNullOrEmpty(Input.Role))
                     {
@@ -171,7 +200,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     }
                     else if (Input.Role == "Passenger")
                     {
-                        return RedirectToAction("Index", "Home", new { area = "" }); // Điều hướng hành khách đến trang chính
+                        return RedirectToAction("Index", "Trip", new { area = "Passenger" });
                     }
                     else
                     {
@@ -202,6 +231,14 @@ namespace TicketBus.Areas.Identity.Pages.Account
             // If we got this far, something failed, redisplay form
             _logger.LogInformation("Redisplaying form due to validation errors.");
             return Page();
+        }
+
+        private string GeneratePassengerCode()
+        {
+            // Simple implementation: Generate a unique code (e.g., P001, P002)
+            // In production, use a sequence or database-generated value
+            var random = new Random();
+            return "P" + random.Next(1000, 9999).ToString();
         }
 
         private ApplicationUser CreateUser()

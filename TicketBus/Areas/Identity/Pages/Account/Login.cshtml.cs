@@ -101,7 +101,7 @@ namespace TicketBus.Areas.Identity.Pages.Account
                     }
                     else if (roles.Contains("NhanVien"))
                     {
-                        return RedirectToAction("EmployeePanel", "Home", new { area = "Admin" });
+                        return RedirectToAction("Index", "Tripp", new { area = "NhanVien" });
                     }
                     else if (roles.Contains("Brand"))
                     {

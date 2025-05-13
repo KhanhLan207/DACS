@@ -6,18 +6,19 @@ using System.Diagnostics;
 using System.Linq;
 using TicketBus.Data;
 using TicketBus.Models;
+using Microsoft.AspNetCore.Identity;
 
 [Area("Passenger")]
 [Authorize(Roles = "Passenger")]
 public class TripController : Controller
 {
-    
     private readonly ApplicationDbContext _context;
-   
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public TripController(ApplicationDbContext context)
+    public TripController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public IActionResult Index(string startPoint, string destination, DateTime? departureDate, string sortOption,
@@ -80,8 +81,6 @@ public class TripController : Controller
                         .ThenInclude(d => d.City)
             .AsSplitQuery() // Cải thiện hiệu suất
             .AsQueryable();
-
-        
 
         // Lọc theo điểm bắt đầu và điểm đến
         if (!string.IsNullOrEmpty(startPoint) && !string.IsNullOrEmpty(destination))
@@ -171,26 +170,15 @@ public class TripController : Controller
                 break;
         }
 
-        //// Phân trang
-        //var totalItems = pricesQuery.Count();
-        //var totalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
-        //page = Math.Max(1, Math.Min(page, totalPages)); // Đảm bảo page hợp lệ
-        //var prices = pricesQuery
-        //    .Skip((page - 1) * PageSize)
-        //    .Take(PageSize)
-        //    .ToList();
-
-
         var prices = pricesQuery.ToList();
-        // Tính số ghế trống
+        // Tính số ghế trống lại
         var emptySeats = new Dictionary<int, int>();
         foreach (var price in prices)
         {
             if (price?.ScheduleDetails?.Coach?.Seats != null)
             {
-                var seatCount = price.ScheduleDetails.Coach.Seats
+                emptySeats[price.ScheduleDetails.IdCoach] = price.ScheduleDetails.Coach.Seats
                     .Count(s => s.State == SeatState.Trong);
-                emptySeats[price.ScheduleDetails.IdCoach] = seatCount;
             }
             else
             {
@@ -200,5 +188,206 @@ public class TripController : Controller
         ViewBag.EmptySeats = emptySeats;
 
         return View(prices);
+    }
+
+    public async Task<IActionResult> Details(int id)
+    {
+        var price = _context.Prices
+            .Include(p => p.RouteStopStart)
+            .Include(p => p.RouteStopEnd)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.RouteStops)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Seats)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Brand)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.VehicleType)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.Pickups)
+                        .ThenInclude(p => p.City)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.DropOffs)
+                        .ThenInclude(d => d.City)
+            .FirstOrDefault(p => p.IdPrice == id);
+
+        // Get current user
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
+        {
+            var passenger = _context.Passengers
+                .FirstOrDefault(p => p.UserId == user.Id);
+            ViewBag.CustomerName = passenger?.NamePassenger ?? user.FullName;
+            ViewBag.CustomerPhone = passenger?.PhoneNumber ?? user.PhoneNumber;
+        }
+
+        // Danh sách ghế
+        var SeatList = _context.Seats
+            .Include(s => s.Coach)
+            .Where(s => s.Coach.IdCoach == price.ScheduleDetails.IdCoach)
+            .ToList();
+        ViewBag.SeatList = SeatList;
+
+        // Danh sách điểm đón
+        var PickUpList = _context.Pickups
+            .Include(p => p.City)
+            .Where(p => p.IdRoute == price.ScheduleDetails.BusRoute.IdRoute)
+            .ToList();
+        ViewBag.PickUpList = PickUpList;
+
+        // Danh sách điểm trả
+        var DropOffList = _context.DropOffs
+            .Include(d => d.City)
+            .Where(d => d.IdRoute == price.ScheduleDetails.BusRoute.IdRoute)
+            .ToList();
+        ViewBag.DropOffList = DropOffList;
+        ViewBag.idPrice = price.IdPrice;
+
+        if (price == null)
+        {
+            return NotFound();
+        }
+
+        var m = _context.Prices
+            .Include(p => p.RouteStopStart)
+            .Include(p => p.RouteStopEnd)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.RouteStops)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Seats)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Brand)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.VehicleType)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.Pickups)
+                        .ThenInclude(p => p.City)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.DropOffs)
+                        .ThenInclude(d => d.City)
+            .AsSplitQuery()
+            .AsQueryable().ToList();
+
+        // Tính số ghế trống lại
+        var emptySeats = new Dictionary<int, int>();
+        foreach (var i in m)
+        {
+            if (price?.ScheduleDetails?.Coach?.Seats != null)
+            {
+                emptySeats[price.ScheduleDetails.IdCoach] = i.ScheduleDetails.Coach.Seats
+                    .Count(s => s.State == SeatState.Trong);
+            }
+            else
+            {
+                emptySeats[price?.ScheduleDetails?.IdCoach ?? 0] = 0;
+            }
+        }
+        ViewBag.EmptySeats = emptySeats;
+
+        return View(price);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Details(List<int> SoGhe, int diemDi, int diemDen, int idPrice)
+    {
+        if (SoGhe == null || SoGhe.Count <= 0)
+        {
+            var price = _context.Prices
+             .Include(p => p.RouteStopStart)
+             .Include(p => p.RouteStopEnd)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.BusRoute)
+                     .ThenInclude(r => r.RouteStops)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.Coach)
+                     .ThenInclude(c => c.Seats)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.Coach)
+                     .ThenInclude(c => c.Brand)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.Coach)
+                     .ThenInclude(c => c.VehicleType)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.BusRoute)
+                     .ThenInclude(r => r.Pickups)
+                         .ThenInclude(p => p.City)
+             .Include(p => p.ScheduleDetails)
+                 .ThenInclude(sd => sd.BusRoute)
+                     .ThenInclude(r => r.DropOffs)
+                         .ThenInclude(d => d.City)
+             .FirstOrDefault(p => p.IdPrice == idPrice);
+
+            // Danh sách ghế
+            var SeatList = _context.Seats
+                .Include(s => s.Coach)
+                .Where(s => s.Coach.IdCoach == price.ScheduleDetails.IdCoach)
+                .ToList();
+            ViewBag.SeatList = SeatList;
+
+            // Danh sách điểm đón
+            var PickUpList = _context.Pickups
+                .Include(p => p.City)
+                .Where(p => p.IdRoute == price.ScheduleDetails.BusRoute.IdRoute)
+                .ToList();
+            ViewBag.PickUpList = PickUpList;
+
+            // Danh sách điểm trả
+            var DropOffList = _context.DropOffs
+                .Include(d => d.City)
+                .Where(d => d.IdRoute == price.ScheduleDetails.BusRoute.IdRoute)
+                .ToList();
+            ViewBag.DropOffList = DropOffList;
+            ViewBag.idPrice = price.IdPrice;
+            ModelState.AddModelError(string.Empty, "Chọn ghế!!!");
+            return View(price);
+        }
+
+        // Get current user and corresponding Passenger
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+            return View("Details", new { id = idPrice }); // Redirect back to Details GET
+        }
+
+        var passenger = await _context.Passengers
+            .FirstOrDefaultAsync(p => p.UserId == user.Id);
+        if (passenger == null)
+        {
+            ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin hành khách. Vui lòng liên hệ quản trị viên.");
+            return View("Details", new { id = idPrice }); // Redirect back to Details GET
+        }
+
+        foreach (var item in SoGhe)
+        {
+            Ticket x = new Ticket();
+            x.IdPrice = idPrice;
+            x.IdSeat = item;
+            x.CreatedDate = DateTime.Now;
+            x.IdPassenger = passenger.IdPassenger; // Use the logged-in user's Passenger ID
+            x.State = TicketState.ChuaThanhToan;
+            var seat = _context.Seats.FirstOrDefault(s => s.IdSeat == item);
+            if (seat != null)
+            {
+                seat.State = SeatState.DaDat;
+                _context.Update(seat);
+            }
+            _context.Tickets.Add(x);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Index");
     }
 }

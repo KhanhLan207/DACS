@@ -2,16 +2,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TicketBus.Data;
 using TicketBus.Models;
+using TicketBus.Models.Momo;
 using TicketBus.Repositories;
+using TicketBus.Services.Momo;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//Momo API Payment
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
+
 // Đăng ký DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 // Đăng ký Identity sử dụng ApplicationUser
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
