@@ -1352,7 +1352,49 @@ namespace TicketBus.Data
                 .HasForeignKey(t => t.IdEmployee)
                 .OnDelete(DeleteBehavior.NoAction);
 
-
+            // Trip entity configuration - fix multiple cascade paths
+            modelBuilder.Entity<Trip>()
+                .HasOne(t => t.Coach)
+                .WithMany()
+                .HasForeignKey(t => t.CoachId)
+                .OnDelete(DeleteBehavior.NoAction);
+            
+            modelBuilder.Entity<Trip>()
+                .HasOne(t => t.Route)
+                .WithMany()
+                .HasForeignKey(t => t.RouteId)
+                .OnDelete(DeleteBehavior.NoAction);
+            
+            // Configure decimal precision for Bill entity
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.Total)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.DiscountPercentage)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.DiscountedAmount)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Bill>()
+                .Property(b => b.FinalTotal)
+                .HasPrecision(18, 2);
+                
+            // Configure decimal precision for Position entity
+            modelBuilder.Entity<Position>()
+                .Property(p => p.BaseSalary)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<Position>()
+                .Property(p => p.Bonus)
+                .HasPrecision(18, 2);
+                
+            // Configure decimal precision for Price entity
+            modelBuilder.Entity<Price>()
+                .Property(p => p.PriceValue)
+                .HasPrecision(18, 2);
           
         }
     }

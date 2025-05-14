@@ -244,12 +244,15 @@ namespace TicketBus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("DiscountPercentage")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("DiscountedAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("FinalTotal")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("IdPassenger")
@@ -259,6 +262,7 @@ namespace TicketBus.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("IdBill");
@@ -2276,14 +2280,14 @@ namespace TicketBus.Migrations
                             IdDistrict = 207,
                             DistrictCode = "DIST-DL-05",
                             IdCity = 19,
-                            NameDistrict = "Huyện Cư M’gar"
+                            NameDistrict = "Huyện Cư M'gar"
                         },
                         new
                         {
                             IdDistrict = 208,
                             DistrictCode = "DIST-DL-06",
                             IdCity = 19,
-                            NameDistrict = "Huyện Ea H’leo"
+                            NameDistrict = "Huyện Ea H'leo"
                         },
                         new
                         {
@@ -2346,7 +2350,7 @@ namespace TicketBus.Migrations
                             IdDistrict = 217,
                             DistrictCode = "DIST-DL-15",
                             IdCity = 19,
-                            NameDistrict = "Huyện M’Đrắk"
+                            NameDistrict = "Huyện M'Đrắk"
                         },
                         new
                         {
@@ -2381,7 +2385,7 @@ namespace TicketBus.Migrations
                             IdDistrict = 222,
                             DistrictCode = "DIST-DN-05",
                             IdCity = 20,
-                            NameDistrict = "Huyện Đắk R’lấp"
+                            NameDistrict = "Huyện Đắk R'lấp"
                         },
                         new
                         {
@@ -5745,6 +5749,90 @@ namespace TicketBus.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.OrderDetail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PassengerName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PassengerPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SeatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TripId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("TripId");
+
+                    b.ToTable("OrderDetail");
+                });
+
             modelBuilder.Entity("TicketBus.Models.Passenger", b =>
                 {
                     b.Property<int>("IdPassenger")
@@ -5776,6 +5864,53 @@ namespace TicketBus.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Passengers");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentInfo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionCode")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("TicketBus.Models.Pickup", b =>
@@ -5818,9 +5953,11 @@ namespace TicketBus.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdPos"));
 
                     b.Property<decimal>("BaseSalary")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("Bonus")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("NamePos")
@@ -5864,6 +6001,7 @@ namespace TicketBus.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("PriceValue")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("IdPrice");
@@ -5991,16 +6129,32 @@ namespace TicketBus.Migrations
                     b.Property<int?>("CoachIdCoach")
                         .HasColumnType("int");
 
+                    b.Property<int>("Column")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdCoach")
                         .HasColumnType("int");
 
-                    b.Property<string>("SeatCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SeatNumber")
+                    b.Property<int>("Row")
                         .HasColumnType("int");
 
+                    b.Property<string>("SeatCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SeatNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<int>("State")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("IdSeat");
@@ -6052,6 +6206,43 @@ namespace TicketBus.Migrations
                     b.HasIndex("IdSeat");
 
                     b.ToTable("Tickets");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Trip", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CoachId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DepartureDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("DepartureTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RouteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CoachId");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("Trips");
                 });
 
             modelBuilder.Entity("TicketBus.Models.TypeNews", b =>
@@ -6543,6 +6734,42 @@ namespace TicketBus.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.Order", b =>
+                {
+                    b.HasOne("TicketBus.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.OrderDetail", b =>
+                {
+                    b.HasOne("TicketBus.Models.Order", "Order")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketBus.Models.Seat", "Seat")
+                        .WithMany()
+                        .HasForeignKey("SeatId");
+
+                    b.HasOne("TicketBus.Models.Trip", "Trip")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Seat");
+
+                    b.Navigation("Trip");
+                });
+
             modelBuilder.Entity("TicketBus.Models.Passenger", b =>
                 {
                     b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
@@ -6551,6 +6778,17 @@ namespace TicketBus.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Payment", b =>
+                {
+                    b.HasOne("TicketBus.Models.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("TicketBus.Models.Pickup", b =>
@@ -6713,6 +6951,25 @@ namespace TicketBus.Migrations
                     b.Navigation("Seat");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.Trip", b =>
+                {
+                    b.HasOne("TicketBus.Models.Coach", "Coach")
+                        .WithMany()
+                        .HasForeignKey("CoachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("TicketBus.Models.BusRoute", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Coach");
+
+                    b.Navigation("Route");
+                });
+
             modelBuilder.Entity("TicketBus.Models.Brand", b =>
                 {
                     b.Navigation("Coaches");
@@ -6748,9 +7005,21 @@ namespace TicketBus.Migrations
                     b.Navigation("Seats");
                 });
 
+            modelBuilder.Entity("TicketBus.Models.Order", b =>
+                {
+                    b.Navigation("OrderDetails");
+
+                    b.Navigation("Payments");
+                });
+
             modelBuilder.Entity("TicketBus.Models.ScheduleDetails", b =>
                 {
                     b.Navigation("Prices");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Trip", b =>
+                {
+                    b.Navigation("OrderDetails");
                 });
 
             modelBuilder.Entity("TicketBus.Models.VehicleType", b =>
