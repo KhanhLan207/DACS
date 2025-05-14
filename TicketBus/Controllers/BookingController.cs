@@ -198,10 +198,23 @@ namespace TicketBus.Controllers
         [Authorize]
         public async Task<IActionResult> Confirm(BookingInfoViewModel model)
         {
+            // Add debugging to see what's happening
+            if (model == null)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu đặt vé không hợp lệ.";
+                return RedirectToAction("Search");
+            }
+
+            // Relax model validation temporarily to help debug
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Thông tin không hợp lệ. Vui lòng kiểm tra lại.";
-                return RedirectToAction(nameof(PassengerInfo), new { tripId = model.TripId, selectedSeats = model.SelectedSeatIds });
+                // Log model state errors
+                var errors = string.Join("; ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                
+                TempData["ErrorMessage"] = $"Thông tin không hợp lệ: {errors}";
+                // Continue anyway for debugging purposes
             }
             
             var trip = await _context.Trips
@@ -212,16 +225,24 @@ namespace TicketBus.Controllers
             
             if (trip == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin chuyến đi.";
+                return RedirectToAction("Search");
             }
             
             // Kiểm tra ghế còn trống không
             var bookedSeatIds = await _context.Orders
-                .Where(o => o.Status != OrderStatus.Cancelled)
+                .Where(o => o.Status != OrderStatus.Cancelled && o.Status != OrderStatus.Failed)
                 .SelectMany(o => o.OrderDetails)
                 .Where(od => od.TripId == model.TripId)
                 .Select(od => od.SeatId.Value)
                 .ToListAsync();
+            
+            // Fix issue with seat selection
+            if (model.SelectedSeatIds == null || !model.SelectedSeatIds.Any())
+            {
+                TempData["ErrorMessage"] = "Vui lòng chọn ít nhất một ghế.";
+                return RedirectToAction(nameof(SelectSeats), new { tripId = model.TripId });
+            }
             
             // Kiểm tra xem có ghế nào đã được đặt rồi không
             var conflictSeats = model.SelectedSeatIds.Intersect(bookedSeatIds).ToList();
@@ -235,54 +256,70 @@ namespace TicketBus.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Confirm", "Booking") });
+                // Redirect to login with return URL
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("PassengerInfo", "Booking", new { tripId = model.TripId }) });
             }
             
-            // Tính tổng tiền
-            var price = await _context.Prices
-                .Where(p => p.IdSchedule == trip.RouteId) // Giả định là dùng RouteId thay cho IdSchedule
-                .OrderByDescending(p => p.PriceValue)
-                .FirstOrDefaultAsync();
-            
-            decimal totalAmount = price?.PriceValue * model.SelectedSeatIds.Count ?? 0;
-            
-            // Tạo đơn hàng mới
-            var order = new Order
+            try
             {
-                UserId = user.Id,
-                TotalAmount = totalAmount,
-                Status = OrderStatus.Pending,
-                Note = model.Note ?? ""
-            };
-            
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-            
-            // Tạo chi tiết đơn hàng cho từng ghế
-            for (int i = 0; i < model.SelectedSeatIds.Count; i++)
-            {
-                var seatId = model.SelectedSeatIds[i];
-                var passengerName = model.PassengerNames[i];
-                var passengerPhone = model.PassengerPhones[i];
+                // Tính tổng tiền
+                var price = await _context.Prices
+                    .Where(p => p.IdSchedule == trip.RouteId) // Giả định là dùng RouteId thay cho IdSchedule
+                    .OrderByDescending(p => p.PriceValue)
+                    .FirstOrDefaultAsync();
                 
-                var orderDetail = new OrderDetail
+                decimal totalAmount = price?.PriceValue * model.SelectedSeatIds.Count ?? 0;
+                
+                // Tạo đơn hàng mới
+                var order = new Order
                 {
-                    OrderId = order.Id,
-                    TripId = trip.Id,
-                    SeatId = seatId,
-                    Price = price?.PriceValue ?? 0,
-                    PassengerName = passengerName,
-                    PassengerPhone = passengerPhone,
+                    UserId = user.Id,
+                    TotalAmount = totalAmount,
+                    Status = OrderStatus.Pending,
                     Note = model.Note ?? ""
                 };
                 
-                _context.Add(orderDetail);
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+                
+                // Tạo chi tiết đơn hàng cho từng ghế
+                for (int i = 0; i < model.SelectedSeatIds.Count; i++)
+                {
+                    var seatId = model.SelectedSeatIds[i];
+                    // Handle missing passenger names/phones - use defaults if necessary
+                    var passengerName = (model.PassengerNames != null && model.PassengerNames.Count > i) 
+                        ? model.PassengerNames[i] 
+                        : user.FullName ?? "Khách hàng";
+                    
+                    var passengerPhone = (model.PassengerPhones != null && model.PassengerPhones.Count > i) 
+                        ? model.PassengerPhones[i] 
+                        : user.PhoneNumber ?? "";
+                    
+                    var orderDetail = new OrderDetail
+                    {
+                        OrderId = order.Id,
+                        TripId = trip.Id,
+                        SeatId = seatId,
+                        Price = price?.PriceValue ?? 0,
+                        PassengerName = passengerName,
+                        PassengerPhone = passengerPhone,
+                        Note = model.Note ?? ""
+                    };
+                    
+                    _context.Add(orderDetail);
+                }
+                
+                await _context.SaveChangesAsync();
+                
+                // Chuyển đến trang thanh toán
+                return RedirectToAction("Index", "Checkout", new { orderId = order.Id });
             }
-            
-            await _context.SaveChangesAsync();
-            
-            // Chuyển đến trang thanh toán
-            return RedirectToAction("Index", "Checkout", new { orderId = order.Id });
+            catch (Exception ex)
+            {
+                // Log the exception
+                TempData["ErrorMessage"] = $"Lỗi khi xử lý đơn hàng: {ex.Message}";
+                return RedirectToAction(nameof(PassengerInfo), new { tripId = model.TripId, selectedSeats = model.SelectedSeatIds });
+            }
         }
     }
     

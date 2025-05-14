@@ -170,6 +170,8 @@
                                         </label>
                                     </div>
                                 }
+                                <!-- Add validation message -->
+                                <div class="invalid-feedback">Vui lòng chọn điểm đón</div>
                             </div>
                         </div>
                     </div>
@@ -188,6 +190,8 @@
                                         </label>
                                     </div>
                                 }
+                                <!-- Add validation message -->
+                                <div class="invalid-feedback">Vui lòng chọn điểm trả</div>
                             </div>
                         </div>
                     </div>
@@ -196,7 +200,7 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="tab" data-bs-target="#nav-ghe">
                         <i class="bi bi-arrow-left-circle"></i> Quay lại
                     </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="submitButton">
                         <i class="bi bi-ticket-detailed-fill"></i> Đặt vé
                     </button>
                 </div>
@@ -210,6 +214,8 @@
         const seatCheckboxes = document.querySelectorAll('.seat-checkbox');
         const continueBtn = document.getElementById('continue-btn');
         const totalPriceElement = document.getElementById('total-price');
+        const form = document.querySelector('form');
+        const submitButton = document.getElementById('submitButton');
 
         // Function to update total price
         function updateTotalPrice() {
@@ -243,6 +249,47 @@
                 updateTotalPrice();
                 updateContinueButton();
             });
+        });
+
+        // Enhanced form validation before submission
+        form.addEventListener('submit', function(event) {
+            // Check if any seat is selected
+            const selectedSeats = Array.from(seatCheckboxes).filter(checkbox => checkbox.checked && !checkbox.disabled);
+            if (selectedSeats.length === 0) {
+                event.preventDefault();
+                alert('Vui lòng chọn ít nhất một ghế!');
+                return false;
+            }
+            
+            // Check if pickup point is selected
+            const pickupSelected = document.querySelector('input[name="diemDi"]:checked');
+            if (!pickupSelected) {
+                event.preventDefault();
+                alert('Vui lòng chọn điểm đón!');
+                document.getElementById('nav-diem-tab').click(); // Switch to pickup/dropoff tab
+                return false;
+            }
+            
+            // Check if dropoff point is selected
+            const dropoffSelected = document.querySelector('input[name="diemDen"]:checked');
+            if (!dropoffSelected) {
+                event.preventDefault();
+                alert('Vui lòng chọn điểm trả!');
+                document.getElementById('nav-diem-tab').click(); // Switch to pickup/dropoff tab
+                return false;
+            }
+            
+            // Log form data for debugging
+            console.log('Form is valid, submitting...');
+            console.log('Selected seats:', selectedSeats.map(s => s.value).join(', '));
+            console.log('Pickup point:', pickupSelected.value);
+            console.log('Dropoff point:', dropoffSelected.value);
+            
+            // Disable submit button to prevent double submission
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+            
+            return true;
         });
 
         // Initial check

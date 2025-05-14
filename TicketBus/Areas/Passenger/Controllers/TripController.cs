@@ -354,40 +354,96 @@ public class TripController : Controller
             return View(price);
         }
 
-        // Get current user and corresponding Passenger
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
+        try
         {
-            ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
-            return View("Details", new { id = idPrice }); // Redirect back to Details GET
-        }
-
-        var passenger = await _context.Passengers
-            .FirstOrDefaultAsync(p => p.UserId == user.Id);
-        if (passenger == null)
-        {
-            ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin hành khách. Vui lòng liên hệ quản trị viên.");
-            return View("Details", new { id = idPrice }); // Redirect back to Details GET
-        }
-
-        foreach (var item in SoGhe)
-        {
-            Ticket x = new Ticket();
-            x.IdPrice = idPrice;
-            x.IdSeat = item;
-            x.CreatedDate = DateTime.Now;
-            x.IdPassenger = passenger.IdPassenger; // Use the logged-in user's Passenger ID
-            x.State = TicketState.ChuaThanhToan;
-            var seat = _context.Seats.FirstOrDefault(s => s.IdSeat == item);
-            if (seat != null)
+            // Get current user and corresponding Passenger
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                seat.State = SeatState.DaDat;
-                _context.Update(seat);
+                ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
+                return View("Details", new { id = idPrice }); // Redirect back to Details GET
             }
-            _context.Tickets.Add(x);
-        }
 
-        await _context.SaveChangesAsync();
-        return RedirectToAction("Index");
+            var passenger = await _context.Passengers
+                .FirstOrDefaultAsync(p => p.UserId == user.Id);
+            if (passenger == null)
+            {
+                ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin hành khách. Vui lòng liên hệ quản trị viên.");
+                return View("Details", new { id = idPrice }); // Redirect back to Details GET
+            }
+
+            // Get price information
+            var price = await _context.Prices
+                .Include(p => p.ScheduleDetails)
+                .FirstOrDefaultAsync(p => p.IdPrice == idPrice);
+            
+            if (price == null)
+            {
+                ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin giá vé.");
+                return View("Details", new { id = idPrice });
+            }
+
+            // Calculate total amount
+            decimal totalAmount = price.PriceValue * SoGhe.Count;
+
+            // Create new order
+            var order = new Order
+            {
+                UserId = user.Id,
+                OrderDate = DateTime.Now,
+                TotalAmount = totalAmount,
+                Status = OrderStatus.Pending,
+                Note = $"Đặt vé từ {diemDi} đến {diemDen}"
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Create order details and tickets
+            foreach (var seatId in SoGhe)
+            {
+                // Create ticket
+                var ticket = new Ticket
+                {
+                    IdPrice = idPrice,
+                    IdSeat = seatId,
+                    CreatedDate = DateTime.Now,
+                    IdPassenger = passenger.IdPassenger,
+                    State = TicketState.ChuaThanhToan
+                };
+                _context.Tickets.Add(ticket);
+
+                // Update seat status
+                var seat = await _context.Seats.FindAsync(seatId);
+                if (seat != null)
+                {
+                    seat.State = SeatState.DaDat;
+                    _context.Update(seat);
+                }
+
+                // Create order detail
+                var orderDetail = new OrderDetail
+                {
+                    OrderId = order.Id,
+                    TripId = price.ScheduleDetails.IdSchedule, // Assuming IdSchedule maps to TripId
+                    SeatId = seatId,
+                    Price = price.PriceValue,
+                    PassengerName = passenger.NamePassenger ?? user.FullName,
+                    PassengerPhone = passenger.PhoneNumber ?? user.PhoneNumber
+                };
+                _context.OrderDetails.Add(orderDetail);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Redirect to checkout page
+            return RedirectToAction("Index", "Checkout", new { area = "", orderId = order.Id });
+        }
+        catch (Exception ex)
+        {
+            // Log the error
+            ModelState.AddModelError(string.Empty, $"Lỗi khi đặt vé: {ex.Message}");
+            return View("Details", new { id = idPrice });
+        }
     }
 }

@@ -34,42 +34,103 @@ namespace TicketBus.Controllers
         [Authorize]
         public async Task<IActionResult> Index(int orderId)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
+            try
             {
-                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Index", "Checkout", new { orderId }) });
-            }
-
-            // Lấy thông tin đơn hàng từ database
-            var order = await _context.Orders
-                .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Trip)
-                .ThenInclude(t => t.Route)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == user.Id);
-
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            // Tạo model cho view
-            var model = new OrderCheckoutViewModel
-            {
-                OrderId = order.Id.ToString(),
-                CustomerName = user.FullName,
-                Email = user.Email,
-                Phone = user.PhoneNumber,
-                TotalAmount = order.TotalAmount,
-                OrderDetails = order.OrderDetails.Select(od => new OrderDetailViewModel
+                // Add debug information
+                System.Diagnostics.Debug.WriteLine($"Checkout initiated for orderId: {orderId}");
+                
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
                 {
-                    RouteName = od.Trip.Route.NameRoute,
-                    DepartureDate = od.Trip.DepartureDate,
-                    DepartureTime = od.Trip.DepartureTime.ToString(@"hh\:mm"),
-                    Price = od.Price
-                }).ToList()
-            };
+                    TempData["ErrorMessage"] = "Bạn cần đăng nhập để tiếp tục.";
+                    return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Index", "Checkout", new { orderId }) });
+                }
 
-            return View(model);
+                // Lấy thông tin đơn hàng từ database
+                var order = await _context.Orders
+                    .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Trip)
+                    .ThenInclude(t => t.Route)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                if (order == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Order not found: {orderId}");
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin đơn hàng.";
+                    return RedirectToAction("Index", "Home");
+                }
+                
+                // Log order details for debugging
+                System.Diagnostics.Debug.WriteLine($"Order found: {order.Id}, Status: {order.Status}, User: {order.UserId}");
+                
+                // Check if order belongs to current user
+                if (order.UserId != user.Id)
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền truy cập đơn hàng này.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Check if order is in the correct state for payment
+                if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Created)
+                {
+                    if (order.Status == OrderStatus.Paid || order.Status == OrderStatus.Completed)
+                    {
+                        TempData["SuccessMessage"] = "Đơn hàng này đã được thanh toán.";
+                        return RedirectToAction("PaymentSuccess", new { orderId = order.Id });
+                    }
+                    
+                    TempData["ErrorMessage"] = "Đơn hàng này không thể thanh toán.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // For clearer debugging, log the order details we're about to send to the view
+                System.Diagnostics.Debug.WriteLine($"Creating checkout model for order: {order.Id}");
+                System.Diagnostics.Debug.WriteLine($"Order has {order.OrderDetails?.Count ?? 0} details");
+
+                // Fix for possible null references
+                if (order.OrderDetails == null || !order.OrderDetails.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine("Order has no details!");
+                    TempData["ErrorMessage"] = "Đơn hàng không có chi tiết. Vui lòng thử đặt vé lại.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Tạo model cho view
+                var model = new OrderCheckoutViewModel
+                {
+                    OrderId = order.Id.ToString(),
+                    CustomerName = user.FullName,
+                    Email = user.Email,
+                    Phone = user.PhoneNumber,
+                    TotalAmount = order.TotalAmount,
+                    OrderDetails = order.OrderDetails.Select(od => new OrderDetailViewModel
+                    {
+                        RouteName = od.Trip?.Route?.NameRoute ?? "Unknown Route",
+                        DepartureDate = od.Trip?.DepartureDate ?? DateTime.Now,
+                        DepartureTime = od.Trip?.DepartureTime.ToString(@"hh\:mm") ?? "00:00",
+                        Price = od.Price
+                    }).ToList()
+                };
+
+                // Log that we're about to return the view
+                System.Diagnostics.Debug.WriteLine("Returning checkout view with model");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                // Comprehensive error logging
+                System.Diagnostics.Debug.WriteLine($"Error in Checkout/Index: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                
+                // Log inner exception if any
+                if (ex.InnerException != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
+                
+                TempData["ErrorMessage"] = $"Đã xảy ra lỗi: {ex.Message}";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         [HttpPost]

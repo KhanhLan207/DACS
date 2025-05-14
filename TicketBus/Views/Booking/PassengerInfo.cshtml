@@ -14,14 +14,24 @@
 
     @if (!User.Identity.IsAuthenticated)
     {
-        <div class="alert alert-info" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i>
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
             <strong>Lưu ý:</strong> Bạn cần <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("PassengerInfo", "Booking", new { tripId = trip.Id }) })">đăng nhập</a> để hoàn tất đặt vé.
-            Tuy nhiên, bạn vẫn có thể điền thông tin hành khách trước.
+            Vui lòng đăng nhập trước khi tiếp tục.
         </div>
     }
 
-    <form method="post" action="@Url.Action("Confirm", "Booking")" class="needs-validation" novalidate>
+    <!-- Display any error messages -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form id="bookingForm" method="post" action="@Url.Action("Confirm", "Booking")" class="needs-validation" novalidate>
         <input type="hidden" name="TripId" value="@trip.Id" />
         @foreach (var seat in seats)
         {
@@ -196,7 +206,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button type="submit" class="btn btn-primary w-100">Tiếp tục thanh toán</button>
+                        <button type="submit" id="submitBooking" class="btn btn-primary w-100">Tiếp tục thanh toán</button>
                         <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="history.back()">Quay lại</button>
                     </div>
                 </div>
@@ -274,11 +284,25 @@
                     if (!form.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();
+                        
+                        // Show alert for invalid form
+                        alert('Vui lòng điền đầy đủ thông tin trước khi tiếp tục!');
+                    } else if (!checkAuthentication()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        // Redirect to login
+                        window.location.href = '@Url.Action("Login", "Account", new { returnUrl = Url.Action("PassengerInfo", "Booking", new { tripId = trip.Id }) })';
                     }
                     
                     form.classList.add('was-validated');
                 }, false);
             });
+            
+            // Check if user is authenticated
+            function checkAuthentication() {
+                return @(User.Identity.IsAuthenticated ? "true" : "false");
+            }
         })();
         
         // Passenger tabs navigation
@@ -286,6 +310,41 @@
             $('#passengerTabs button').on('click', function(e) {
                 e.preventDefault();
                 $(this).tab('show');
+            });
+            
+            // Handle submission for unauthenticated users
+            $('#submitBooking').on('click', function(e) {
+                if (!@(User.Identity.IsAuthenticated ? "true" : "false")) {
+                    e.preventDefault();
+                    if (confirm('Bạn cần đăng nhập để tiếp tục. Chuyển đến trang đăng nhập?')) {
+                        window.location.href = '@Url.Action("Login", "Account", new { returnUrl = Url.Action("PassengerInfo", "Booking", new { tripId = trip.Id }) })';
+                    }
+                }
+            });
+            
+            // Fix form submission for default options
+            $('#bookingForm').on('submit', function() {
+                // Ensure all tabs have values
+                var valid = true;
+                @for (int i = 0; i < seats.Count; i++)
+                {
+                    <text>
+                    if ($('#passenger-name-@i').val() === '') {
+                        $('#passengerTabs button[data-bs-target="#passenger-@i"]').tab('show');
+                        $('#passenger-name-@i').focus();
+                        valid = false;
+                        return false;
+                    }
+                    if ($('#passenger-phone-@i').val() === '') {
+                        $('#passengerTabs button[data-bs-target="#passenger-@i"]').tab('show');
+                        $('#passenger-phone-@i').focus();
+                        valid = false;
+                        return false;
+                    }
+                    </text>
+                }
+                
+                return valid;
             });
         });
     </script>
