@@ -20,6 +20,7 @@ namespace TicketBus.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<News> News { get; set; }
+        public DbSet<Order> Orders { get; set; }
         public DbSet<Passenger> Passengers { get; set; }
         public DbSet<Pickup> Pickups { get; set; }
         public DbSet<Position> Positions { get; set; }
@@ -33,6 +34,8 @@ namespace TicketBus.Data
         public DbSet<TypeNews> TypeNews { get; set; }
         public DbSet<VehicleType> VehicleTypes { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Trip> Trips { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -423,8 +426,8 @@ namespace TicketBus.Data
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-02", NameDistrict = "TX. Buôn Hồ", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-03", NameDistrict = "Huyện Buôn Đôn", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-04", NameDistrict = "Huyện Cư Kuin", IdCity = 19 },
-                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-05", NameDistrict = "Huyện Cư M’gar", IdCity = 19 },
-                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-06", NameDistrict = "Huyện Ea H’leo", IdCity = 19 },
+                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-05", NameDistrict = "Huyện Cư M'gar", IdCity = 19 },
+                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-06", NameDistrict = "Huyện Ea H'leo", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-07", NameDistrict = "Huyện Ea Kar", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-08", NameDistrict = "Huyện Ea Súp", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-09", NameDistrict = "Huyện Krông Ana", IdCity = 19 },
@@ -433,7 +436,7 @@ namespace TicketBus.Data
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-12", NameDistrict = "Huyện Krông Năng", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-13", NameDistrict = "Huyện Krông Pắc", IdCity = 19 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-14", NameDistrict = "Huyện Lắk", IdCity = 19 },
-                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-15", NameDistrict = "Huyện M’Đrắk", IdCity = 19 }
+                new District { IdDistrict = districtId++, DistrictCode = "DIST-DL-15", NameDistrict = "Huyện M'Đrắk", IdCity = 19 }
             );
 
             // Đắk Nông (IdCity = 20)
@@ -442,7 +445,7 @@ namespace TicketBus.Data
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-02", NameDistrict = "Huyện Cư Jút", IdCity = 20 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-03", NameDistrict = "Huyện Đắk Glong", IdCity = 20 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-04", NameDistrict = "Huyện Đắk Mil", IdCity = 20 },
-                new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-05", NameDistrict = "Huyện Đắk R’lấp", IdCity = 20 },
+                new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-05", NameDistrict = "Huyện Đắk R'lấp", IdCity = 20 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-06", NameDistrict = "Huyện Đắk Song", IdCity = 20 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-07", NameDistrict = "Huyện Krông Nô", IdCity = 20 },
                 new District { IdDistrict = districtId++, DistrictCode = "DIST-DN-08", NameDistrict = "Huyện Tuy Đức", IdCity = 20 }

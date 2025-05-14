@@ -12,8 +12,8 @@ using TicketBus.Data;
 namespace TicketBus.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250506013821_addDB")]
-    partial class addDB
+    [Migration("20250513065836_newV1")]
+    partial class newV1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -5771,7 +5771,12 @@ namespace TicketBus.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("IdPassenger");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Passengers");
                 });
@@ -6539,6 +6544,16 @@ namespace TicketBus.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TicketBus.Models.Passenger", b =>
+                {
+                    b.HasOne("TicketBus.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("TicketBus.Models.Pickup", b =>

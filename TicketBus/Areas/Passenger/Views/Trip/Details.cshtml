@@ -125,13 +125,13 @@
                         <div class="seat-grid">
                             @foreach (Seat seat in ViewBag.SeatList)
                             {
-                                var isLeftSide = seat.SeatNumber % 2 == 0; // Even numbers for left, odd for right (adjust logic as needed)
-                                                                           <div class="@(isLeftSide ? "seat-left" : "seat-right")">
-                                                                               <input type="checkbox" class="seat-checkbox" name="SoGhe" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
-                                                                               <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
-                                                                                   <i class="bi bi-chair"></i> @seat.SeatCode
-                                                                               </label>
-                                                                           </div>
+                                var isLeftSide = int.Parse(seat.SeatNumber.ToString()) % 2 == 0; // Even numbers for left, odd for right (adjust logic as needed)
+                                <div class="@(isLeftSide ? "seat-left" : "seat-right")">
+                                    <input type="checkbox" class="seat-checkbox" name="SoGhe" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                    <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
+                                        <i class="bi bi-chair"></i> @seat.SeatCode
+                                    </label>
+                                </div>
                             }
                         </div>
                         <div class="mt-3">

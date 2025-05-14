@@ -1,0 +1,292 @@
+@{
+    ViewData["Title"] = "Thông tin hành khách";
+    var trip = ViewBag.Trip as TicketBus.Models.Trip;
+    var seats = ViewBag.Seats as List<TicketBus.Models.Seat>;
+    var pickups = ViewBag.Pickups as List<TicketBus.Models.Pickup>;
+    var dropoffs = ViewBag.Dropoffs as List<TicketBus.Models.DropOff>;
+    var totalAmount = ViewBag.TotalAmount as decimal?;
+    var user = ViewBag.UserInfo as TicketBus.Models.ApplicationUser;
+}
+
+<div class="container mt-4">
+    <!-- Stepper -->
+    @await Html.PartialAsync("_BookingStepper", 3)
+
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Lưu ý:</strong> Bạn cần <a href="@Url.Action("Login", "Account", new { returnUrl = Url.Action("PassengerInfo", "Booking", new { tripId = trip.Id }) })">đăng nhập</a> để hoàn tất đặt vé.
+            Tuy nhiên, bạn vẫn có thể điền thông tin hành khách trước.
+        </div>
+    }
+
+    <form method="post" action="@Url.Action("Confirm", "Booking")" class="needs-validation" novalidate>
+        <input type="hidden" name="TripId" value="@trip.Id" />
+        @foreach (var seat in seats)
+        {
+            <input type="hidden" name="SelectedSeatIds" value="@seat.IdSeat" />
+        }
+
+        <div class="row">
+            <!-- Main content - Passenger info -->
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Thông tin hành khách</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Passenger information tabs -->
+                        <ul class="nav nav-tabs mb-3" id="passengerTabs" role="tablist">
+                            @for (int i = 0; i < seats.Count; i++)
+                            {
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(i == 0 ? "active" : "")" id="passenger-tab-@i" 
+                                            data-bs-toggle="tab" data-bs-target="#passenger-@i" 
+                                            type="button" role="tab" aria-selected="@(i == 0 ? "true" : "false")">
+                                        Ghế @seats[i].SeatCode
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                        
+                        <div class="tab-content" id="passengerTabsContent">
+                            @for (int i = 0; i < seats.Count; i++)
+                            {
+                                <div class="tab-pane fade @(i == 0 ? "show active" : "")" id="passenger-@i" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="passenger-name-@i" class="form-label">Họ tên hành khách <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="passenger-name-@i" name="PassengerNames" 
+                                                   value="@(i == 0 && user != null ? user.FullName : "")" required>
+                                            <div class="invalid-feedback">
+                                                Vui lòng nhập họ tên hành khách
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="passenger-phone-@i" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                            <input type="tel" class="form-control" id="passenger-phone-@i" name="PassengerPhones"
+                                                   value="@(i == 0 && user != null ? user.PhoneNumber : "")" required>
+                                            <div class="invalid-feedback">
+                                                Vui lòng nhập số điện thoại hợp lệ
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Pickup and drop-off points -->
+                        <h5 class="mb-3">Điểm đón / trả khách</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="pickup-point" class="form-label">Điểm đón <span class="text-danger">*</span></label>
+                                <select class="form-select" id="pickup-point" name="PickupId" required>
+                                    <option value="">-- Chọn điểm đón --</option>
+                                    @foreach (var pickup in pickups)
+                                    {
+                                        <option value="@pickup.IdPickup">@pickup.PickupName - @pickup.City?.NameCity</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback">
+                                    Vui lòng chọn điểm đón
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="dropoff-point" class="form-label">Điểm trả <span class="text-danger">*</span></label>
+                                <select class="form-select" id="dropoff-point" name="DropOffId" required>
+                                    <option value="">-- Chọn điểm trả --</option>
+                                    @foreach (var dropoff in dropoffs)
+                                    {
+                                        <option value="@dropoff.IdDropOff">@dropoff.DropOffName - @dropoff.City?.NameCity</option>
+                                    }
+                                </select>
+                                <div class="invalid-feedback">
+                                    Vui lòng chọn điểm trả
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Ghi chú đặc biệt (nếu có)</label>
+                            <textarea class="form-control" id="note" name="Note" rows="3" placeholder="VD: Hành lý cồng kềnh, nhu cầu đặc biệt, v.v."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order summary sidebar -->
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Thông tin chuyến đi</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="@(string.IsNullOrEmpty(trip.Coach.Brand.Image) ? "/images/default-brand.png" : trip.Coach.Brand.Image)" 
+                                 alt="@trip.Coach.Brand.NameBrand" class="rounded me-2" width="40" height="40">
+                            <h6 class="mb-0">@trip.Coach.Brand.NameBrand</h6>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex">
+                                <div class="route-icon me-2">
+                                    <i class="bi bi-geo-alt-fill text-success"></i>
+                                </div>
+                                <div>
+                                    <strong>Điểm đi:</strong> @trip.Route.StartCity?.NameCity<br>
+                                    <small class="text-muted">@trip.DepartureDate.ToString("dd/MM/yyyy") - @trip.DepartureTime.ToString(@"hh\:mm")</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex">
+                                <div class="route-icon me-2">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                </div>
+                                <div>
+                                    <strong>Điểm đến:</strong> @trip.Route.EndCity?.NameCity<br>
+                                    <small class="text-muted">
+                                        @{
+                                            var arrivalTime = trip.DepartureTime.Add(trip.Route.TravelTime ?? TimeSpan.Zero);
+                                            var arrivalDate = trip.DepartureDate;
+                                            if (arrivalTime < trip.DepartureTime)
+                                            {
+                                                arrivalDate = arrivalDate.AddDays(1);
+                                            }
+                                        }
+                                        @arrivalDate.ToString("dd/MM/yyyy") - @arrivalTime.ToString(@"hh\:mm")
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Selected seats -->
+                        <h6 class="mb-3">Ghế đã chọn:</h6>
+                        <div class="selected-seats mb-3">
+                            @foreach (var seat in seats)
+                            {
+                                <span class="badge bg-success me-1 mb-1">@seat.SeatCode</span>
+                            }
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- Price summary -->
+                        <div class="price-summary">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giá vé:</span>
+                                <span>@(totalAmount / seats.Count)đ × @seats.Count</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Phí dịch vụ:</span>
+                                <span>0đ</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Tổng tiền:</span>
+                                <span class="text-danger">@totalAmount?.ToString("N0")đ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary w-100">Tiếp tục thanh toán</button>
+                        <button type="button" class="btn btn-outline-secondary w-100 mt-2" onclick="history.back()">Quay lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Stepper styles */
+    .booking-progress .step {
+        position: relative;
+        padding: 10px;
+    }
+    
+    .booking-progress .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 5px;
+        font-size: 1.2rem;
+    }
+    
+    .booking-progress .step.active .step-icon {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .booking-progress .step.completed .step-icon {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    /* Custom form styles */
+    .was-validated .form-control:invalid,
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .was-validated .form-control:valid,
+    .form-control.is-valid {
+        border-color: #28a745;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .route-icon i {
+        font-size: 1.2rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Form validation
+        (function() {
+            'use strict';
+            
+            // Fetch all forms we want to apply validation to
+            var forms = document.querySelectorAll('.needs-validation');
+            
+            // Loop through and prevent submission
+            Array.prototype.slice.call(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+        
+        // Passenger tabs navigation
+        $(document).ready(function() {
+            $('#passengerTabs button').on('click', function(e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+} 

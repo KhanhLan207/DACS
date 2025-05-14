@@ -1,0 +1,28 @@
+@model dynamic
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">Thanh toán qua MoMo</h5>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Checkout" asp-action="MomoCheckout" method="post">
+            <input type="hidden" name="amount" value="@Model.Amount" />
+            <input type="hidden" name="orderInfo" value="Thanh toan ve xe bus - @Model.OrderInfo" />
+            <input type="hidden" name="orderId" value="@Model.OrderInfo" />
+            
+            <div class="text-center mb-3">
+                <img src="~/images/momo-logo.png" alt="MoMo Logo" height="40" class="mb-3" onerror="this.src='https://static.mservice.io/img/logo-momo.png';this.onerror='';" />
+                <p class="text-muted small">Thanh toán an toàn với MoMo</p>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary" style="background-color: #ae2070; border-color: #ae2070;">
+                    Thanh toán qua MoMo
+                </button>
+            </div>
+            <div class="mt-2 small text-center text-muted">
+                Bạn sẽ được chuyển hướng đến ứng dụng/cổng thanh toán MoMo
+            </div>
+        </form>
+    </div>
+</div> 

@@ -1,4 +1,4 @@
-﻿namespace TicketBus.Models.Order
+﻿namespace TicketBus.Models.OrderModels
 {
     public class OrderInfoModel
     {

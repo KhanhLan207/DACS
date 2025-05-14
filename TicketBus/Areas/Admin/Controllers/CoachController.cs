@@ -97,10 +97,10 @@ namespace TicketBus.Areas.Admin.Controllers
                     {
                         var seat = new Seat
                         {
-                            SeatCode = $"S{i:D2}", // Ví dụ: S01, S02, ..., S34
-                            SeatNumber = i,        // Số thứ tự ghế
-                            State = SeatState.Trong, // Ghế mặc định là trống
-                            IdCoach = coach.IdCoach // Liên kết với xe
+                            SeatCode = $"S{i:D2}",
+                            SeatNumber = i.ToString(),
+                            State = SeatState.Trong,
+                            IdCoach = coach.IdCoach
                         };
                         _context.Seats.Add(seat);
                     }
@@ -116,7 +116,7 @@ namespace TicketBus.Areas.Admin.Controllers
                 var notification = new Notification
                 {
                     UserId = coach.Brand.UserId,
-                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã được phê duyệt và đã sinh {coach.VehicleType.SeatCount} ghế.",
+                    Message = $"Xe {coach.CoachCode} ({coach.NumberPlate}) đã được phê duyệt và đã sinh {coach.VehicleType.SeatCount.ToString()} ghế.",
                     CreatedDate = DateTime.Now,
                     IsRead = false
                 };
@@ -225,7 +225,7 @@ namespace TicketBus.Areas.Admin.Controllers
                             var seat = new Seat
                             {
                                 SeatCode = $"S{i:D2}",
-                                SeatNumber = i,
+                                SeatNumber = i.ToString(),
                                 State = SeatState.Trong,
                                 IdCoach = coach.IdCoach
                             };

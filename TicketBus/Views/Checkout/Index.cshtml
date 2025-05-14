@@ -1,0 +1,95 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Thông tin đơn hàng</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Thông tin đơn hàng -->
+                    <h5>Chi tiết vé</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tuyến xe</th>
+                                    <th>Ngày đi</th>
+                                    <th>Giờ</th>
+                                    <th>Giá vé</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dữ liệu từ Model -->
+                                @if (Model.OrderDetails != null)
+                                {
+                                    foreach (var item in Model.OrderDetails)
+                                    {
+                                        <tr>
+                                            <td>@item.RouteName</td>
+                                            <td>@item.DepartureDate.ToString("dd/MM/yyyy")</td>
+                                            <td>@item.DepartureTime</td>
+                                            <td>@item.Price.ToString("N0") VNĐ</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Thông tin người đặt vé -->
+                    <h5 class="mt-4">Thông tin người đặt vé</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Họ tên:</strong> @Model.CustomerName</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Điện thoại:</strong> @Model.Phone</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Thanh toán</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Tổng tiền:</h5>
+                        <h5 class="text-danger">@Model.TotalAmount.ToString("N0") VNĐ</h5>
+                    </div>
+
+                    <p class="text-muted">Chọn phương thức thanh toán:</p>
+
+                    <!-- Tab thanh toán -->
+                    <ul class="nav nav-tabs" id="paymentTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="momo-tab" data-bs-toggle="tab" data-bs-target="#momo" type="button" role="tab" aria-controls="momo" aria-selected="true">MoMo</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="vnpay-tab" data-bs-toggle="tab" data-bs-target="#vnpay" type="button" role="tab" aria-controls="vnpay" aria-selected="false">VNPay</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3" id="paymentTabContent">
+                        <div class="tab-pane fade show active" id="momo" role="tabpanel" aria-labelledby="momo-tab">
+                            <!-- Form thanh toán MoMo -->
+                            <partial name="_MomoPartial" model="@(new { Amount = Model.TotalAmount, OrderInfo = Model.OrderId })" />
+                        </div>
+                        <div class="tab-pane fade" id="vnpay" role="tabpanel" aria-labelledby="vnpay-tab">
+                            <!-- Form thanh toán VNPay -->
+                            <partial name="_VNPayPartial" model="@(new { Amount = Model.TotalAmount, OrderInfo = Model.OrderId })" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

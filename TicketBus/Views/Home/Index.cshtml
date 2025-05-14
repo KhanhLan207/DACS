@@ -1,6 +1,7 @@
 ﻿@* Views/Home/Index.cshtml *@
 @{
     ViewData["Title"] = "Trang chủ";
+    var cities = ViewBag.Cities as List<TicketBus.Models.City> ?? new List<TicketBus.Models.City>();
 }
 
 <!-- Banner -->
@@ -9,6 +10,48 @@
         <h1>Đặt Vé Xe Buýt Nhanh Chóng & Tiện Lợi</h1>
         <p>Trải nghiệm dịch vụ đặt vé xe buýt dễ dàng, tiết kiệm thời gian!</p>
         <a href="#datve" class="btn-booking">Đặt vé ngay</a>
+    </div>
+</section>
+
+<!-- Tìm kiếm nhanh -->
+<section id="datve" class="quick-search">
+    <div class="container">
+        <div class="search-box">
+            <h2 class="text-center mb-4">Tìm chuyến xe</h2>
+            <form method="get" action="@Url.Action("Search", "Booking")" class="row g-3">
+                <div class="col-md-4">
+                    <label for="from" class="form-label">Điểm đi</label>
+                    <select class="form-select" id="from" name="from" required>
+                        <option value="">-- Chọn điểm đi --</option>
+                        @foreach (var city in cities)
+                        {
+                            <option value="@city.NameCity">@city.NameCity</option>
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="to" class="form-label">Điểm đến</label>
+                    <select class="form-select" id="to" name="to" required>
+                        <option value="">-- Chọn điểm đến --</option>
+                        @foreach (var city in cities)
+                        {
+                            <option value="@city.NameCity">@city.NameCity</option>
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="date" class="form-label">Ngày đi</label>
+                    <input type="date" class="form-control" id="date" name="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" 
+                           value="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                </div>
+                
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Tìm</button>
+                </div>
+            </form>
+        </div>
     </div>
 </section>
 
@@ -21,6 +64,75 @@
             <div class="service-item">❄️ Điều hòa</div>
             <div class="service-item">🛑 Đưa đón tận nơi</div>
             <div class="service-item">💺 Ghế ngả thoải mái</div>
+        </div>
+    </div>
+</section>
+
+<!-- Nhà xe nổi bật -->
+<section class="featured-brands">
+    <div class="container text-center">
+        <h2 class="section-title">Nhà Xe Nổi Bật</h2>
+        <div class="brands-slider row">
+            <div class="col-md-3 mb-4">
+                <div class="brand-card">
+                    <img src="/images/default-brand.png" alt="Nhà xe 1" class="brand-logo">
+                    <h4 class="brand-name">Phương Trang</h4>
+                    <div class="rating">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-half text-warning"></i>
+                        <span class="rating-count">(245)</span>
+                    </div>
+                    <p class="brand-routes">40+ tuyến xe</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="brand-card">
+                    <img src="/images/default-brand.png" alt="Nhà xe 2" class="brand-logo">
+                    <h4 class="brand-name">Sài Gòn Express</h4>
+                    <div class="rating">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star text-warning"></i>
+                        <span class="rating-count">(187)</span>
+                    </div>
+                    <p class="brand-routes">25+ tuyến xe</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="brand-card">
+                    <img src="/images/default-brand.png" alt="Nhà xe 3" class="brand-logo">
+                    <h4 class="brand-name">Hoàng Long</h4>
+                    <div class="rating">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <span class="rating-count">(320)</span>
+                    </div>
+                    <p class="brand-routes">30+ tuyến xe</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="brand-card">
+                    <img src="/images/default-brand.png" alt="Nhà xe 4" class="brand-logo">
+                    <h4 class="brand-name">Thanh Bình</h4>
+                    <div class="rating">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-half text-warning"></i>
+                        <i class="bi bi-star text-warning"></i>
+                        <span class="rating-count">(156)</span>
+                    </div>
+                    <p class="brand-routes">20+ tuyến xe</p>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -45,3 +157,57 @@
         }
     </div>
 </section>
+
+<style>
+    .quick-search {
+        margin-top: -50px;
+        margin-bottom: 50px;
+        z-index: 100;
+        position: relative;
+    }
+    
+    .search-box {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .featured-brands {
+        padding: 50px 0;
+        background-color: #f8f9fa;
+    }
+    
+    .brand-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s;
+    }
+    
+    .brand-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .brand-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        margin-bottom: 15px;
+    }
+    
+    .brand-name {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+    
+    .rating {
+        margin-bottom: 10px;
+    }
+    
+    .rating-count {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>

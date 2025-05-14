@@ -1,0 +1,29 @@
+@{
+    ViewData["Title"] = "Lỗi thanh toán";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Thanh toán thất bại</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i> @ViewBag.ErrorMessage
+                    </div>
+                    
+                    <div class="mt-4">
+                        <p>Thanh toán của bạn không thành công. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary">Quay về trang chủ</a>
+                        <a href="/Checkout" class="btn btn-outline-secondary ms-2">Thử lại</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

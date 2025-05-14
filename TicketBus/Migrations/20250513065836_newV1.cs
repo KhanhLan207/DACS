@@ -5,7 +5,7 @@
 namespace TicketBus.Migrations
 {
     /// <inheritdoc />
-    public partial class addDB : Migration
+    public partial class newV1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

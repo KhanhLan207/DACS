@@ -1,0 +1,437 @@
+@model IEnumerable<TicketBus.Models.Seat>
+@{
+    ViewData["Title"] = "Chọn ghế";
+    var trip = ViewBag.Trip as TicketBus.Models.Trip;
+    var bookedSeatIds = ViewBag.BookedSeatIds as List<int>;
+    var basePrice = ViewBag.BasePrice as decimal?;
+}
+
+<div class="container mt-4">
+    <!-- Stepper -->
+    @await Html.PartialAsync("_BookingStepper", 2)
+
+    <div class="row">
+        <!-- Trip info sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Thông tin chuyến đi</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="d-flex align-items-center mb-3">
+                        <img src="@(string.IsNullOrEmpty(trip.Coach.Brand.Image) ? "/images/default-brand.png" : trip.Coach.Brand.Image)" 
+                             alt="@trip.Coach.Brand.NameBrand" class="rounded me-2" width="30" height="30">
+                        @trip.Coach.Brand.NameBrand
+                    </h6>
+                    
+                    <div class="trip-route mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="route-timeline">
+                                <div class="route-point start"></div>
+                                <div class="route-line"></div>
+                                <div class="route-point end"></div>
+                            </div>
+                            <div class="route-details ms-3">
+                                <div class="mb-3">
+                                    <div class="fw-bold">@trip.Route.StartCity?.NameCity</div>
+                                    <div class="text-muted">@trip.DepartureDate.ToString("dd/MM/yyyy") - @trip.DepartureTime.ToString(@"hh\:mm")</div>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">@trip.Route.EndCity?.NameCity</div>
+                                    <div class="text-muted">
+                                        @{
+                                            var arrivalTime = trip.DepartureTime.Add(trip.Route.TravelTime ?? TimeSpan.Zero);
+                                            var arrivalDate = trip.DepartureDate;
+                                            if (arrivalTime < trip.DepartureTime) // Có thể sang ngày mới
+                                            {
+                                                arrivalDate = arrivalDate.AddDays(1);
+                                            }
+                                        }
+                                        @arrivalDate.ToString("dd/MM/yyyy") - @arrivalTime.ToString(@"hh\:mm")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="trip-details">
+                        <div class="row mb-2">
+                            <div class="col-5">Loại xe:</div>
+                            <div class="col-7 fw-bold">@trip.Coach.VehicleType.NameType</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5">Biển số:</div>
+                            <div class="col-7 fw-bold">@trip.Coach.NumberPlate</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-5">Thời gian:</div>
+                            <div class="col-7 fw-bold">@trip.Route.TravelTime?.ToString(@"hh\:mm") giờ</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-5">Giá vé:</div>
+                            <div class="col-7 fw-bold text-danger">@basePrice?.ToString("N0") VNĐ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Selected seats summary -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Ghế đã chọn</h6>
+                </div>
+                <div class="card-body" id="selected-seats-container">
+                    <div class="text-center py-4" id="no-seats-message">
+                        <i class="bi bi-chair" style="font-size: 2rem;"></i>
+                        <p class="mb-0 mt-2">Bạn chưa chọn ghế nào</p>
+                    </div>
+                    <div id="selected-seats-list" class="d-none">
+                        <!-- Selected seats will be listed here via JavaScript -->
+                    </div>
+                    <div class="d-flex justify-content-between fw-bold mt-3 pt-3 border-top d-none" id="total-price-container">
+                        <span>Tổng tiền:</span>
+                        <span class="text-danger" id="total-price">0 VNĐ</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form method="post" action="@Url.Action("PassengerInfo", "Booking")">
+                        <input type="hidden" name="tripId" value="@trip.Id">
+                        <div id="selected-seats-inputs">
+                            <!-- Hidden inputs for selected seats will be added here via JavaScript -->
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" id="continue-btn" disabled>
+                            Tiếp tục <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Seat selection main area -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chọn ghế</h5>
+                    <div class="seat-legend">
+                        <span class="seat-type available me-3"><i class="bi bi-square"></i> Ghế trống</span>
+                        <span class="seat-type selected me-3"><i class="bi bi-square-fill"></i> Đang chọn</span>
+                        <span class="seat-type booked"><i class="bi bi-square-fill"></i> Đã đặt</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="vehicle-front text-center mb-4">
+                        <div class="driver-area">
+                            <span class="driver-label">Tài xế</span>
+                            <div class="steering-wheel">
+                                <i class="bi bi-circle"></i>
+                            </div>
+                        </div>
+                        <div class="entrance-label mt-2">Lối vào</div>
+                    </div>
+                    
+                    <div class="seat-map">
+                        @{
+                            // Xác định số ghế tối đa trong một hàng
+                            int maxColumn = 4; // Mặc định 4 ghế một hàng
+                            int totalSeats = Model.Count();
+                            int rows = (int)Math.Ceiling((double)totalSeats / maxColumn);
+                            
+                            // Tạo bố cục ghế theo hàng và cột
+                            for (int row = 0; row < rows; row++)
+                            {
+                                <div class="seat-row">
+                                    @for (int col = 0; col < maxColumn; col++)
+                                    {
+                                        int seatIndex = row * maxColumn + col;
+                                        if (seatIndex < totalSeats)
+                                        {
+                                            var seat = Model.ElementAt(seatIndex);
+                                            bool isBooked = bookedSeatIds.Contains(seat.IdSeat);
+                                            string seatClass = isBooked ? "booked" : "available";
+                                            bool isDisabled = isBooked || seat.State == TicketBus.Models.SeatState.KhongHoatDong;
+                                            
+                                            <div class="seat-item @(col == 1 ? "me-auto" : "")" data-seat-id="@seat.IdSeat" data-seat-code="@seat.SeatCode">
+                                                <input type="checkbox" id="seat-@seat.IdSeat" class="seat-checkbox" 
+                                                       @(isDisabled ? "disabled" : "") 
+                                                       value="@seat.IdSeat"
+                                                       data-price="@basePrice"
+                                                       data-seat-code="@seat.SeatCode">
+                                                <label for="seat-@seat.IdSeat" class="seat @seatClass" title="@seat.SeatCode">
+                                                    <i class="bi bi-chair-fill"></i>
+                                                    <span class="seat-code">@seat.SeatCode</span>
+                                                </label>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="seat-item empty @(col == 1 ? "me-auto" : "")"></div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Stepper styles */
+    .booking-progress .step {
+        position: relative;
+        padding: 10px;
+    }
+    
+    .booking-progress .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 5px;
+        font-size: 1.2rem;
+    }
+    
+    .booking-progress .step.active .step-icon {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .booking-progress .step.completed .step-icon {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    /* Route timeline */
+    .route-timeline {
+        position: relative;
+        padding: 0 5px;
+    }
+    
+    .route-point {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 2px solid #007bff;
+    }
+    
+    .route-point.start {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .route-point.end {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .route-line {
+        width: 2px;
+        height: 40px;
+        background-color: #ccc;
+        margin: 0 auto;
+        margin-left: 5px;
+    }
+    
+    /* Seat map styles */
+    .seat-map {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .seat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .seat-item {
+        width: 60px;
+        height: 60px;
+        margin: 0 5px;
+    }
+    
+    .seat-item.empty {
+        visibility: hidden;
+    }
+    
+    .seat-checkbox {
+        display: none;
+    }
+    
+    .seat {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid #ddd;
+        color: #888;
+    }
+    
+    .seat i {
+        font-size: 1.5rem;
+        margin-bottom: 2px;
+    }
+    
+    .seat.available {
+        background-color: #e6f3e6;
+        border-color: #28a745;
+    }
+    
+    .seat.booked {
+        background-color: #f8d7da;
+        border-color: #dc3545;
+        cursor: not-allowed;
+    }
+    
+    .seat-checkbox:checked + .seat {
+        background-color: #007bff;
+        border-color: #0056b3;
+        color: white;
+    }
+    
+    /* Vehicle front styles */
+    .vehicle-front {
+        position: relative;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 30px;
+    }
+    
+    .driver-area {
+        display: inline-block;
+        position: relative;
+    }
+    
+    .steering-wheel {
+        width: 40px;
+        height: 40px;
+        border: 2px solid #888;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .driver-label, .entrance-label {
+        font-size: 0.8rem;
+        color: #888;
+    }
+
+    /* Seat legend */
+    .seat-legend .seat-type {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+    
+    .seat-legend .seat-type i {
+        margin-right: 4px;
+    }
+    
+    .seat-legend .seat-type.available i {
+        color: #28a745;
+    }
+    
+    .seat-legend .seat-type.selected i {
+        color: #007bff;
+    }
+    
+    .seat-legend .seat-type.booked i {
+        color: #dc3545;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            const basePrice = @(basePrice?.ToString("F0") ?? "0");
+            let selectedSeats = [];
+            
+            // Xử lý khi chọn ghế
+            $('.seat-checkbox').change(function() {
+                const seatId = $(this).val();
+                const seatCode = $(this).data('seat-code');
+                
+                if ($(this).is(':checked')) {
+                    selectedSeats.push({
+                        id: seatId,
+                        code: seatCode,
+                        price: basePrice
+                    });
+                } else {
+                    selectedSeats = selectedSeats.filter(seat => seat.id !== seatId);
+                }
+                
+                updateSelectedSeats();
+            });
+            
+            // Cập nhật danh sách ghế đã chọn
+            function updateSelectedSeats() {
+                const selectedSeatsContainer = $('#selected-seats-list');
+                const noSeatsMessage = $('#no-seats-message');
+                const totalContainer = $('#total-price-container');
+                const totalPrice = $('#total-price');
+                const continueBtn = $('#continue-btn');
+                const hiddenInputsContainer = $('#selected-seats-inputs');
+                
+                // Xóa tất cả hidden inputs hiện tại
+                hiddenInputsContainer.empty();
+                
+                if (selectedSeats.length > 0) {
+                    let seatsList = '';
+                    let total = 0;
+                    
+                    selectedSeats.forEach(seat => {
+                        seatsList += `
+                            <div class="selected-seat d-flex justify-content-between mb-2">
+                                <span>Ghế ${seat.code}</span>
+                                <span>${numberWithCommas(seat.price)} VNĐ</span>
+                            </div>
+                        `;
+                        
+                        // Thêm hidden input cho mỗi ghế đã chọn
+                        hiddenInputsContainer.append(`<input type="hidden" name="selectedSeats" value="${seat.id}">`);
+                        
+                        total += seat.price;
+                    });
+                    
+                    selectedSeatsContainer.html(seatsList);
+                    totalPrice.text(numberWithCommas(total) + ' VNĐ');
+                    
+                    selectedSeatsContainer.removeClass('d-none');
+                    totalContainer.removeClass('d-none');
+                    noSeatsMessage.addClass('d-none');
+                    continueBtn.prop('disabled', false);
+                } else {
+                    selectedSeatsContainer.addClass('d-none');
+                    totalContainer.addClass('d-none');
+                    noSeatsMessage.removeClass('d-none');
+                    continueBtn.prop('disabled', true);
+                }
+            }
+            
+            // Định dạng số có dấu phân cách hàng nghìn
+            function numberWithCommas(x) {
+                return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+        });
+    </script>
+} 

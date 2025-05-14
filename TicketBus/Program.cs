@@ -4,6 +4,7 @@ using TicketBus.Data;
 using TicketBus.Models;
 using TicketBus.Models.Momo;
 using TicketBus.Repositories;
+using TicketBus.Services;
 using TicketBus.Services.Momo;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Đăng ký Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// Add these lines where you register services
+builder.Services.Configure<VNPaySettings>(builder.Configuration.GetSection("VNPay"));
+builder.Services.AddSingleton<IVNPayService, VNPayService>();
+builder.Services.AddHttpContextAccessor();
+
+// Add HttpClientFactory services
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

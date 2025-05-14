@@ -1,0 +1,29 @@
+@model dynamic
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h5 class="mb-0">Thanh toán qua VNPay</h5>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Checkout" asp-action="VnPayCheckout" method="post">
+            <input type="hidden" name="amount" value="@Model.Amount" />
+            <input type="hidden" name="orderInfo" value="Thanh toan ve xe bus - @Model.OrderInfo" />
+            <input type="hidden" name="orderId" value="@Model.OrderInfo" />
+            
+            <div class="text-center mb-3">
+                <img src="~/images/vnpay-logo.png" alt="VNPay Logo" height="40" class="mb-3" onerror="this.src='https://sandbox.vnpayment.vn/images/brand/logo-en.svg';this.onerror='';" />
+                <p class="text-muted small">Thanh toán an toàn với VNPay</p>
+            </div>
+            
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    Thanh toán qua VNPay
+                </button>
+            </div>
+            <div class="mt-2 small text-center text-muted">
+                Bạn sẽ được chuyển hướng đến cổng thanh toán VNPay
+            </div>
+        </form>
+    </div>
+</div>
+ 

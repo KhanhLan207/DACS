@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Thanh toán thành công</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> @ViewBag.SuccessMessage
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>Chi tiết đơn hàng</h5>
+                        <p><strong>Mã đơn hàng:</strong> @ViewBag.OrderId</p>
+                        <!-- Thêm các thông tin khác về đơn hàng nếu có -->
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary">Quay về trang chủ</a>
+                        <a href="/Home/History" class="btn btn-outline-secondary ms-2">Xem lịch sử đặt vé</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
