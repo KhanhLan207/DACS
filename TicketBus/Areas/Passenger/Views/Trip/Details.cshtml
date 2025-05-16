@@ -14,7 +14,7 @@
         cursor: pointer;
         transition: all 0.3s;
         font-size: 0.9rem;
-        width: 80px; /* Adjusted width for better fit in 4-column layout */
+        width: 80px;
     }
 
         .seat-label.available {
@@ -34,6 +34,13 @@
             cursor: not-allowed;
         }
 
+        .seat-label.disabled {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
     .trip-info-card {
         background-color: #f8f9fa;
         border-left: 5px solid #007bff;
@@ -42,15 +49,35 @@
 
     .seat-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr); /* 4 columns */
+        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
-        max-width: 600px; /* Optional: constrain width */
+        max-width: 600px;
         margin: 0 auto;
     }
 
-    /* Divide seats into left and right sections */
+    .seat-grid-sleeper {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .deck-section {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+        .deck-section h5 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #007bff;
+        }
+
     .seat-left, .seat-right {
-        display: contents; /* Allows grid items to flow naturally */
+        display: contents;
     }
 
     .form-check-input:checked {
@@ -69,6 +96,11 @@
         background-color: #f1f1f1;
         border-radius: 5px;
         font-size: 1rem;
+    }
+
+    .alert-max-seats {
+        display: none;
+        margin-top: 10px;
     }
 </style>
 
@@ -99,7 +131,7 @@
     </div>
 
     <!-- Booking Form -->
-    <form action="/Passenger/Trip/Details" method="post">
+    <form action="/Passenger/Trip/Payment" method="get">
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
         <input type="hidden" name="idPrice" value="@Model.IdPrice" />
 
@@ -122,18 +154,58 @@
                         <i class="bi bi-chair"></i> Chọn vị trí ghế
                     </div>
                     <div class="card-body">
-                        <div class="seat-grid">
-                            @foreach (Seat seat in ViewBag.SeatList)
-                            {
-                                var isLeftSide = seat.SeatNumber % 2 == 0; // Even numbers for left, odd for right (adjust logic as needed)
-                                                                           <div class="@(isLeftSide ? "seat-left" : "seat-right")">
-                                                                               <input type="checkbox" class="seat-checkbox" name="SoGhe" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
-                                                                               <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
-                                                                                   <i class="bi bi-chair"></i> @seat.SeatCode
-                                                                               </label>
-                                                                           </div>
-                            }
-                        </div>
+                        @if (ViewBag.IsSleeper)
+                        {
+                            <div class="seat-grid-sleeper">
+                                <!-- Upper Deck -->
+                                <div class="deck-section">
+                                    <h5>Tầng trên</h5>
+                                    <div class="seat-grid">
+                                        @foreach (Seat seat in ViewBag.UpperDeckSeats)
+                                        {
+                                            var isLeftSide = seat.SeatNumber % 2 == 0;
+                                            <div class="@(isLeftSide ? "seat-left" : "seat-right")">
+                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                                <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
+                                                    <i class="bi bi-chair"></i> @seat.SeatCode
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <!-- Lower Deck -->
+                                <div class="deck-section">
+                                    <h5>Tầng dưới</h5>
+                                    <div class="seat-grid">
+                                        @foreach (Seat seat in ViewBag.LowerDeckSeats)
+                                        {
+                                            var isLeftSide = seat.SeatNumber % 2 == 0;
+                                            <div class="@(isLeftSide ? "seat-left" : "seat-right")">
+                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                                <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
+                                                    <i class="bi bi-chair"></i> @seat.SeatCode
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="seat-grid">
+                                @foreach (Seat seat in ViewBag.SeatList)
+                                {
+                                    var isLeftSide = seat.SeatNumber % 2 == 0;
+                                    <div class="@(isLeftSide ? "seat-left" : "seat-right")">
+                                        <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                        <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
+                                            <i class="bi bi-chair"></i> @seat.SeatCode
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
                         <div class="mt-3">
                             <span class="badge bg-light border"><i class="bi bi-circle"></i> Còn trống</span>
                             <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Đang chọn</span>
@@ -142,6 +214,9 @@
                         <div class="price-info">
                             <p><strong>Giá mỗi ghế:</strong> <span id="price-per-seat">@Model.PriceValue.ToString("N0")</span> VND</p>
                             <p><strong>Tổng giá:</strong> <span id="total-price">0</span> VND</p>
+                        </div>
+                        <div class="alert alert-warning alert-max-seats" id="max-seats-alert">
+                            Bạn chỉ được chọn tối đa 4 ghế!
                         </div>
                         <div class="text-end mt-3">
                             <button type="button" class="btn btn-primary continue-btn" id="continue-btn" disabled data-bs-toggle="tab" data-bs-target="#nav-diem">
@@ -164,7 +239,7 @@
                                 @foreach (Pickup pickup in ViewBag.PickUpList)
                                 {
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" name="diemDi" id="pickup-@pickup.IdPickup" value="@pickup.IdPickup" required />
+                                        <input class="form-check-input" type="radio" name="pickupId" id="pickup-@pickup.IdPickup" value="@pickup.IdPickup" required />
                                         <label class="form-check-label" for="pickup-@pickup.IdPickup">
                                             <i class="bi bi-geo-alt-fill"></i> @pickup.PickupName (@pickup.City?.NameCity)
                                         </label>
@@ -182,7 +257,7 @@
                                 @foreach (DropOff dropOff in ViewBag.DropOffList)
                                 {
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" name="diemDen" id="dropoff-@dropOff.IdDropOff" value="@dropOff.IdDropOff" required />
+                                        <input class="form-check-input" type="radio" name="dropOffId" id="dropoff-@dropOff.IdDropOff" value="@dropOff.IdDropOff" required />
                                         <label class="form-check-label" for="dropoff-@dropOff.IdDropOff">
                                             <i class="bi bi-flag-fill"></i> @dropOff.DropOffName (@dropOff.City?.NameCity)
                                         </label>
@@ -210,6 +285,8 @@
         const seatCheckboxes = document.querySelectorAll('.seat-checkbox');
         const continueBtn = document.getElementById('continue-btn');
         const totalPriceElement = document.getElementById('total-price');
+        const maxSeatsAlert = document.getElementById('max-seats-alert');
+        const maxSeats = 4;
 
         // Function to update total price
         function updateTotalPrice() {
@@ -220,13 +297,31 @@
                     total += pricePerSeat;
                 }
             });
-            totalPriceElement.textContent = total.toLocaleString('vi-VN'); // Format number with commas
+            totalPriceElement.textContent = total.toLocaleString('vi-VN');
         }
 
         // Function to check if any seat is selected
         function updateContinueButton() {
             const anySeatSelected = Array.from(seatCheckboxes).some(checkbox => checkbox.checked && !checkbox.disabled);
             continueBtn.disabled = !anySeatSelected;
+        }
+
+        // Function to update seat availability based on selection count
+        function updateSeatAvailability() {
+            const selectedCount = Array.from(seatCheckboxes).filter(checkbox => checkbox.checked && !checkbox.disabled).length;
+            seatCheckboxes.forEach(checkbox => {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                if (selectedCount >= maxSeats && !checkbox.checked && !checkbox.disabled) {
+                    checkbox.disabled = true;
+                    label.classList.remove('available');
+                    label.classList.add('disabled');
+                } else if (selectedCount < maxSeats && !checkbox.checked && !label.classList.contains('booked')) {
+                    checkbox.disabled = false;
+                    label.classList.remove('disabled');
+                    label.classList.add('available');
+                }
+            });
+            maxSeatsAlert.style.display = selectedCount >= maxSeats ? 'block' : 'none';
         }
 
         // Update seat selection visuals, total price, and continue button state
@@ -242,11 +337,13 @@
                 }
                 updateTotalPrice();
                 updateContinueButton();
+                updateSeatAvailability();
             });
         });
 
         // Initial check
         updateTotalPrice();
         updateContinueButton();
+        updateSeatAvailability();
     });
 </script>
