@@ -448,7 +448,6 @@ public class TripController : Controller
                     IdPrice = idPrice,
                     IdSeat = item,
                     CreatedDate = DateTime.Now,
-                    IdPassenger = passenger.IdPassenger,
                     State = TicketState.ChuaThanhToan
                 };
                 seat.State = SeatState.DaDat;

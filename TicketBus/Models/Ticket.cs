@@ -6,24 +6,26 @@ namespace TicketBus.Models
     public class Ticket
     {
         [Key]
-        [RegularExpression(@"^[A-Za-z0-9]+$", ErrorMessage = "IdTicket must be alphanumeric")]
+
         public int IdTicket { get; set; }
         public string? TicketCode { get; set; }
         public DateTime? CreatedDate { get; set; }
+        public DateTime? DepartureDate { get; set; } // New field for departure date
         [ForeignKey("Seat")]
         public int? IdSeat { get; set; }
         [ForeignKey("Price")]
         public int? IdPrice { get; set; }
-        [ForeignKey("Passenger")]
-        public int? IdPassenger { get; set; }
+        [ForeignKey("Bill")]
+        public int? IdBill { get; set; } // New foreign key to Bill
         public TicketState State { get; set; }
         [ForeignKey("Employee")]
         public int? IdEmployee { get; set; }
 
         public Seat? Seat { get; set; }
         public Price? Price { get; set; }
-        public Passenger? Passenger { get; set; }
+        public Bill? Bill { get; set; } // New navigation property to Bill
         public Employee? Employee { get; set; }
+
     }
 
     public enum TicketState

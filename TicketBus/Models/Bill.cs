@@ -28,5 +28,6 @@ namespace TicketBus.Models
         public int? IdPassenger { get; set; }
 
         public Passenger? Passenger { get; set; }
+        public ICollection<Ticket> Tickets { get; set; }
     }
 }
