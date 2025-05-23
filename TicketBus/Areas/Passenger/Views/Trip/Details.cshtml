@@ -135,7 +135,7 @@
     </div>
 
     <!-- Booking Form -->
-    <form action="/Passenger/Trip/Payment" method="get">
+    <form asp-action="Details" asp-controller="Trip" asp-area="Passenger" method="post">
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
         <input type="hidden" name="idPrice" value="@Model.IdPrice" />
         <input type="hidden" name="departureDate" value="@ViewBag.DepartureDate?.ToString("dd-MM-yy hh:mm:ss tt")" />

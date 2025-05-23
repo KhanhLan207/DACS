@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TicketBus.Data;
 using TicketBus.Models;
+using Microsoft.Extensions.Logging;
 
 [Area("Passenger")]
 [Authorize(Roles = "Passenger")]
@@ -16,11 +17,13 @@ public class TripController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<TripController> _logger;
 
-    public TripController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public TripController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<TripController> logger)
     {
         _context = context;
         _userManager = userManager;
+        _logger = logger;
     }
 
     public IActionResult Index(string startPoint, string destination, DateTime? departureDate, string sortOption,
@@ -270,33 +273,34 @@ public class TripController : Controller
     [HttpPost]
     public async Task<IActionResult> Details(List<int> seatIds, int diemDi, int diemDen, int idPrice, DateTime? departureDate)
     {
+        _logger.LogInformation("[Ticket Debug] POST Details: seatIds={seatIds}, diemDi={diemDi}, diemDen={diemDen}, idPrice={idPrice}, departureDate={departureDate}", seatIds, diemDi, diemDen, idPrice, departureDate);
         // Kiểm tra seatIds
         if (seatIds == null || seatIds.Count == 0)
         {
+            _logger.LogWarning("[Ticket Debug] Không có seatIds được chọn");
             ModelState.AddModelError(string.Empty, "Vui lòng chọn ít nhất một ghế!");
             return View(await GetPriceDetails(idPrice));
         }
-
         if (seatIds.Count > 4)
         {
+            _logger.LogWarning("[Ticket Debug] Chọn quá số lượng ghế cho phép: {Count}", seatIds.Count);
             ModelState.AddModelError(string.Empty, "Bạn chỉ được chọn tối đa 4 ghế!");
             return View(await GetPriceDetails(idPrice));
         }
-
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
         {
+            _logger.LogError("[Ticket Debug] Không tìm thấy thông tin người dùng");
             ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
             return View(await GetPriceDetails(idPrice));
         }
-
         var passenger = await _context.Passengers.FirstOrDefaultAsync(p => p.UserId == user.Id);
         if (passenger == null)
         {
+            _logger.LogError("[Ticket Debug] Không tìm thấy thông tin hành khách cho userId={UserId}", user.Id);
             ModelState.AddModelError(string.Empty, "Không tìm thấy thông tin hành khách. Vui lòng liên hệ quản trị viên.");
             return View(await GetPriceDetails(idPrice));
         }
-
         var price = await _context.Prices
             .Include(p => p.RouteStopStart)
             .Include(p => p.RouteStopEnd)
@@ -312,12 +316,11 @@ public class TripController : Controller
                 .ThenInclude(sd => sd.Coach)
                     .ThenInclude(c => c.VehicleType)
             .FirstOrDefaultAsync(p => p.IdPrice == idPrice);
-
         if (price == null)
         {
+            _logger.LogError("[Ticket Debug] Không tìm thấy thông tin giá với idPrice={IdPrice}", idPrice);
             return NotFound();
         }
-
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -326,11 +329,11 @@ public class TripController : Controller
                 var seat = await _context.Seats.FirstOrDefaultAsync(s => s.IdSeat == seatId && s.State == SeatState.Trong);
                 if (seat == null)
                 {
+                    _logger.LogWarning("[Ticket Debug] Ghế với ID {SeatId} không khả dụng hoặc đã được đặt", seatId);
                     ModelState.AddModelError(string.Empty, $"Ghế với ID {seatId} không khả dụng hoặc đã được đặt.");
                     return View(await GetPriceDetails(idPrice));
                 }
-
-                Ticket ticket = new Ticket
+                var ticket = new Ticket
                 {
                     IdPrice = idPrice,
                     IdSeat = seatId,
@@ -338,22 +341,22 @@ public class TripController : Controller
                     State = TicketState.ChuaThanhToan,
                     DepartureDate = departureDate
                 };
-
+                _logger.LogInformation("[Ticket Debug] Tạo ticket: {@Ticket}", ticket);
                 seat.State = SeatState.DaDat;
                 _context.Update(seat);
                 _context.Tickets.Add(ticket);
             }
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+            _logger.LogInformation("[Ticket Debug] Lưu vé thành công cho các seatIds: {seatIds}", seatIds);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
+            _logger.LogError(ex, "[Ticket Debug] Lỗi khi lưu vé");
             ModelState.AddModelError(string.Empty, $"Lỗi khi lưu vé: {ex.Message}");
             return View(await GetPriceDetails(idPrice));
         }
-
         return RedirectToAction("Payment", new { idPrice = idPrice, seatIds = seatIds, pickupId = diemDi, dropOffId = diemDen });
     }
 
