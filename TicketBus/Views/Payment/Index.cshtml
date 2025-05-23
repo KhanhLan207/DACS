@@ -1,4 +1,7 @@
-﻿<form method="POST" asp-action="CreatePaymentUrl" asp-controller="Payment">
+﻿
+
+
+<form method="POST" asp-action="CreatePaymentUrl" asp-controller="Payment">
 	<input type="hidden" name="FullName" value="@User.Identity.Name" />
 	<input type="hidden" name="Amount" value="@Model.GrandTotal" />
 

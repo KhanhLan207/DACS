@@ -20,5 +20,7 @@ namespace TicketBus.Models
         [ForeignKey("UserId")]
         public virtual ApplicationUser? ApplicationUser { get; set; }
 
+        public ICollection<Bill> Bills { get; set; } = new List<Bill>();
+
     }
 }

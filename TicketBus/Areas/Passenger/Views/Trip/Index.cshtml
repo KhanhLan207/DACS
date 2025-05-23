@@ -68,7 +68,8 @@
                     </div>
                     <div class="input-group">
                         <label>Ngày khởi hành</label>
-                        <input type="date" name="departureDate" id="departureDate" value="@ViewBag.DepartureDate" placeholder="Chọn ngày">
+                        <input type="date" name="departureDate" id="departureDate"
+                               value="@(ViewBag.DepartureDate != null ? ViewBag.DepartureDate.ToString() : "")">
                     </div>
                     <button type="submit" class="search-btn">Tìm kiếm</button>
                 </div>
@@ -183,9 +184,10 @@
                                     <p class="seats-left">
                                         Chỉ còn @(ViewBag.EmptySeats != null && price?.ScheduleDetails?.IdCoach != null && ViewBag.EmptySeats.ContainsKey(price.ScheduleDetails.IdCoach) ? ViewBag.EmptySeats[price.ScheduleDetails.IdCoach] : 0) chỗ trống
                                     </p>
-                                    <a href="#" class="details-link">Thông tin chi tiết ▼</a>
+                                    @* <a href="#" class="details-link">Thông tin chi tiết ▼</a> *@
                                     @* <button class="book-btn">Chọn chuyến</button> *@
-                                    <a href="/Passenger/Trip/Details/@price.IdPrice" class="details-link">Chọn chuyến</a>
+                                    @* <a href="/Passenger/Trip/Details?id=@price.IdPrice&departureDate=@ViewBag.DepartureDate" class="details-link">Chọn chuyến</a> *@
+                                    <button class="book-btn" onclick="chonchuyen(@price.IdPrice)">Chọn chuyến</button>
                                 </div>
                             </div>
 
@@ -331,6 +333,22 @@
                       '?startPoint=' + encodeURIComponent(startPoint) +
                       '&destination=' + encodeURIComponent(destination) +
                       '&departureDate=' + encodeURIComponent(departureDate);
+            window.location.href = url;
+        }
+
+         function chonchuyen(id) {
+            // 1. Lấy giá trị ngày và kiểm tra hợp lệ
+            var gio = document.querySelector("#departureDate").value;
+            if (!gio) {
+                alert("Vui lòng chọn ngày khởi hành!");
+                return;
+            }
+
+            // 2. Tạo URL với encodeURIComponent để tránh lỗi ký tự đặc biệt
+            var url = '/Passenger/Trip/Details?id=' + id + '&departureDate=' + gio;
+            console.log("URL sẽ chuyển hướng:", url);
+
+            // 3. Chuyển trang (viết đúng window.location.href)
             window.location.href = url;
         }
     </script>

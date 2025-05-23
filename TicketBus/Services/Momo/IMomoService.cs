@@ -1,11 +1,11 @@
-﻿using TicketBus.Models.Momo;
-using TicketBus.Models.Order;
+﻿using TicketBus.Models;
 
 namespace TicketBus.Services.Momo
 {
     public interface IMomoService
     {
         Task<MomoCreatePaymentResponseModel> CreatePaymentAsync(OrderInfoModel model);
-        MomoExecuteResponseModel PaymentExecuteAsync(IQueryCollection collection);
+
+        Task<MomoExecuteResponseModel> PaymentExecuteAsync(IQueryCollection collection);
     }
 }
