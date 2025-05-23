@@ -112,24 +112,31 @@
         </div>
         <div class="card-body">
             <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Tuyến xe:</strong> @Model.ScheduleDetails?.BusRoute?.NameRoute</p>
-                        <p><strong>Hãng xe:</strong> @Model.ScheduleDetails?.Coach?.Brand?.NameBrand</p>
-                        <p><strong>Loại xe:</strong> @Model.ScheduleDetails?.Coach?.VehicleType?.NameType</p>
-                        <p><strong>Biển số:</strong> @Model.ScheduleDetails?.Coach?.NumberPlate</p>
+                <div class="col-md-6">
+                    <p><strong>Tuyến xe:</strong> @Model.ScheduleDetails?.BusRoute?.NameRoute</p>
+                    <p><strong>Hãng xe:</strong> @Model.ScheduleDetails?.Coach?.Brand?.NameBrand</p>
+                    <p><strong>Loại xe:</strong> @Model.ScheduleDetails?.Coach?.VehicleType?.NameType</p>
+                    <p><strong>Biển số:</strong> @Model.ScheduleDetails?.Coach?.NumberPlate</p>
                     <p>
                         <strong>Ngày khởi hành:</strong>
-                        @(ViewBag.DepartureDate != null ? ((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy") : "Không xác định")
+                        @if (ViewBag.DepartureDate != null)
+                        {
+                            @(((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy"))
+                        }
+                        else
+                        {
+                            <input type="date" id="departureDateInput" name="departureDate" class="form-control d-inline-block w-auto" required value="@DateTime.Today.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        }
                     </p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Điểm đi:</strong> @Model.RouteStopStart?.StopName <small>(@Model.RouteStopStart?.Time?.ToString(@"hh\:mm"))</small></p>
-                        <p><strong>Điểm đến:</strong> @Model.RouteStopEnd?.StopName <small>(@Model.RouteStopEnd?.Time?.ToString(@"hh\:mm"))</small></p>
-                        <p><strong>Giá vé:</strong> @Model.PriceValue.ToString("N0") VND</p>
-                        <p><strong>Số ghế trống:</strong> @(ViewBag.EmptySeats != null && Model?.ScheduleDetails?.IdCoach != null && ViewBag.EmptySeats.ContainsKey(Model.ScheduleDetails.IdCoach) ? ViewBag.EmptySeats[Model.ScheduleDetails.IdCoach] : 0)</p>
-                        <p><strong>Khách hàng:</strong> @ViewBag.CustomerName</p>
-                        <p><strong>Số điện thoại:</strong> @ViewBag.CustomerPhone</p>
-                    </div>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Điểm đi:</strong> @Model.RouteStopStart?.StopName <small>(@Model.RouteStopStart?.Time?.ToString(@"hh\:mm"))</small></p>
+                    <p><strong>Điểm đến:</strong> @Model.RouteStopEnd?.StopName <small>(@Model.RouteStopEnd?.Time?.ToString(@"hh\:mm"))</small></p>
+                    <p><strong>Giá vé:</strong> @Model.PriceValue.ToString("N0") VND</p>
+                    <p><strong>Số ghế trống:</strong> @(ViewBag.EmptySeats != null && Model?.ScheduleDetails?.IdCoach != null && ViewBag.EmptySeats.ContainsKey(Model.ScheduleDetails.IdCoach) ? ViewBag.EmptySeats[Model.ScheduleDetails.IdCoach] : 0)</p>
+                    <p><strong>Khách hàng:</strong> @ViewBag.CustomerName</p>
+                    <p><strong>Số điện thoại:</strong> @ViewBag.CustomerPhone</p>
+                </div>
             </div>
         </div>
     </div>
@@ -138,7 +145,10 @@
     <form asp-action="Details" asp-controller="Trip" asp-area="Passenger" method="post">
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
         <input type="hidden" name="idPrice" value="@Model.IdPrice" />
-        <input type="hidden" name="departureDate" value="@ViewBag.DepartureDate?.ToString("dd-MM-yy hh:mm:ss tt")" />
+        @if (ViewBag.DepartureDate != null)
+        {
+            <input type="hidden" name="departureDate" value="@(((DateTime)ViewBag.DepartureDate).ToString("yyyy-MM-dd"))" />
+        }
         <nav class="mb-4">
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                 <button class="nav-link active" id="nav-ghe-tab" data-bs-toggle="tab" data-bs-target="#nav-ghe" type="button" role="tab" aria-controls="nav-ghe" aria-selected="true">
@@ -243,7 +253,7 @@
                                 @foreach (Pickup pickup in ViewBag.PickUpList)
                                 {
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" name="pickupId" id="pickup-@pickup.IdPickup" value="@pickup.IdPickup" required />
+                                        <input class="form-check-input" type="radio" name="diemDi" id="pickup-@pickup.IdPickup" value="@pickup.IdPickup" required />
                                         <label class="form-check-label" for="pickup-@pickup.IdPickup">
                                             <i class="bi bi-geo-alt-fill"></i> @pickup.PickupName (@pickup.City?.NameCity)
                                         </label>
@@ -261,7 +271,7 @@
                                 @foreach (DropOff dropOff in ViewBag.DropOffList)
                                 {
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" type="radio" name="dropOffId" id="dropoff-@dropOff.IdDropOff" value="@dropOff.IdDropOff" required />
+                                        <input class="form-check-input" type="radio" name="diemDen" id="dropoff-@dropOff.IdDropOff" value="@dropOff.IdDropOff" required />
                                         <label class="form-check-label" for="dropoff-@dropOff.IdDropOff">
                                             <i class="bi bi-flag-fill"></i> @dropOff.DropOffName (@dropOff.City?.NameCity)
                                         </label>
@@ -291,6 +301,7 @@
         const totalPriceElement = document.getElementById('total-price');
         const maxSeatsAlert = document.getElementById('max-seats-alert');
         const maxSeats = 4;
+        const departureDateInput = document.getElementById('departureDateInput');
 
         // Function to update total price
         function updateTotalPrice() {
@@ -344,6 +355,21 @@
                 updateSeatAvailability();
             });
         });
+
+        // Handle departure date input
+        if (departureDateInput) {
+            departureDateInput.addEventListener('change', function () {
+                const form = document.querySelector('form[asp-action="Details"]');
+                let hiddenInput = form.querySelector('input[name="departureDate"]');
+                if (!hiddenInput) {
+                    hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'departureDate';
+                    form.appendChild(hiddenInput);
+                }
+                hiddenInput.value = this.value;
+            });
+        }
 
         // Initial check
         updateTotalPrice();

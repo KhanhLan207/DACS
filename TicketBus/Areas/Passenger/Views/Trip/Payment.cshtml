@@ -71,18 +71,57 @@
                     </div>
                     <div class="col-md-6">
                         <p><strong>Điểm đi:</strong> @Model.RouteStopStart?.StopName <small>(@Model.RouteStopStart?.Time?.ToString(@"hh\:mm"))</small></p>
-                        <p><strong>Điểm đón:</strong> @ViewBag.Pickup?.PickupName (@ViewBag.Pickup?.City?.NameCity)</p>
+                        <p>
+                            <strong>Điểm đón:</strong>
+                            @if (ViewBag.Pickup != null)
+                            {
+                                @ViewBag.Pickup.PickupName
+                                @if (ViewBag.Pickup.City != null)
+                                {
+                                    <text> (@ViewBag.Pickup.City.NameCity)</text>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-danger">Không xác định</span>
+                            }
+                        </p>
                         <p><strong>Điểm đến:</strong> @Model.RouteStopEnd?.StopName <small>(@Model.RouteStopEnd?.Time?.ToString(@"hh\:mm"))</small></p>
-                        <p><strong>Điểm trả:</strong> @ViewBag.DropOff?.DropOffName (@ViewBag.DropOff?.City?.NameCity)</p>
+                        <p>
+                            <strong>Điểm trả:</strong>
+                            @if (ViewBag.DropOff != null)
+                            {
+                                @ViewBag.DropOff.DropOffName
+                                @if (ViewBag.DropOff.City != null)
+                                {
+                                    <text> (@ViewBag.DropOff.City.NameCity)</text>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-danger">Không xác định</span>
+                            }
+                        </p>
                         <p>
                             <strong>Ngày khởi hành:</strong>
-                            @(ViewBag.DepartureDate != null ? ((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy") : "Không xác định")
+                            @if (ViewBag.Tickets != null && ViewBag.Tickets.Count > 0 && ViewBag.Tickets[0].DepartureDate != null)
+                            {
+                                @(((DateTime)ViewBag.Tickets[0].DepartureDate).ToString("dd/MM/yyyy"))
+                            }
+                            else if (ViewBag.DepartureDate != null)
+                            {
+                                @(((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy"))
+                            }
+                            else
+                            {
+                                <span class="text-danger">Không xác định. Vui lòng liên hệ quản trị viên.</span>
+                            }
                         </p>
                     </div>
                 </div>
                 <hr />
                 <h5><i class="bi bi-chair"></i> Thông tin vé</h5>
-                @if (ViewBag.Tickets != null)
+                @if (ViewBag.Tickets != null && ViewBag.Tickets.Count > 0)
                 {
                     <table class="table table-bordered">
                         <thead>
@@ -91,24 +130,26 @@
                                 <th>Ghế</th>
                                 <th>Ngày tạo</th>
                                 <th>Ngày khởi hành</th>
+                                <th>Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach (var ticket in ViewBag.Tickets)
-                        {
-                            <tr>
-                                <td>@ticket.TicketCode</td>
-                                <td>@ticket.Seat?.SeatCode</td>
-                                <td>@(ticket.CreatedDate != null ? ((DateTime)ticket.CreatedDate).ToString("dd/MM/yyyy HH:mm") : "-")</td>
-                                <td>@(ticket.DepartureDate != null ? ((DateTime)ticket.DepartureDate).ToString("dd/MM/yyyy") : "-")</td>
-                            </tr>
-                        }
+                            @foreach (var ticket in ViewBag.Tickets)
+                            {
+                                <tr>
+                                    <td>@(ticket.TicketCode ?? "Chưa tạo")</td>
+                                    <td>@(ticket.Seat?.SeatCode ?? "-")</td>
+                                    <td>@(ticket.CreatedDate != null ? ((DateTime)ticket.CreatedDate).ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                    <td>@(ticket.DepartureDate != null ? ((DateTime)ticket.DepartureDate).ToString("dd/MM/yyyy") : "-")</td>
+                                    <td>@(ticket.State == TicketState.ChuaThanhToan ? "Chưa thanh toán" : "Đã thanh toán")</td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 }
                 else
                 {
-                    <p><strong>Ngày khởi hành:</strong> @(ViewBag.DepartureDate != null ? ((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy") : "Không xác định")</p>
+                    <p class="text-warning">Không tìm thấy thông tin vé. Vui lòng thử lại hoặc liên hệ quản trị viên.</p>
                 }
                 <hr />
                 <h5><i class="bi bi-person-fill"></i> Thông tin khách hàng</h5>
@@ -144,11 +185,8 @@
                             <input type="hidden" name="PriceValue" value="@Model.PriceValue" />
                             <input type="hidden" name="Total" value="@(Model.PriceValue * (ViewBag.SelectedSeats?.Count ?? 1))" />
                             <input type="hidden" name="PaymentStatus" value="Pending" />
-
                             <button type="submit" class="btn btn-momo">Thanh toán qua MoMo</button>
                         </form>
-
-
                     </div>
                 </div>
             </div>
@@ -169,7 +207,6 @@
 </div>
 
 <script>
-    // JavaScript to toggle payment method details
     document.getElementById('payAtBus').addEventListener('change', function () {
         document.getElementById('payAtBusDetails').style.display = 'block';
         document.getElementById('momoDetails').style.display = 'none';
@@ -180,7 +217,6 @@
         document.getElementById('momoDetails').style.display = 'block';
     });
 
-    // Handle MoMo form submission
     document.querySelector('form[asp-action="CreatePaymentUrl"]').addEventListener('submit', async function (e) {
         e.preventDefault();
         const form = e.target;
