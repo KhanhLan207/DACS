@@ -5,12 +5,14 @@
         border-left: 5px solid #007bff;
         margin-bottom: 20px;
     }
+
     .payment-info {
         padding: 15px;
         background-color: #e9f7ef;
         border-radius: 5px;
         font-size: 1rem;
     }
+
     .ticket-details {
         background-color: #fff;
         border: 1px solid #ddd;
@@ -18,15 +20,37 @@
         padding: 15px;
         margin-bottom: 20px;
     }
+
     .payment-method {
         background-color: #f1f1f1;
         padding: 15px;
         border-radius: 5px;
         margin-bottom: 20px;
     }
+
     .btn-back {
         margin-top: 20px;
     }
+
+    .payment-option {
+        margin-bottom: 15px;
+    }
+
+    .momo-qr {
+        display: none;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .btn-momo {
+        margin-top: 10px;
+        background-color: #a50064;
+        color: white;
+    }
+
+        .btn-momo:hover {
+            background-color: #8e004f;
+        }
 </style>
 
 <div class="container mt-4">
@@ -50,13 +74,17 @@
                         <p><strong>Điểm đón:</strong> @ViewBag.Pickup?.PickupName (@ViewBag.Pickup?.City?.NameCity)</p>
                         <p><strong>Điểm đến:</strong> @Model.RouteStopEnd?.StopName <small>(@Model.RouteStopEnd?.Time?.ToString(@"hh\:mm"))</small></p>
                         <p><strong>Điểm trả:</strong> @ViewBag.DropOff?.DropOffName (@ViewBag.DropOff?.City?.NameCity)</p>
-                        <p><strong>Ngày khởi hành:</strong> @ViewBag.DepartureDate</p>
+                        <p>
+                            <strong>Ngày khởi hành:</strong>
+                            @(ViewBag.DepartureDate != null ? ((DateTime)ViewBag.DepartureDate).ToString("dd/MM/yyyy") : "Không xác định")
+                        </p>
                     </div>
                 </div>
                 <hr />
                 <h5><i class="bi bi-chair"></i> Thông tin vé</h5>
                 <p><strong>Số ghế đã chọn:</strong> @string.Join(", ", ViewBag.SelectedSeats)</p>
                 <p><strong>Giá mỗi ghế:</strong> @Model.PriceValue VND</p>
+                <input type="hidden" name="PriceValue" value="@Model.PriceValue" />
                 <p><strong>Tổng giá:</strong> @(Model.PriceValue* ViewBag.SelectedSeats.Count) VND</p>
                 <hr />
                 <h5><i class="bi bi-person-fill"></i> Thông tin khách hàng</h5>
@@ -67,13 +95,43 @@
             <!-- Payment Method -->
             <div class="payment-method">
                 <h5><i class="bi bi-wallet2"></i> Phương thức thanh toán</h5>
-                <p><strong>Thanh toán tại nhà xe</strong></p>
-                <p>Vui lòng đến văn phòng nhà xe hoặc điểm đón để thanh toán trực tiếp trước giờ khởi hành. Thông tin liên hệ nhà xe sẽ được cung cấp qua email hoặc số điện thoại của bạn.</p>
+                <div class="payment-option">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="payAtBus" value="payAtBus" checked>
+                        <label class="form-check-label" for="payAtBus">
+                            Thanh toán tại nhà xe
+                        </label>
+                    </div>
+                    <div id="payAtBusDetails" class="mt-2">
+                        <p>Vui lòng đến văn phòng nhà xe hoặc điểm đón để thanh toán trực tiếp trước giờ khởi hành. Thông tin liên hệ nhà xe sẽ được cung cấp qua email hoặc số điện thoại của bạn.</p>
+                    </div>
+                </div>
+                <div class="payment-option">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="payWithMomo" value="payWithMomo">
+                        <label class="form-check-label" for="payWithMomo">
+                            Thanh toán bằng MoMo
+                        </label>
+                    </div>
+                    <div id="momoDetails" class="momo-qr">
+                        <p>Nhấn nút bên dưới để thanh toán qua MoMo:</p>
+                        <form method="post" asp-controller="Payment" asp-action="CreatePaymentUrl">
+                            <input type="hidden" name="SelectedSeats" value="@string.Join(",", ViewBag.SelectedSeats)" />
+                            <input type="hidden" name="PriceValue" value="@Model.PriceValue" />
+                            <input type="hidden" name="Total" value="@(Model.PriceValue * (ViewBag.SelectedSeats?.Count ?? 1))" />
+                            <input type="hidden" name="PaymentStatus" value="Pending" />
+
+                            <button type="submit" class="btn btn-momo">Thanh toán qua MoMo</button>
+                        </form>
+
+
+                    </div>
+                </div>
             </div>
 
             <!-- Success Message -->
             <div class="payment-info">
-                <p><i class="bi bi-check-circle-fill text-success"></i> Vé của bạn đã được đặt thành công! Vui lòng kiểm tra thông tin và thanh toán tại nhà xe trước giờ khởi hành.</p>
+                <p><i class="bi bi-check-circle-fill text-success"></i> Vui lòng kiểm tra thông tin và hoàn tất thanh toán theo phương thức đã chọn.</p>
             </div>
 
             <!-- Back Button -->
@@ -85,3 +143,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    // JavaScript to toggle payment method details
+    document.getElementById('payAtBus').addEventListener('change', function () {
+        document.getElementById('payAtBusDetails').style.display = 'block';
+        document.getElementById('momoDetails').style.display = 'none';
+    });
+
+    document.getElementById('payWithMomo').addEventListener('change', function () {
+        document.getElementById('payAtBusDetails').style.display = 'none';
+        document.getElementById('momoDetails').style.display = 'block';
+    });
+
+    // Handle MoMo form submission
+    document.querySelector('form[asp-action="CreatePaymentUrl"]').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'Accept': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.payUrl) {
+                window.location.href = result.payUrl;
+            } else {
+                alert('Failed to retrieve MoMo payment URL: ' + (result.message || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Error during payment processing: ' + error.message);
+        }
+    });
+</script>

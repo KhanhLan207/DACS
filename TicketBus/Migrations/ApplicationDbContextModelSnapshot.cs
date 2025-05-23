@@ -243,23 +243,20 @@ namespace TicketBus.Migrations
                     b.Property<string>("BillCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("DiscountPercentage")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("DiscountedAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("FinalTotal")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("IdPassenger")
                         .HasColumnType("int");
 
+                    b.Property<string>("PaymentStatus")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("SeatQuantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<long>("Total")
+                        .HasColumnType("bigint");
 
                     b.HasKey("IdBill");
 

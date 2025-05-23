@@ -4,9 +4,15 @@ using TicketBus.Data;
 using TicketBus.Models;
 
 using TicketBus.Repositories;
+using TicketBus.Services.Momo;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Momo API Payment
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddScoped<IMomoService, MomoService>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

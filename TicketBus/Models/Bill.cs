@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TicketBus.Models
 {
@@ -13,21 +13,16 @@ namespace TicketBus.Models
         public int? SeatQuantity { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Total must be greater than or equal to 0")]
-        public decimal Total { get; set; }
+        public long Total { get; set; } // ✅ Nếu MoMo yêu cầu số nguyên
 
-        [Range(0, 100, ErrorMessage = "Discount percentage must be between 0 and 100")]
-        public decimal DiscountPercentage { get; set; }
+        public decimal FinalTotal { get; set; } // ✅ Tổng tiền cuối cùng sau giảm giá
 
-        [Range(0, double.MaxValue, ErrorMessage = "Discounted amount must be greater than or equal to 0")]
-        public decimal DiscountedAmount { get; set; }
-
-        [Range(0, double.MaxValue, ErrorMessage = "Final total must be greater than or equal to 0")]
-        public decimal FinalTotal { get; set; }
+        public string? PaymentStatus { get; set; }
 
         [ForeignKey("Passenger")]
         public int? IdPassenger { get; set; }
-
         public Passenger? Passenger { get; set; }
+
         public ICollection<Ticket> Tickets { get; set; }
     }
 }
