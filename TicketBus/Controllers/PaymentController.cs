@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
 using TicketBus.Data;
@@ -13,110 +16,164 @@ namespace TicketBus.Controllers
     {
         private readonly IMomoService _momoService;
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(IMomoService momoService, ApplicationDbContext context)
+        public PaymentController(IMomoService momoService, ApplicationDbContext context, ILogger<PaymentController> logger)
         {
             _momoService = momoService ?? throw new ArgumentNullException(nameof(momoService));
             _context = context ?? throw new ArgumentNullException(nameof(context));
+            _logger = logger;
         }
 
         [HttpGet]
         public IActionResult Index() => View();
+
         public IActionResult PaymentSuccess()
         {
-            return View("PaymentSuccess"); // ✅ Đảm bảo gọi đúng tên view
+            return View("PaymentSuccess");
         }
 
         public async Task<IActionResult> PaymentCallback()
         {
             try
             {
-                Console.WriteLine("🔄 Đang xử lý phản hồi thanh toán từ MoMo...");
-                Console.WriteLine($"📢 Dữ liệu query từ MoMo: {JsonConvert.SerializeObject(Request.Query)}");
+                _logger.LogInformation("[PaymentCallback] Đang xử lý phản hồi thanh toán từ MoMo. Query: {Query}", JsonConvert.SerializeObject(Request.Query));
 
                 var response = await _momoService.PaymentExecuteAsync(Request.Query);
 
-                // ✅ Log phản hồi từ MoMo sau khi xử lý
-                Console.WriteLine($"📢 Phản hồi từ MoMo: {JsonConvert.SerializeObject(response)}");
+                _logger.LogInformation("[PaymentCallback] Phản hồi từ MoMo: {Response}", JsonConvert.SerializeObject(response));
 
                 if (response == null || response.PaymentStatus == "Error" || string.IsNullOrEmpty(response.BillCode))
                 {
-                    Console.WriteLine("❌ Lỗi: Thanh toán thất bại hoặc phản hồi không hợp lệ.");
+                    _logger.LogWarning("[PaymentCallback] Thanh toán thất bại hoặc phản hồi không hợp lệ. PaymentStatus: {PaymentStatus}, BillCode: {BillCode}",
+                        response?.PaymentStatus, response?.BillCode);
                     return View("PaymentFailed");
                 }
 
-                Console.WriteLine($"✅ Thanh toán thành công! BillCode: {response.BillCode}, Trạng thái: {response.PaymentStatus}");
-                return View("PaymentSuccess");
+                // Tìm bill trong CSDL
+                var bill = await _context.Bills
+                    .Include(b => b.Tickets)
+                    .FirstOrDefaultAsync(b => b.BillCode == response.BillCode);
+
+                if (bill == null)
+                {
+                    _logger.LogError("[PaymentCallback] Không tìm thấy bill với BillCode: {BillCode}", response.BillCode);
+                    return View("PaymentFailed");
+                }
+
+                // Cập nhật trạng thái bill và vé
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    bill.PaymentStatus = "Completed";
+
+                    foreach (var ticket in bill.Tickets)
+                    {
+                        ticket.State = TicketState.DaThanhToan;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("[PaymentCallback] Cập nhật trạng thái bill và vé thành công. BillCode: {BillCode}, IdBill: {IdBill}",
+                        bill.BillCode, bill.IdBill);
+                    return View("PaymentSuccess");
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "[PaymentCallback] Lỗi khi cập nhật trạng thái bill và vé. BillCode: {BillCode}", response.BillCode);
+                    return View("PaymentError");
+                }
             }
             catch (SecurityException ex)
             {
-                Console.WriteLine($"❌ Lỗi bảo mật: {ex.Message}");
+                _logger.LogError(ex, "[PaymentCallback] Lỗi bảo mật khi xử lý callback MoMo");
                 return View("PaymentError");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Lỗi hệ thống: {ex.Message}");
+                _logger.LogError(ex, "[PaymentCallback] Lỗi hệ thống khi xử lý callback MoMo");
                 return View("PaymentError");
             }
         }
+
         [HttpPost]
         [Route("CreatePaymentUrl")]
-        public async Task<IActionResult> CreatePaymentUrl(OrderInfoModel model, [FromForm] string SelectedSeats)
+        public async Task<IActionResult> CreatePaymentUrl(OrderInfoModel model, [FromForm] string SelectedSeats, [FromForm] int BillId)
         {
-            // ✅ Log kiểm tra dữ liệu đầu vào
-            Console.WriteLine($"🔍 Dữ liệu nhận từ form: {JsonConvert.SerializeObject(model)}");
-            Console.WriteLine($"📢 Ghế đã chọn (chuỗi CSV): {SelectedSeats}");
+            _logger.LogInformation("[CreatePaymentUrl] Nhận yêu cầu tạo URL thanh toán. Model: {Model}, SelectedSeats: {SelectedSeats}, BillId: {BillId}",
+                JsonConvert.SerializeObject(model), SelectedSeats, BillId);
 
-            if (model == null || string.IsNullOrEmpty(SelectedSeats))
+            if (model == null || string.IsNullOrEmpty(SelectedSeats) || BillId <= 0)
             {
-                Console.WriteLine("❌ Lỗi: Thông tin đơn hàng hoặc ghế không hợp lệ.");
-                return BadRequest(new { message = "Thông tin đơn hàng hoặc danh sách ghế không hợp lệ." });
+                _logger.LogWarning("[CreatePaymentUrl] Dữ liệu đầu vào không hợp lệ. Model: {Model}, SelectedSeats: {SelectedSeats}, BillId: {BillId}",
+                    model != null, SelectedSeats, BillId);
+                return BadRequest(new { message = "Thông tin đơn hàng, danh sách ghế hoặc BillId không hợp lệ." });
             }
 
-            // ✅ Chuyển danh sách ghế từ chuỗi CSV thành danh sách
+            // Chuyển danh sách ghế từ chuỗi CSV thành danh sách
             model.SelectedSeat = SelectedSeats.Split(',').ToList();
             model.SeatQuantity = model.SelectedSeat.Count;
 
-            Console.WriteLine($"📢 Số lượng ghế đã chọn: {model.SeatQuantity}");
+            // Kiểm tra bill tồn tại
+            var bill = await _context.Bills
+                .Include(b => b.Tickets)
+                .FirstOrDefaultAsync(b => b.IdBill == BillId);
 
-            // ✅ Lấy `UserId` từ bảng `AspNetUsers`
+            if (bill == null)
+            {
+                _logger.LogError("[CreatePaymentUrl] Không tìm thấy bill với IdBill: {BillId}", BillId);
+                return BadRequest(new { message = "Hóa đơn không tồn tại." });
+            }
+
+            // Cập nhật thông tin bill nếu cần
+            model.BillCode = bill.BillCode;
+            model.Total = bill.Total;
+            model.SeatQuantity = bill.SeatQuantity;
+            model.IdPassenger = bill.IdPassenger;
+
+            // Lấy thông tin user và passenger
             var userEmail = User.Identity.Name;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
 
             if (user == null)
             {
-                Console.WriteLine("❌ Không tìm thấy thông tin user đăng nhập.");
+                _logger.LogError("[CreatePaymentUrl] Không tìm thấy thông tin user đăng nhập. Email: {Email}", userEmail);
                 return BadRequest(new { message = "Bạn cần đăng nhập để thanh toán." });
             }
 
-            // ✅ Tìm `IdPassenger` từ bảng `Passengers`
             var passenger = await _context.Passengers.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
             if (passenger == null || passenger.IdPassenger == 0)
             {
-                Console.WriteLine("❌ Không tìm thấy `IdPassenger` trong hệ thống.");
+                _logger.LogError("[CreatePaymentUrl] Không tìm thấy IdPassenger cho user. UserId: {UserId}", user.Id);
                 return BadRequest(new { message = "Không thể xác định hành khách." });
             }
 
             model.IdPassenger = passenger.IdPassenger;
-            Console.WriteLine($"📢 Đã lấy `IdPassenger` từ database: {model.IdPassenger}");
 
-            // ✅ Log kiểm tra dữ liệu trước khi gửi yêu cầu đến MoMo
-            Console.WriteLine($"📢 Dữ liệu gửi đi cho MoMo: {JsonConvert.SerializeObject(model)}");
-
-            var response = await _momoService.CreatePaymentAsync(model);
-
-            // ✅ Log phản hồi từ MoMo
-            Console.WriteLine($"📢 Phản hồi từ MoMo: {JsonConvert.SerializeObject(response)}");
-
-            if (response == null || string.IsNullOrEmpty(response.PayUrl))
+            // Gọi MoMo để tạo URL thanh toán
+            try
             {
-                Console.WriteLine("❌ Lỗi khi tạo liên kết thanh toán.");
-                return BadRequest(new { message = "Lỗi xử lý thanh toán." });
-            }
+                var response = await _momoService.CreatePaymentAsync(model);
 
-            Console.WriteLine($"✅ Đã tạo liên kết thanh toán thành công: {response.PayUrl}");
-            return Redirect(response.PayUrl);
+                _logger.LogInformation("[CreatePaymentUrl] Phản hồi từ MoMo: {Response}", JsonConvert.SerializeObject(response));
+
+                if (response == null || string.IsNullOrEmpty(response.PayUrl))
+                {
+                    _logger.LogWarning("[CreatePaymentUrl] Lỗi khi tạo liên kết thanh toán. Response: {Response}", JsonConvert.SerializeObject(response));
+                    return BadRequest(new { message = "Lỗi xử lý thanh toán." });
+                }
+
+                _logger.LogInformation("[CreatePaymentUrl] Tạo liên kết thanh toán thành công. PayUrl: {PayUrl}", response.PayUrl);
+                return Redirect(response.PayUrl); // Redirect trực tiếp để hiển thị mã QR
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[CreatePaymentUrl] Lỗi khi gọi MoMo service");
+                return BadRequest(new { message = "Lỗi xử lý thanh toán: " + ex.Message });
+            }
         }
     }
 }
