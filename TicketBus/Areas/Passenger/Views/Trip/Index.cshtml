@@ -15,13 +15,18 @@
     <!-- Navbar -->
     <div class="container-fluid fixed-top custom-navbar">
         <div class="navbar">
-            <a class="navbar-brand" href="#">
-                <h1>GreenBus</h1>
+            <a class="navbar-brand" href="~/Passenger/Trip"> 
+                <h1>GreenBus</h1> 
+             </a>
+            <a href="@Url.Action("MyTickets", "Trip")" class="btn btn-outline-primary">
+                <i class="bi bi-ticket-detailed-fill"></i> Vé của tôi
             </a>
+            
             <div class="flag-container">
                 <img class="flag-icon" src="https://flagcdn.com/w40/vn.png" alt="Vietnam Flag">
             </div>
-        </div>
+               
+            </div>
     </div>
 
     <div class="container">

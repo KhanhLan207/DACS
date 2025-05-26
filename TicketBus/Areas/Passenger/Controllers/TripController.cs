@@ -44,12 +44,11 @@ public class TripController : Controller
             .OrderBy(v => v.NameType)
             .ToList();
 
-        // Parse departureDate from query string
         if (!departureDate.HasValue && !string.IsNullOrEmpty(Request.Query["departureDate"]))
         {
             if (DateTime.TryParse(Request.Query["departureDate"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
             {
-                departureDate = parsedDate.Date; // Chỉ lấy ngày, bỏ giờ
+                departureDate = parsedDate.Date;
             }
         }
 
@@ -235,7 +234,6 @@ public class TripController : Controller
             ViewBag.CustomerPhone = passenger?.PhoneNumber ?? user.PhoneNumber;
         }
 
-        // Nếu departureDate không được truyền, đặt mặc định là hôm nay
         ViewBag.DepartureDate = departureDate?.Date ?? DateTime.Today;
 
         var SeatList = await _context.Seats
@@ -244,11 +242,9 @@ public class TripController : Controller
             .ToListAsync();
         ViewBag.SeatList = SeatList;
 
-        // Determine if the vehicle is a sleeper bus
         bool isSleeper = price.ScheduleDetails?.Coach?.VehicleType?.NameType.ToLower().Contains("giường nằm") == true;
         ViewBag.IsSleeper = isSleeper;
 
-        // If it's a sleeper bus, split seats into upper and lower decks
         if (isSleeper)
         {
             var totalSeats = SeatList.Count;
@@ -284,7 +280,6 @@ public class TripController : Controller
     {
         _logger.LogInformation("[Details POST] seatIds={SeatIds}, diemDi={DiemDi}, diemDen={DiemDen}, idPrice={IdPrice}, departureDate={DepartureDate}", seatIds, diemDi, diemDen, idPrice, departureDate);
 
-        // Kiểm tra seatIds
         if (seatIds == null || seatIds.Count == 0)
         {
             _logger.LogWarning("[Details POST] Không có seatIds được chọn");
@@ -298,7 +293,6 @@ public class TripController : Controller
             return View(await GetPriceDetails(idPrice));
         }
 
-        // Kiểm tra diemDi và diemDen
         var pickupExists = await _context.Pickups.AnyAsync(p => p.IdPickup == diemDi);
         var dropOffExists = await _context.DropOffs.AnyAsync(d => d.IdDropOff == diemDen);
         if (!pickupExists || !dropOffExists)
@@ -346,7 +340,6 @@ public class TripController : Controller
             return NotFound();
         }
 
-        // Nếu departureDate không được truyền, đặt mặc định là hôm nay
         departureDate = departureDate?.Date ?? DateTime.Today;
 
         using var transaction = await _context.Database.BeginTransactionAsync();
@@ -369,7 +362,7 @@ public class TripController : Controller
                     CreatedDate = DateTime.Now,
                     State = TicketState.ChuaThanhToan,
                     DepartureDate = departureDate,
-                    TicketCode = GenerateTicketCode() // Tạo mã vé ngẫu nhiên
+                    TicketCode = GenerateTicketCode()
                 };
                 _logger.LogInformation("[Details POST] Tạo ticket: {@Ticket}", ticket);
 
@@ -391,34 +384,6 @@ public class TripController : Controller
         }
 
         return RedirectToAction("Payment", new { idPrice, seatIds, pickupId = diemDi, dropOffId = diemDen, departureDate });
-    }
-
-    private async Task<Price> GetPriceDetails(int idPrice)
-    {
-        return await _context.Prices
-            .Include(p => p.RouteStopStart)
-            .Include(p => p.RouteStopEnd)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.BusRoute)
-                    .ThenInclude(r => r.RouteStops)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.Coach)
-                    .ThenInclude(c => c.Seats)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.Coach)
-                    .ThenInclude(c => c.Brand)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.Coach)
-                    .ThenInclude(c => c.VehicleType)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.BusRoute)
-                    .ThenInclude(r => r.Pickups)
-                        .ThenInclude(p => p.City)
-            .Include(p => p.ScheduleDetails)
-                .ThenInclude(sd => sd.BusRoute)
-                    .ThenInclude(r => r.DropOffs)
-                        .ThenInclude(d => d.City)
-            .FirstOrDefaultAsync(p => p.IdPrice == idPrice);
     }
 
     public async Task<IActionResult> Payment(int idPrice, List<int> seatIds, int pickupId, int dropOffId, DateTime? departureDate)
@@ -447,7 +412,6 @@ public class TripController : Controller
             return NotFound();
         }
 
-        // Parse departureDate từ query string nếu cần
         if (!departureDate.HasValue && !string.IsNullOrEmpty(Request.Query["departureDate"]))
         {
             if (DateTime.TryParse(Request.Query["departureDate"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
@@ -456,7 +420,6 @@ public class TripController : Controller
             }
         }
 
-        // Nếu departureDate vẫn null, đặt mặc định là hôm nay
         departureDate = departureDate?.Date ?? DateTime.Today;
 
         var user = await _userManager.GetUserAsync(User);
@@ -487,7 +450,6 @@ public class TripController : Controller
             .Include(d => d.City)
             .FirstOrDefaultAsync(d => d.IdDropOff == dropOffId);
 
-        // Lấy danh sách vé vừa tạo
         var tickets = await _context.Tickets
             .Include(t => t.Seat)
             .Where(t => t.IdPrice == idPrice && seatIds.Contains(t.IdSeat.Value) && t.DepartureDate == departureDate && t.State == TicketState.ChuaThanhToan)
@@ -500,7 +462,6 @@ public class TripController : Controller
             return NotFound();
         }
 
-        // Tạo Bill
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
@@ -512,12 +473,11 @@ public class TripController : Controller
                 FinalTotal = (decimal)(tickets.Count * price.PriceValue),
                 PaymentStatus = "Pending",
                 IdPassenger = passenger.IdPassenger,
-                Tickets = tickets // Liên kết vé với bill
+                Tickets = tickets
             };
             _context.Bills.Add(bill);
             await _context.SaveChangesAsync();
 
-            // Cập nhật IdBill cho các vé
             foreach (var ticket in tickets)
             {
                 ticket.IdBill = bill.IdBill;
@@ -528,7 +488,7 @@ public class TripController : Controller
             _logger.LogInformation("[Payment] Tạo bill và cập nhật vé thành công: BillCode={BillCode}, IdBill={IdBill}", bill.BillCode, bill.IdBill);
 
             ViewBag.Tickets = tickets;
-            ViewBag.Bill = bill; // Truyền Bill vào view
+            ViewBag.Bill = bill;
         }
         catch (Exception ex)
         {
@@ -548,7 +508,76 @@ public class TripController : Controller
         return View(price);
     }
 
-    // Hàm tạo mã vé ngẫu nhiên
+    public async Task<IActionResult> MyTickets()
+    {
+        _logger.LogInformation("[MyTickets] Retrieving tickets for user");
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            _logger.LogError("[MyTickets] Không tìm thấy thông tin người dùng");
+            return RedirectToAction("Login", "Account");
+        }
+
+        var passenger = await _context.Passengers
+            .FirstOrDefaultAsync(p => p.UserId == user.Id);
+        if (passenger == null)
+        {
+            _logger.LogError("[MyTickets] Không tìm thấy thông tin hành khách cho userId={UserId}", user.Id);
+            return NotFound();
+        }
+
+        var tickets = await _context.Tickets
+            .Include(t => t.Seat)
+            .Include(t => t.Price)
+                .ThenInclude(p => p.RouteStopStart)
+            .Include(t => t.Price)
+                .ThenInclude(p => p.RouteStopEnd)
+            .Include(t => t.Price)
+                .ThenInclude(p => p.ScheduleDetails)
+                    .ThenInclude(sd => sd.BusRoute)
+            .Include(t => t.Price)
+                .ThenInclude(p => p.ScheduleDetails)
+                    .ThenInclude(sd => sd.Coach)
+                        .ThenInclude(c => c.Brand)
+            .Include(t => t.Price)
+                .ThenInclude(p => p.ScheduleDetails)
+                    .ThenInclude(sd => sd.Coach)
+                        .ThenInclude(c => c.VehicleType)
+            .Where(t => t.IdPrice != null && t.Price != null && t.Price.ScheduleDetails != null && t.Price.ScheduleDetails.BusRoute != null)
+            .OrderByDescending(t => t.CreatedDate)
+            .ToListAsync();
+
+        return View(tickets);
+    }
+    private async Task<Price> GetPriceDetails(int idPrice)
+    {
+        return await _context.Prices
+            .Include(p => p.RouteStopStart)
+            .Include(p => p.RouteStopEnd)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.RouteStops)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Seats)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.Brand)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.Coach)
+                    .ThenInclude(c => c.VehicleType)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.Pickups)
+                        .ThenInclude(p => p.City)
+            .Include(p => p.ScheduleDetails)
+                .ThenInclude(sd => sd.BusRoute)
+                    .ThenInclude(r => r.DropOffs)
+                        .ThenInclude(d => d.City)
+            .FirstOrDefaultAsync(p => p.IdPrice == idPrice);
+    }
+
     private string GenerateTicketCode()
     {
         return "TICKET-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();

@@ -19,7 +19,6 @@ namespace TicketBus.Areas.Brand.Controllers
             _context = context;
             _logger = logger;
         }
-
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -40,6 +39,60 @@ namespace TicketBus.Areas.Brand.Controllers
 
             ViewBag.BrandInfo = brand;
             return View();
+        }
+
+        // GET: /Brand/Home/TicketList
+        public async Task<IActionResult> TicketList()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["Message"] = "Không thể xác định người dùng. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            var brand = await _context.Brands
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.UserId == userId && b.State == BrandState.HoatDong);
+
+            if (brand == null)
+            {
+                TempData["Message"] = "Hãng xe của bạn chưa được phê duyệt hoặc không tồn tại.";
+                return View(new List<object>());
+            }
+
+            var tickets = await _context.Tickets
+                .AsNoTracking()
+                .Include(t => t.Price)
+                    .ThenInclude(p => p.ScheduleDetails)
+                    .ThenInclude(sd => sd.BusRoute)
+                .Include(t => t.Price)
+                    .ThenInclude(p => p.RouteStopStart)
+                .Include(t => t.Price)
+                    .ThenInclude(p => p.RouteStopEnd)
+                .Include(t => t.Seat)
+                .Include(t => t.Bill)
+                    .ThenInclude(b => b.Passenger)
+                .Where(t => t.Price.ScheduleDetails.BusRoute.IdBrand == brand.IdBrand)
+                .Select(t => new
+                {
+                    TicketId = t.IdTicket,
+                    TicketCode = t.TicketCode,
+                    PassengerName = t.Bill.Passenger.NamePassenger,
+                    PassengerPhone = t.Bill.Passenger.PhoneNumber,
+                    RouteName = t.Price.ScheduleDetails.BusRoute.NameRoute,
+                    StartStop = t.Price.RouteStopStart.StopName,
+                    EndStop = t.Price.RouteStopEnd.StopName,
+                    DepartureDate = t.DepartureDate,
+                    SeatCode = t.Seat.SeatCode,
+                    PriceValue = t.Price.PriceValue,
+                    PaymentStatus = t.Bill.PaymentStatus,
+                    TicketState = t.State
+                })
+                .OrderByDescending(t => t.DepartureDate)
+                .ToListAsync();
+
+            return View(tickets);
         }
 
         [HttpGet]

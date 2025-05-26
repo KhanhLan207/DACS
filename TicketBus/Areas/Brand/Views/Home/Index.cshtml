@@ -51,6 +51,22 @@
 
     <!-- Nội dung chính -->
     <div class="brand-content">
+        <!-- Quản lý vé -->
+        <div class="management-section">
+            <h3>Quản lý vé</h3>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Quản lý vé</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Xem danh sách vé xe đã được đặt bởi hành khách.</p>
+                    <a asp-area="Brand" asp-controller="Home" asp-action="TicketList" class="btn btn-primary">
+                        <i class="fas fa-ticket-alt me-1"></i> Xem danh sách vé xe
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- Quản lý xe -->
         <div class="management-section">
             <h3>Quản lý xe</h3>
@@ -115,8 +131,8 @@
 <div class="modal fade" id="coachListModal" tabindex="-1" aria-labelledby="coachListModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="coachListModalLabel">Danh sách xe đã được phê duyệt</h5>
+            <div class="card-header">
+                <h5 class="card-title">Danh sách xe đã được phê duyệt</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
