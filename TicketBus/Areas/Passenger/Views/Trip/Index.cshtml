@@ -15,18 +15,18 @@
     <!-- Navbar -->
     <div class="container-fluid fixed-top custom-navbar">
         <div class="navbar">
-            <a class="navbar-brand" href="~/Passenger/Trip"> 
-                <h1>GreenBus</h1> 
-             </a>
+            <a class="navbar-brand" href="~/Passenger/Trip">
+                <h1>GreenBus</h1>
+            </a>
             <a href="@Url.Action("MyTickets", "Trip")" class="btn btn-outline-primary">
                 <i class="bi bi-ticket-detailed-fill"></i> Vé của tôi
             </a>
-            
+
             <div class="flag-container">
                 <img class="flag-icon" src="https://flagcdn.com/w40/vn.png" alt="Vietnam Flag">
             </div>
-               
-            </div>
+
+        </div>
     </div>
 
     <div class="container">
@@ -167,7 +167,9 @@
                             <div class="direction">Hướng đi: @(price.ScheduleDetails?.BusRoute?.NameRoute ?? "Không xác định")</div>
                             <div class="trip-details">
                                 <div class="trip-image">
-                                    <img src="@(price.ScheduleDetails?.Coach?.Images ?? "https://via.placeholder.com/100")" alt="Hình xe">
+                                    <img src="@price.ScheduleDetails.Coach.Images" alt="Bus Image" class="img-fluid" />
+
+
                                     <span class="instant-booking">Đặt vé tức thì</span>
                                 </div>
                                 <div class="trip-info">
@@ -186,9 +188,9 @@
                                     <p class="discounted-price">
                                         @(price.PriceValue.ToString("N0")) VND
                                     </p>
-                                    <p class="seats-left">
-                                        Chỉ còn @(ViewBag.EmptySeats != null && price?.ScheduleDetails?.IdCoach != null && ViewBag.EmptySeats.ContainsKey(price.ScheduleDetails.IdCoach) ? ViewBag.EmptySeats[price.ScheduleDetails.IdCoach] : 0) chỗ trống
-                                    </p>
+                                    @* <p class="seats-left"> *@
+                                    @*     Chỉ còn @(ViewBag.EmptySeats != null && price?.ScheduleDetails?.IdCoach != null && ViewBag.EmptySeats.ContainsKey(price.ScheduleDetails.IdCoach) ? ViewBag.EmptySeats[price.ScheduleDetails.IdCoach] : 0) chỗ trống *@
+                                    @* </p> *@
                                     @* <a href="#" class="details-link">Thông tin chi tiết ▼</a> *@
                                     @* <button class="book-btn">Chọn chuyến</button> *@
                                     @* <a href="/Passenger/Trip/Details?id=@price.IdPrice&departureDate=@ViewBag.DepartureDate" class="details-link">Chọn chuyến</a> *@

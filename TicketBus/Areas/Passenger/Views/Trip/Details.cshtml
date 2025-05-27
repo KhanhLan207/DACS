@@ -1,114 +1,9 @@
-﻿﻿
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
-<style>
-    .seat-checkbox {
-        display: none;
-    }
-
-    .seat-label {
-        display: block;
-        padding: 8px;
-        text-align: center;
-        border: 2px solid #ddd;
-        border-radius: 5px;
-        margin: 5px;
-        cursor: pointer;
-        transition: all 0.3s;
-        font-size: 0.9rem;
-        width: 80px;
-    }
-
-        .seat-label.available {
-            background-color: #e6f3e6;
-            border-color: #28a745;
-        }
-
-        .seat-label.selected {
-            background-color: #28a745;
-            color: white;
-            border-color: #218838;
-        }
-
-        .seat-label.booked {
-            background-color: #f8d7da;
-            border-color: #dc3545;
-            cursor: not-allowed;
-        }
-
-        .seat-label.disabled {
-            background-color: #e9ecef;
-            border-color: #ced4da;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-    .trip-info-card {
-        background-color: #f8f9fa;
-        border-left: 5px solid #007bff;
-        margin-bottom: 20px;
-    }
-
-    .seat-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .seat-grid-sleeper {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .deck-section {
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-    }
-
-        .deck-section h5 {
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-            color: #007bff;
-        }
-
-    .seat-left, .seat-right {
-        display: contents;
-    }
-
-    .form-check-input:checked {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-
-    .continue-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-
-    .price-info {
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #f1f1f1;
-        border-radius: 5px;
-        font-size: 1rem;
-    }
-
-    .alert-max-seats {
-        display: none;
-        margin-top: 10px;
-    }
-</style>
+﻿<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
 
 <div class="container mt-4">
     <!-- Trip Information -->
     <div class="card trip-info-card mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header">
             <h5 class="mb-0"><i class="bi bi-bus-front-fill"></i> Thông tin chuyến đi</h5>
         </div>
         <div class="card-body">
@@ -126,7 +21,8 @@
                         }
                         else
                         {
-                            <input type="date" id="departureDateInput" name="departureDate" class="form-control d-inline-block w-auto" required value="@DateTime.Today.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input type="date" id="departureDateInput" name="departureDate" class="form-control" required
+                                   value="@DateTime.Today.ToString("yyyy-MM-dd")" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                         }
                     </p>
                 </div>
@@ -150,6 +46,7 @@
         {
             <input type="hidden" name="departureDate" value="@(((DateTime)ViewBag.DepartureDate).ToString("yyyy-MM-dd"))" />
         }
+
         <nav class="mb-4">
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
                 <button class="nav-link active" id="nav-ghe-tab" data-bs-toggle="tab" data-bs-target="#nav-ghe" type="button" role="tab" aria-controls="nav-ghe" aria-selected="true">
@@ -163,10 +60,10 @@
 
         <div class="tab-content" id="nav-tabContent">
             <!-- Tab 1: Seat Selection -->
-            <div class="tab-pane fade show active" id="nav-ghe" role="tabpanel" aria-labelledby="nav-ghe-tab">
-                <div class="card border-primary mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-chair"></i> Chọn vị trí ghế
+            <div class हमीtab-pane fade show active" id="nav-ghe" role="tabpanel" aria-labelledby="nav-ghe-tab">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="bi bi-chair"></i> Chọn vị trí ghế</h5>
                     </div>
                     <div class="card-body">
                         @if (ViewBag.IsSleeper)
@@ -178,9 +75,9 @@
                                     <div class="seat-grid">
                                         @foreach (Seat seat in ViewBag.UpperDeckSeats)
                                         {
-                                            var isLeftSide = seat.SeatNumber % 2 == 0;
-                                            <div class="@(isLeftSide ? "seat-left" : "seat-right")">
-                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                            <div class="seat-item">
+                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat"
+                                                       @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
                                                 <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
                                                     <i class="bi bi-chair"></i> @seat.SeatCode
                                                 </label>
@@ -194,9 +91,9 @@
                                     <div class="seat-grid">
                                         @foreach (Seat seat in ViewBag.LowerDeckSeats)
                                         {
-                                            var isLeftSide = seat.SeatNumber % 2 == 0;
-                                            <div class="@(isLeftSide ? "seat-left" : "seat-right")">
-                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                            <div class="seat-item">
+                                                <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat"
+                                                       @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
                                                 <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
                                                     <i class="bi bi-chair"></i> @seat.SeatCode
                                                 </label>
@@ -211,9 +108,9 @@
                             <div class="seat-grid">
                                 @foreach (Seat seat in ViewBag.SeatList)
                                 {
-                                    var isLeftSide = seat.SeatNumber % 2 == 0;
-                                    <div class="@(isLeftSide ? "seat-left" : "seat-right")">
-                                        <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat" @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
+                                    <div class="seat-item">
+                                        <input type="checkbox" class="seat-checkbox" name="seatIds" id="seat-@seat.IdSeat" value="@seat.IdSeat"
+                                               @(seat.State == SeatState.DaDat ? "disabled" : "") data-price="@Model.PriceValue" />
                                         <label for="seat-@seat.IdSeat" class="seat-label @(seat.State == SeatState.DaDat ? "booked" : "available")">
                                             <i class="bi bi-chair"></i> @seat.SeatCode
                                         </label>
@@ -221,22 +118,21 @@
                                 }
                             </div>
                         }
-                        <div class="mt-3">
+                        <div class="mt-3 d-flex gap-2">
                             <span class="badge bg-light border"><i class="bi bi-circle"></i> Còn trống</span>
                             <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Đang chọn</span>
                             <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Đã đặt</span>
                         </div>
-                        <div class="price-info">
-                            <p><strong>Giá mỗi ghế:</strong> <span id="price-per-seat">@Model.PriceValue.ToString("N0")</span> VND</p>
-                            <p><strong>Tổng giá:</strong> <span id="total-price">0</span> VND</p>
+                        <div class="price-info card mt-3">
+                            <div class="card-body">
+                                <p><strong>Giá mỗi ghế:</strong> <span id="price-per-seat">@Model.PriceValue.ToString("N0")</span> VND</p>
+                                <p><strong>Tổng giá:</strong> <span id="total-price">0</span> VND</p>
+                            </div>
                         </div>
-                        <div class="alert alert-warning alert-max-seats" id="max-seats-alert">
+                        <div class="alert alert-warning alert-max-seats mt-3" id="max-seats-alert">
                             Bạn chỉ được chọn tối đa 4 ghế!
                         </div>
                         <div class="text-end mt-3">
-                            <button type="button" class="btn btn-primary continue-btn" id="continue-btn" disabled data-bs-toggle="tab" data-bs-target="#nav-diem">
-                                <i class="bi bi-arrow-right-circle-fill"></i> Tiếp tục
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -246,9 +142,9 @@
             <div class="tab-pane fade" id="nav-diem" role="tabpanel" aria-labelledby="nav-diem-tab">
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="card border-primary mb-3">
-                            <div class="card-header bg-primary text-white">
-                                <i class="bi bi-geo-alt"></i> Điểm đón
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5><i class="bi bi-geo-alt"></i> Điểm đón</h5>
                             </div>
                             <div class="card-body">
                                 @foreach (Pickup pickup in ViewBag.PickUpList)
@@ -264,9 +160,9 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card border-primary mb-3">
-                            <div class="card-header bg-primary text-white">
-                                <i class="bi bi-flag"></i> Điểm trả
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5><i class="bi bi-flag"></i> Điểm trả</h5>
                             </div>
                             <div class="card-body">
                                 @foreach (DropOff dropOff in ViewBag.DropOffList)
@@ -283,9 +179,6 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-4">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="tab" data-bs-target="#nav-ghe">
-                        <i class="bi bi-arrow-left-circle"></i> Quay lại
-                    </button>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-ticket-detailed-fill"></i> Đặt vé
                     </button>
@@ -295,7 +188,96 @@
     </form>
 </div>
 
+<style>
+    .seat-checkbox {
+        display: none;
+    }
+
+    .seat-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        margin: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        width: 80px;
+        height: 50px;
+    }
+
+        .seat-label.available {
+            background-color: #e6f3e6;
+            border-color: varÛ(secondary);
+        }
+
+        .seat-label.selected {
+            background-color: var(--secondary);
+            color: #fff;
+            border-color: darken(var(--secondary), 10%);
+        }
+
+        .seat-label.booked {
+            background-color: #f8d7da;
+            border-color: var(--danger);
+            cursor: not-allowed;
+        }
+
+        .seat-label.disabled {
+            background-color: #e9ecef;
+            border-color: var(--border);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+    .seat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 10px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .seat-grid-sleeper {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .deck-section {
+        border: 1px solid var(--border);
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+        .deck-section h5 {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+    .form-check-input:checked {
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+    }
+
+    .price-info {
+        background-color: #f1f1f1;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    .alert-max-seats {
+        display: none;
+    }
+</style>
+
 <script>
+    // (Giữ nguyên script hiện tại, chỉ tối ưu hiệu suất nếu cần)
     document.addEventListener('DOMContentLoaded', function () {
         const seatCheckboxes = document.querySelectorAll('.seat-checkbox');
         const continueBtn = document.getElementById('continue-btn');
@@ -304,25 +286,20 @@
         const maxSeats = 4;
         const departureDateInput = document.getElementById('departureDateInput');
 
-        // Function to update total price
         function updateTotalPrice() {
             let total = 0;
             seatCheckboxes.forEach(checkbox => {
                 if (checkbox.checked && !checkbox.disabled) {
-                    const pricePerSeat = parseFloat(checkbox.getAttribute('data-price'));
-                    total += pricePerSeat;
+                    total += parseFloat(checkbox.getAttribute('data-price'));
                 }
             });
             totalPriceElement.textContent = total.toLocaleString('vi-VN');
         }
 
-        // Function to check if any seat is selected
         function updateContinueButton() {
-            const anySeatSelected = Array.from(seatCheckboxes).some(checkbox => checkbox.checked && !checkbox.disabled);
-            continueBtn.disabled = !anySeatSelected;
+            continueBtn.disabled = !Array.from(seatCheckboxes).some(checkbox => checkbox.checked && !checkbox.disabled);
         }
 
-        // Function to update seat availability based on selection count
         function updateSeatAvailability() {
             const selectedCount = Array.from(seatCheckboxes).filter(checkbox => checkbox.checked && !checkbox.disabled).length;
             seatCheckboxes.forEach(checkbox => {
@@ -340,7 +317,6 @@
             maxSeatsAlert.style.display = selectedCount >= maxSeats ? 'block' : 'none';
         }
 
-        // Update seat selection visuals, total price, and continue button state
         seatCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
                 const label = document.querySelector(`label[for="${this.id}"]`);
@@ -357,7 +333,6 @@
             });
         });
 
-        // Handle departure date input
         if (departureDateInput) {
             departureDateInput.addEventListener('change', function () {
                 const form = document.querySelector('form[asp-action="Details"]');
@@ -372,7 +347,6 @@
             });
         }
 
-        // Initial check
         updateTotalPrice();
         updateContinueButton();
         updateSeatAvailability();
